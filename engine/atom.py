@@ -9,4 +9,4 @@ class Atom(HasTraits):
     """
 
     name = Str
-    influenced_by_forces = List(trait = Instance(Force))
+    produced_forces = List(trait = Instance(Force))

@@ -1,4 +1,4 @@
-¿# First, and before importing any Enthought packages, set the ETS_TOOLKIT
+# First, and before importing any Enthought packages, set the ETS_TOOLKIT
 # environment variable to qt4, to tell Traits that we will use Qt.
 import os
 os.environ['ETS_TOOLKIT'] = 'qt4'

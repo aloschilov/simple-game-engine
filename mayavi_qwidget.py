@@ -1,4 +1,3 @@
-
 from pyface.qt import QtGui
 
 from traits.api import HasTraits, Instance, on_trait_change
@@ -7,11 +6,16 @@ from mayavi.core.ui.api import MayaviScene, MlabSceneModel, \
         SceneEditor
 from mayavi import mlab
 
+from engine.universe import Universe
+
+
 
 class Visualization(HasTraits):
     """
     The actual visualization
     """
+
+    universe = Instance(Universe, ())
     scene = Instance(MlabSceneModel, ())
 
     @on_trait_change('scene.activated')
@@ -22,6 +26,8 @@ class Visualization(HasTraits):
         VTK features require a GLContext.
         """
 
+        self.universe.bind_to_scene(self.scene)
+
         # We can do normal mlab calls on the embedded scene.
         self.scene.mlab.test_points3d()
 
@@ -29,6 +35,7 @@ class Visualization(HasTraits):
         def anim():
             f = mlab.gcf()
             while 1:
+                self.universe.next_step()
                 f.scene.camera.azimuth(0.1)
                 f.scene.render()
                 yield
