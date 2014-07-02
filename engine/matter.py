@@ -4,6 +4,8 @@ from tvtk.api import tvtk
 
 from atom import Atom
 
+from traits.api import HasTraits, Instance, on_trait_change
+
 
 class Matter(HasTraits):
     """
@@ -15,6 +17,12 @@ class Matter(HasTraits):
     atoms = Dict(key_trait=Instance(Atom), value_trait=Int)
 
 
+    @on_trait_change('position')
+    def update_position(self):
+        print "I expect this to be update_position"
+        (x, y) = (self.position[0], self.position[1])
+        self.sphere_actor.position = (x, y, 0)
+
     def generate_actor(self):
         """
         Temporary way to generate an actor for matter
@@ -25,6 +33,7 @@ class Matter(HasTraits):
         sphere = tvtk.SphereSource(center=(0, 0, 0), radius=0.5)
         sphere_mapper = tvtk.PolyDataMapper(input=sphere.output)
         p = tvtk.Property(opacity=1, color=(1,0,0))
-        sphere_actor = tvtk.Actor(mapper=sphere_mapper, property=p)
+        self.sphere_actor = tvtk.Actor(mapper=sphere_mapper, property=p)
+        self.update_position()
 
-        return sphere_actor
+        return self.sphere_actor

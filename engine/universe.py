@@ -1,5 +1,3 @@
-
-
 from enthought.traits.api import HasTraits, Instance, List
 
 from engine.matter import Matter
@@ -22,7 +20,10 @@ class Universe(HasTraits):
         """
 
         for matter in self.matters:
-            matter.position += (2, 2)
+            (x, y) = matter.position
+            x += 00000000000000.1
+            y += 00000000000000.1
+            matter.position = (x, y)
             print "Good to see that position is updated {position}".format(position=matter.position)
 
 
@@ -33,4 +34,4 @@ class Universe(HasTraits):
         """
 
         for matter in self.matters:
-            matter.generate_actor()
+            scene.add_actor(matter.generate_actor())

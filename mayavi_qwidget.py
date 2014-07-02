@@ -7,6 +7,7 @@ from mayavi.core.ui.api import MayaviScene, MlabSceneModel, \
 from mayavi import mlab
 
 from engine.universe import Universe
+from engine.matter import Matter
 
 
 
@@ -26,12 +27,13 @@ class Visualization(HasTraits):
         VTK features require a GLContext.
         """
 
+        self.universe.matters.append(Matter())
         self.universe.bind_to_scene(self.scene)
 
         # We can do normal mlab calls on the embedded scene.
         self.scene.mlab.test_points3d()
 
-        @mlab.animate(delay=10)
+        @mlab.animate(delay=10, ui=False)
         def anim():
             f = mlab.gcf()
             while 1:
@@ -40,8 +42,7 @@ class Visualization(HasTraits):
                 f.scene.render()
                 yield
 
-        anim() # Starts the animation.
-
+        self.a = anim() # Starts the animation.
 
 
     # the layout of the dialog screated
