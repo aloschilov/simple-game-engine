@@ -35,3 +35,13 @@ class Universe(HasTraits):
 
         for matter in self.matters:
             scene.add_actor(matter.generate_actor())
+
+            for atom in matter.atoms:
+
+                for force in atom.produced_forces:
+                    force_actor = force.generate_actor()
+                    force_actor.user_transform = matter.transform
+                    scene.add_actor(force_actor)
+
+
+

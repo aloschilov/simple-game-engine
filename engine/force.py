@@ -1,4 +1,6 @@
 from enthought.traits.api import HasTraits
+from mayavi import mlab
+import numpy
 
 class Force(HasTraits):
     """
@@ -13,7 +15,8 @@ class Force(HasTraits):
 
     @property
     def force(self, u, v):
-        """Get force value basing on what? distance from the
+        """
+        Get force value basing on what? distance from the
         object? basing on relative coordinate?
         Let's say we want some parameteric parameters,
         the same as for texture, for example.
@@ -21,3 +24,27 @@ class Force(HasTraits):
         """
         # TODO: update mechanism of specifying force
         return 1.0/(u*v) if (u*u+v*v) > 0.5 else u*v
+
+
+    def generate_actor(self):
+        """
+        Generating an actor that represents a force.
+        We consider force to look like mayavi surf
+        """
+
+        def f(x, y):
+            array_to_return = 1.0/(x*x + y*y)
+            shape_to_update = array_to_return[(x*x+y*y)<0.5].shape
+            array_to_return[(x*x+y*y)<0.5] = numpy.ones(shape_to_update)*2
+            return array_to_return
+
+        x, y = numpy.mgrid[-7.:7.00:100j, -5.:5.00:100j]
+        s = mlab.surf(x, y, f)
+
+        # I need to get tvkt.Actor for surf
+
+        # That is a simple thing to get a tvtk actor
+        # http://code.enthought.com/projects/files/ETS3_API/enthought.mayavi.components.actor.Actor.html
+        return s.actor.actor
+
+

@@ -16,12 +16,19 @@ class Matter(HasTraits):
                      desc='Position of an object in 2D-space')
     atoms = Dict(key_trait=Instance(Atom), value_trait=Int)
 
+    transform = Instance(tvtk.Transform, tvtk.Transform())
+
 
     @on_trait_change('position')
     def update_position(self):
+        """
+        Make visualization position consistent with model
+        """
         print "I expect this to be update_position"
         (x, y) = (self.position[0], self.position[1])
-        self.sphere_actor.position = (x, y, 0)
+        self.transform.identity()
+        self.transform.translate((x,y,0))
+
 
     def generate_actor(self):
         """
@@ -34,6 +41,7 @@ class Matter(HasTraits):
         sphere_mapper = tvtk.PolyDataMapper(input=sphere.output)
         p = tvtk.Property(opacity=1, color=(1,0,0))
         self.sphere_actor = tvtk.Actor(mapper=sphere_mapper, property=p)
+        self.sphere_actor.user_transform = self.transform
         self.update_position()
 
         return self.sphere_actor

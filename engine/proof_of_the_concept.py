@@ -11,7 +11,9 @@ v = mlab.figure()
 sphere = tvtk.SphereSource(center=(0, 0, 0), radius=0.5)
 sphere_mapper = tvtk.PolyDataMapper(input=sphere.output)
 p = tvtk.Property(opacity=1, color=(1,0,0))
+
 sphere_actor = tvtk.Actor(mapper=sphere_mapper, property=p)
+sphere_actor.position = (2,3,4)
 v.scene.add_actor(sphere_actor)
 
 def f(x, y):

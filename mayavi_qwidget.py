@@ -8,6 +8,8 @@ from mayavi import mlab
 
 from engine.universe import Universe
 from engine.matter import Matter
+from engine.atom import Atom
+from engine.force import Force
 
 
 
@@ -27,8 +29,20 @@ class Visualization(HasTraits):
         VTK features require a GLContext.
         """
 
-        self.universe.matters.append(Matter())
+        matter1  = Matter()
+        atom1 = Atom()
+        force1 = Force()
+        atom1.produced_forces.append(force1)
+        matter1.atoms[atom1] = 10
+
+        # TODO: reconsider representation.
+        # There could be more obvious way to represent
+        # quantity to atom relation per matter
+
+        self.universe.matters.append(matter1)
         self.universe.bind_to_scene(self.scene)
+
+        self.universe.configure_traits()
 
         # We can do normal mlab calls on the embedded scene.
         self.scene.mlab.test_points3d()
@@ -43,6 +57,7 @@ class Visualization(HasTraits):
                 yield
 
         self.a = anim() # Starts the animation.
+        self.universe.configure_traits()
 
 
     # the layout of the dialog screated
