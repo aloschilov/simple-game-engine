@@ -4,6 +4,7 @@ from traits.api import HasTraits, Instance, on_trait_change
 from traitsui.api import View, Item
 from mayavi.core.ui.api import MayaviScene, MlabSceneModel, \
         SceneEditor
+from enthought.pyface.api import GUI
 from mayavi import mlab
 
 from engine.universe import Universe
@@ -18,7 +19,8 @@ class Visualization(HasTraits):
     The actual visualization
     """
 
-    universe = Instance(Universe, ())
+
+    universe = Instance(Universe, Universe())
     scene = Instance(MlabSceneModel, ())
 
     @on_trait_change('scene.activated')
@@ -29,35 +31,40 @@ class Visualization(HasTraits):
         VTK features require a GLContext.
         """
 
-        matter1  = Matter()
-        atom1 = Atom()
-        force1 = Force()
+        matter1 = self.universe.create_matter()
+        matter1.name = "1-st matter"
+        atom1 = self.universe.create_atom()
+        force1 = self.universe.create_force()
         atom1.produced_forces.append(force1)
         matter1.atoms[atom1] = 10
+        matter1.position = (0.1,0.1)
+
+
+        matter2 = self.universe.create_matter()
+        matter2.name = "2-nd matter"
+        matter2.position = (2, 2)
+        atom2 = self.universe.create_atom()
+        matter2.atoms[atom2] = 20
 
         # TODO: reconsider representation.
         # There could be more obvious way to represent
         # quantity to atom relation per matter
 
-        self.universe.matters.append(matter1)
         self.universe.bind_to_scene(self.scene)
 
-        self.universe.configure_traits()
-
         # We can do normal mlab calls on the embedded scene.
-        self.scene.mlab.test_points3d()
+#        self.scene.mlab.test_points3d()
 
         @mlab.animate(delay=10, ui=False)
         def anim():
             f = mlab.gcf()
             while 1:
                 self.universe.next_step()
-                f.scene.camera.azimuth(0.1)
+#                f.scene.camera.azimuth(0.1)
                 f.scene.render()
                 yield
 
         self.a = anim() # Starts the animation.
-        self.universe.configure_traits()
 
 
     # the layout of the dialog screated

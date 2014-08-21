@@ -9,9 +9,7 @@ class Force(HasTraits):
     It means a force that influence specific atom.
     """
 
-    def __init__(self):
-        pass
-
+#    affects_on = List(trait = Instance(Atom))
 
     @property
     def force(self, u, v):
@@ -46,5 +44,6 @@ class Force(HasTraits):
         # That is a simple thing to get a tvtk actor
         # http://code.enthought.com/projects/files/ETS3_API/enthought.mayavi.components.actor.Actor.html
         return s.actor.actor
+
 
 

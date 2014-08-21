@@ -1,10 +1,10 @@
-from enthought.traits.api import (Delegate, HasTraits, Instance, Tuple,
-                                  Array, Dict, Int)
-from tvtk.api import tvtk
-
 from atom import Atom
 
+from enthought.traits.api import (Delegate, HasTraits, Instance, Tuple,
+                                  Array, Dict, Int, String)
+from tvtk.api import tvtk
 from traits.api import HasTraits, Instance, on_trait_change
+from random import random
 
 
 class Matter(HasTraits):
@@ -16,18 +16,26 @@ class Matter(HasTraits):
                      desc='Position of an object in 2D-space')
     atoms = Dict(key_trait=Instance(Atom), value_trait=Int)
 
-    transform = Instance(tvtk.Transform, tvtk.Transform())
+    transform = Instance(tvtk.Transform)
 
+    name = String()
 
     @on_trait_change('position')
-    def update_position(self):
+    def update_position(self, affected_object):
         """
         Make visualization position consistent with model
         """
-        print "I expect this to be update_position"
-        (x, y) = (self.position[0], self.position[1])
-        self.transform.identity()
-        self.transform.translate((x,y,0))
+        if affected_object is self.position:
+            print "I expect this to be update_position"
+            (x, y) = (self.position[0], self.position[1])
+
+            if self.transform is None:
+                self.transform = tvtk.Transform()
+            else:
+                self.transform.identity()
+
+            self.transform.translate((x,y,0))
+            print self.transform
 
 
     def generate_actor(self):
@@ -37,11 +45,12 @@ class Matter(HasTraits):
         the actor could be created, the way of atoms visualisation
         an so on.
         """
+
         sphere = tvtk.SphereSource(center=(0, 0, 0), radius=0.5)
         sphere_mapper = tvtk.PolyDataMapper(input=sphere.output)
-        p = tvtk.Property(opacity=1, color=(1,0,0))
+        p = tvtk.Property(opacity=1, color=(random(),random(),random()))
         self.sphere_actor = tvtk.Actor(mapper=sphere_mapper, property=p)
         self.sphere_actor.user_transform = self.transform
-        self.update_position()
+        self.update_position(self)
 
         return self.sphere_actor
