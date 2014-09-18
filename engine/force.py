@@ -1,6 +1,6 @@
 from enthought.traits.api import HasTraits
 from mayavi import mlab
-import numpy
+import numpy as np
 
 class Force(HasTraits):
     """
@@ -11,8 +11,7 @@ class Force(HasTraits):
 
 #    affects_on = List(trait = Instance(Atom))
 
-    @property
-    def force(self, u, v):
+    def function(self):
         """
         Get force value basing on what? distance from the
         object? basing on relative coordinate?
@@ -21,7 +20,7 @@ class Force(HasTraits):
         It will be easier manuplulatable for CG guys.
         """
         # TODO: update mechanism of specifying force
-        return 1.0/(u*v) if (u*u+v*v) > 0.5 else u*v
+        return lambda cg: 0.1e1 / (cg[0] ** 2.0 + cg[1] ** 2.0) if 0.5e0 < cg[0] ** 2.0 + cg[1] ** 2.0 else 2.0
 
 
     def generate_actor(self):
@@ -30,20 +29,13 @@ class Force(HasTraits):
         We consider force to look like mayavi surf
         """
 
-        def f(x, y):
-            array_to_return = 1.0/(x*x + y*y)
-            shape_to_update = array_to_return[(x*x+y*y)<0.5].shape
-            array_to_return[(x*x+y*y)<0.5] = numpy.ones(shape_to_update)*2
-            return array_to_return
-
-        x, y = numpy.mgrid[-7.:7.00:100j, -5.:5.00:100j]
-        s = mlab.surf(x, y, f)
+        x, y = np.mgrid[-7.:7.00:100j, -7.:7.00:100j]
+        g = lambda u,v:  self.function()([u,v])
+        g_vectorized= np.vectorize(g)
+        s = mlab.surf(x, y, g_vectorized)
 
         # I need to get tvkt.Actor for surf
 
         # That is a simple thing to get a tvtk actor
         # http://code.enthought.com/projects/files/ETS3_API/enthought.mayavi.components.actor.Actor.html
         return s.actor.actor
-
-
-

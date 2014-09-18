@@ -156,26 +156,48 @@ class Universe(HasTraits):
         This method evaluates entire universe along the time
         """
 
-        # The position of a matter is changed at every interation
-        # The first step is to save old positions
+        def get_gradient(f, p):
+            """
+            @param p: a point to calculate gradient at
+            @type p: iterable
+            """
+
+            gradient_components = []
+            dimentions = len(p)
+            h = 0.001
+
+            for i in xrange(dimentions):
+
+                # Let's introduce a function fixed along the
+                # direction in concern
+
+                g = lambda c: f([p[d] if d == i else c for d in xrange(dimentions)])
+
+                # and the value of c_0
+                c_0 = p[i]
+                partial_direviate_value = (g(c_0+h) - g(c_0-h))/(2*h)
+
+                gradient_components.append(partial_direviate_value)
+
+
+            return gradient_components
+
 
         matters_positions = [matter.position for matter in self.matters]
         matters_to_atoms_matrix = self.create_matters_to_atoms_matrix()
         atoms_to_forces_matrix = self.create_atoms_to_forces_matrix()
+        forces_functions = [ force.function() for force in  self.forces ]
 
         for matter_index, matter in enumerate(self.matters):
             (x, y) = matter.position
 
-            print matters_to_atoms_matrix * atoms_to_forces_matrix
-
-
-
             # Force field that influence a specific atom
-            #get_force_superposition([x,y],
-                                    #matters_to_forces_matrix,
-                                    #matters_positions,
-                                    #forces_list,
-                                    #matters_to_exclude_from_field=[matter_index,])
+            f = lambda position : get_force_superposition(position,
+                                                          matters_to_atoms_matrix * atoms_to_forces_matrix,
+                                                          matters_positions,
+                                                          forces_functions,
+                                                          matters_to_exclude_from_field=[matter_index,])
+            matter.position = tuple(0.001*np.array(get_gradient(f, matter.position)) + np.array((x, y)))
 
 
     def bind_to_scene(self, scene):
