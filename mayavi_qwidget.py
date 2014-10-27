@@ -4,7 +4,7 @@ from traits.api import HasTraits, Instance, on_trait_change
 from traitsui.api import View, Item
 from mayavi.core.ui.api import MayaviScene, MlabSceneModel, \
         SceneEditor
-from enthought.pyface.api import GUI
+from pyface.api import GUI
 from mayavi import mlab
 
 from engine.universe import Universe
@@ -66,7 +66,12 @@ class Visualization(HasTraits):
         self.universe.bind_to_scene(self.scene)
 
         # We can do normal mlab calls on the embedded scene.
-#        self.scene.mlab.test_points3d()
+        # self.scene.mlab.test_points3d()
+
+        mlab.view(45, 45)
+        mlab.view(240, 120)
+        mlab.view(distance=20)
+        mlab.view(focalpoint=(0,0,0))
 
         @mlab.animate(delay=10, ui=False)
         def anim():

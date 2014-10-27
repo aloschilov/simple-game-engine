@@ -1,4 +1,4 @@
-from enthought.traits.api import (HasTraits, Instance, List,
+from traits.api import (HasTraits, Instance, List,
                                   on_trait_change, ListInstance,
                                   ListClass, ListThis, Dict, Int)
 import numpy as np
@@ -156,6 +156,8 @@ class Universe(HasTraits):
         This method evaluates entire universe along the time
         """
 
+        h = 0.001
+
         def get_gradient(f, p):
             """
             @param p: a point to calculate gradient at
@@ -164,7 +166,6 @@ class Universe(HasTraits):
 
             gradient_components = []
             dimentions = len(p)
-            h = 0.001
 
             for i in xrange(dimentions):
 
@@ -197,7 +198,7 @@ class Universe(HasTraits):
                                                           matters_positions,
                                                           forces_functions,
                                                           matters_to_exclude_from_field=[matter_index,])
-            matter.position = tuple(0.001*np.array(get_gradient(f, matter.position)) + np.array((x, y)))
+            matter.position = tuple(h*np.array(get_gradient(f, matter.position)) + np.array((x, y)))
 
 
     def bind_to_scene(self, scene):

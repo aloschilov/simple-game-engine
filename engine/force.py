@@ -1,4 +1,4 @@
-from enthought.traits.api import HasTraits
+from traits.api import HasTraits
 from mayavi import mlab
 import numpy as np
 
@@ -11,6 +11,7 @@ class Force(HasTraits):
 
 #    affects_on = List(trait = Instance(Atom))
 
+    @staticmethod
     def function(self):
         """
         Get force value basing on what? distance from the
@@ -21,7 +22,6 @@ class Force(HasTraits):
         """
         # TODO: update mechanism of specifying force
         return lambda cg: 0.1e1 / (cg[0] ** 2.0 + cg[1] ** 2.0) if 0.5e0 < cg[0] ** 2.0 + cg[1] ** 2.0 else 2.0
-
 
     def generate_actor(self):
         """

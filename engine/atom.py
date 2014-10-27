@@ -1,4 +1,4 @@
-from enthought.traits.api import (Delegate, HasTraits, Instance, Tuple,
+from traits.api import (Delegate, HasTraits, Instance, Tuple,
                                   Array, Dict, Str, List)
 
 from force import Force

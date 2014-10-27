@@ -1,6 +1,6 @@
 from atom import Atom
 
-from enthought.traits.api import (Delegate, HasTraits, Instance, Tuple,
+from traits.api import (Delegate, HasTraits, Instance, Tuple,
                                   Array, Dict, Int, String)
 from tvtk.api import tvtk
 from traits.api import HasTraits, Instance, on_trait_change
