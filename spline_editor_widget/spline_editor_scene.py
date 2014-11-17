@@ -7,6 +7,8 @@ from pyface.qt.QtCore import (QPoint, QPointF, QRectF, QLineF, Qt,
 
 from segment_properties_widget import PaneWidget, SegmentPropertiesWidget
 
+from copy import deepcopy
+
 canvas_width = 640.0
 canvas_height = 320.0
 canvas_margin = 160.0
@@ -283,38 +285,48 @@ class SplineEditorScene(QWidget):
         :return:
         """
 
-        print "def mouseMoveEvent(self, {pos}):".format(pos=e.pos())
-
         # if we've moved more than 25 pixels, assume user is dragging
 
         if not self.mouse_drag and QPoint(self.mouse_press - e.pos()).manhattanLength() > QApplication.instance().startDragDistance():
-            print 80*"=" + "Starting mouse drag"
             self.mouse_drag = True
 
-        p = mapFromCanvas(e.pos())
+        point_from_event = mapFromCanvas(e.pos())
+
+        pending_control_points = deepcopy(self.control_points)
+
+        def control_points_are_valid():
+            return all(map(lambda compare_tuple: compare_tuple[0].x() < compare_tuple[1].x(), zip(pending_control_points, drop(1, pending_control_points))))
 
         if self.mouse_drag and self.active_control_point >= 0 and self.active_control_point < len(self.control_points):
-            p = limitToCanvas(p)
+
+            point_from_event = limitToCanvas(point_from_event)
+
             if indexIsRealPoint(self.active_control_point):
-                targetPoint = p
-                distance = targetPoint - self.control_points[self.active_control_point]
-                print "distance={distance}".format(distance=distance)
-                self.control_points[self.active_control_point] = targetPoint
-                self.control_points[self.active_control_point - 1] += distance
-                self.control_points[self.active_control_point + 1] += distance
+                target_point = point_from_event
+                distance = target_point - pending_control_points[self.active_control_point]
+
+                pending_control_points[self.active_control_point] = target_point
+                pending_control_points[self.active_control_point - 1] += distance
+                pending_control_points[self.active_control_point + 1] += distance
             else:
                 if not self.isControlPointSmooth(self.active_control_point):
-                    self.control_points[self.active_control_point] = p
+                    pending_control_points[self.active_control_point] = point_from_event
                 else:
-                    targetPoint = p
-                    distance = targetPoint - self.control_points[self.active_control_point]
-                    self.control_points[self.active_control_point] = p
+                    target_point = point_from_event
+                    distance = target_point - pending_control_points[self.active_control_point]
+                    pending_control_points[self.active_control_point] = point_from_event
 
                     if self.active_control_point > 1 and self.active_control_point % 3 == 0: # right control point
-                        self.control_points[self.active_control_point - 2] -= distance
-                    elif self.active_control_point < len(self.control_points) - 2 and \
+                        pending_control_points[self.active_control_point - 2] -= distance
+                    elif self.active_control_point < len(pending_control_points) - 2 and \
                                             self.active_control_point % 3 == 1:
-                        self.control_points[self.active_control_point + 2] -= distance
+                        pending_control_points[self.active_control_point + 2] -= distance
+
+
+            if control_points_are_valid():
+                self.control_points = pending_control_points
+            else:
+                print "Unable to move"
 
             self.invalidate()
 
@@ -464,3 +476,17 @@ def paintControlPoint(controlPoint, painter, edit, realPoint, active, smooth):
         painter.drawRect(QRectF(mapToCanvas(controlPoint).x() - pointSize + 0.5,
                                 mapToCanvas(controlPoint).y() - pointSize + 0.5,
                                 pointSize * 2, pointSize * 2))
+
+
+def take(n, xs):
+    if n <= 0:
+        return []
+    else:
+        return xs[:n]
+
+
+def drop(n, xs):
+    if n > len(xs):
+        return []
+    else:
+        return xs[n:]
