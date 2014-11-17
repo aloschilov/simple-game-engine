@@ -295,7 +295,8 @@ class SplineEditorScene(QWidget):
         pending_control_points = deepcopy(self.control_points)
 
         def control_points_are_valid():
-            return all(map(lambda compare_tuple: compare_tuple[0].x() < compare_tuple[1].x(), zip(pending_control_points, drop(1, pending_control_points))))
+            return all(map(lambda compare_tuple: compare_tuple[0].x() < compare_tuple[1].x(), zip([QPointF(0.0, 0.0),] + pending_control_points,
+                                                                                                  drop(1, [QPointF(0.0, 0.0),] + pending_control_points))))
 
         if self.mouse_drag and self.active_control_point >= 0 and self.active_control_point < len(self.control_points):
 
