@@ -7,6 +7,7 @@ from numpy.matlib import zeros
 
 from . import Atom
 from . import Force
+from radial_force import RadialForce
 from . import Matter
 
 
@@ -98,13 +99,18 @@ class Universe(HasTraits):
         self.atoms.append(atom)
         return atom
 
-
     def create_force(self):
         """
 
         """
 
         force = Force()
+        self.forces.append(force)
+        return force
+
+    def create_radial_force(self, control_points):
+        force = RadialForce()
+        force.set_bezier_curve(control_points)
         self.forces.append(force)
         return force
 
@@ -156,7 +162,7 @@ class Universe(HasTraits):
         This method evaluates entire universe along the time
         """
 
-        h = 0.001
+        h = 0.01
 
         def get_gradient(f, p):
             """
@@ -180,9 +186,7 @@ class Universe(HasTraits):
 
                 gradient_components.append(partial_direviate_value)
 
-
             return gradient_components
-
 
         matters_positions = [matter.position for matter in self.matters]
         matters_to_atoms_matrix = self.create_matters_to_atoms_matrix()
@@ -193,11 +197,11 @@ class Universe(HasTraits):
             (x, y) = matter.position
 
             # Force field that influence a specific atom
-            f = lambda position : get_force_superposition(position,
-                                                          matters_to_atoms_matrix * atoms_to_forces_matrix,
-                                                          matters_positions,
-                                                          forces_functions,
-                                                          matters_to_exclude_from_field=[matter_index,])
+            f = lambda position: get_force_superposition(position,
+                                                         matters_to_atoms_matrix * atoms_to_forces_matrix,
+                                                         matters_positions,
+                                                         forces_functions,
+                                                         matters_to_exclude_from_field=[matter_index, ])
             matter.position = tuple(h*np.array(get_gradient(f, matter.position)) + np.array((x, y)))
 
 

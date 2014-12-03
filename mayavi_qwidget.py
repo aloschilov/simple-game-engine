@@ -35,10 +35,11 @@ class Visualization(HasTraits):
         matter1.name = "1-st matter"
 
         atom1 = self.universe.create_atom()
-        force1 = self.universe.create_force()
+        force1 = self.universe.create_radial_force(
+            [0, 0, 0.4, 0.075, 0.462, 0.252, 0.512, 0.512, 0.562, 0.772, 0.7, 0.9, 1, 1])
         atom1.produced_forces.append(force1)
         matter1.atoms[atom1] = 10
-        matter1.position = (0.1,0.1)
+        matter1.position = (0.1, 0.1)
 
 
         matter2 = self.universe.create_matter()
@@ -46,8 +47,8 @@ class Visualization(HasTraits):
 
         matter2.position = (2, 2)
         atom2 = self.universe.create_atom()
-        force2 = self.universe.create_force()
-        atom2.produced_forces.append(force2)
+#        force2 = self.universe.create_force()
+#        atom2.produced_forces.append(force2)
         matter2.atoms[atom2] = 20
 
         matter3 = self.universe.create_matter()
@@ -71,7 +72,7 @@ class Visualization(HasTraits):
         mlab.view(45, 45)
         mlab.view(240, 120)
         mlab.view(distance=20)
-        mlab.view(focalpoint=(0,0,0))
+        mlab.view(focalpoint=(0, 0, 0))
 
         @mlab.animate(delay=10, ui=False)
         def anim():

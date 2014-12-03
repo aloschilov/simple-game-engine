@@ -39,14 +39,14 @@ class SplineEditorScene(QWidget):
         self.setFixedSize(canvas_width + canvas_margin * 2,
                           canvas_height + canvas_margin * 2)
 
-        self.control_points = list()
-        self.control_points.append(QPointF(0.4, 0.075))
-        self.control_points.append(QPointF(0.45, 0.24))
-        self.control_points.append(QPointF(0.5, 0.5))
+        self._control_points = list()
+        self._control_points.append(QPointF(0.4, 0.075))
+        self._control_points.append(QPointF(0.45, 0.24))
+        self._control_points.append(QPointF(0.5, 0.5))
 
-        self.control_points.append(QPointF(0.55, 0.76))
-        self.control_points.append(QPointF(0.7, 0.9))
-        self.control_points.append(QPointF(1.0, 1.0))
+        self._control_points.append(QPointF(0.55, 0.76))
+        self._control_points.append(QPointF(0.7, 0.9))
+        self._control_points.append(QPointF(1.0, 1.0))
 
         self.number_of_segments = 2
         self.active_control_point = -1
@@ -74,7 +74,7 @@ class SplineEditorScene(QWidget):
         self.setupPointListWidget()
 
     def setControlPoint(self, index, point):
-        self.control_points[index] = point
+        self._control_points[index] = point
         self.update()
 
     def setSmooth(self, index, smooth):
@@ -115,7 +115,7 @@ class SplineEditorScene(QWidget):
             if i < self.number_of_segments - 1:
                 smooth = self.smooth_list[i]
 
-            segment_properties_widget.setSegment(i, self.control_points[i*3:(i+1)*3], smooth, i == self.number_of_segments - 1)
+            segment_properties_widget.setSegment(i, self._control_points[i*3:(i+1)*3], smooth, i == self.number_of_segments - 1)
             segment_properties_widget.setSplineEditor(self)
             self.segment_properties.append(segment_properties_widget)
 
@@ -130,7 +130,7 @@ class SplineEditorScene(QWidget):
         if i == 0:
             return False
 
-        if i == len(self.control_points) - 1:
+        if i == len(self._control_points) - 1:
             return False
 
         index = pointForControlPoint(i)
@@ -138,7 +138,7 @@ class SplineEditorScene(QWidget):
         if index == 0:
             return False
 
-        if index == len(self.control_points) - 1:
+        if index == len(self._control_points) - 1:
             return False
 
         return self.smooth_list[index / 3]
@@ -153,9 +153,9 @@ class SplineEditorScene(QWidget):
         if i == 0:
             return False
 
-        p = self.control_points[i]
-        p_before = self.control_points[i - 1]
-        p_after = self.control_points[i + 1]
+        p = self._control_points[i]
+        p_before = self._control_points[i - 1]
+        p_after = self._control_points[i + 1]
 
         v1 = p_after - p
         v1 = v1 / v1.manhattanLength()
@@ -171,20 +171,20 @@ class SplineEditorScene(QWidget):
 
             before = QPointF(0, 0)
             if index > 3:
-                before = self.control_points[index - 3]
+                before = self._control_points[index - 3]
 
             after = QPointF(1.0, 1.0)
-            if index + 3 < len(self.control_points):
-                after = self.control_points[index + 3]
+            if index + 3 < len(self._control_points):
+                after = self._control_points[index + 3]
 
             tangent = (after - before) / 6
-            thisPoint = self.control_points[index]
+            thisPoint = self._control_points[index]
 
             if index > 0:
-                self.control_points[index - 1] = thisPoint - tangent
+                self._control_points[index - 1] = thisPoint - tangent
 
-            if index + 1 < len(self.control_points):
-                self.control_points[index + 1] = thisPoint + tangent
+            if index + 1 < len(self._control_points):
+                self._control_points[index + 1] = thisPoint + tangent
 
             self.smooth_list[index/3] = True
 
@@ -224,13 +224,13 @@ class SplineEditorScene(QWidget):
             if i == 0:
                 p0 = mapToCanvas(QPointF(0.0, 0.0))
             else:
-                p0 = mapToCanvas(self.control_points[i * 3 - 1])
+                p0 = mapToCanvas(self._control_points[i * 3 - 1])
 
             path.moveTo(p0)
 
-            p1 = mapToCanvas(self.control_points[i * 3])
-            p2 = mapToCanvas(self.control_points[i * 3 + 1])
-            p3 = mapToCanvas(self.control_points[i * 3 + 2])
+            p1 = mapToCanvas(self._control_points[i * 3])
+            p2 = mapToCanvas(self._control_points[i * 3 + 1])
+            p3 = mapToCanvas(self._control_points[i * 3 + 2])
             path.cubicTo(p1, p2, p3)
             painter.strokePath(path, QPen(QBrush(Qt.black), 2))
 
@@ -244,8 +244,8 @@ class SplineEditorScene(QWidget):
         paintControlPoint(QPointF(0.0, 0.0), painter, False, True, False, False)
         paintControlPoint(QPointF(1.0, 1.0), painter, False, True, False, False)
 
-        for i in xrange(len(self.control_points) - 1):
-            paintControlPoint(self.control_points[i],
+        for i in xrange(len(self._control_points) - 1):
+            paintControlPoint(self._control_points[i],
                               painter,
                               True,
                               indexIsRealPoint(i),
@@ -292,13 +292,13 @@ class SplineEditorScene(QWidget):
 
         point_from_event = mapFromCanvas(e.pos())
 
-        pending_control_points = deepcopy(self.control_points)
+        pending_control_points = deepcopy(self._control_points)
 
         def control_points_are_valid():
             return all(map(lambda compare_tuple: compare_tuple[0].x() < compare_tuple[1].x(), zip([QPointF(0.0, 0.0),] + pending_control_points,
                                                                                                   drop(1, [QPointF(0.0, 0.0),] + pending_control_points))))
 
-        if self.mouse_drag and self.active_control_point >= 0 and self.active_control_point < len(self.control_points):
+        if self.mouse_drag and self.active_control_point >= 0 and self.active_control_point < len(self._control_points):
 
             point_from_event = limitToCanvas(point_from_event)
 
@@ -325,7 +325,7 @@ class SplineEditorScene(QWidget):
 
 
             if control_points_are_valid():
-                self.control_points = pending_control_points
+                self._control_points = pending_control_points
             else:
                 print "Unable to move"
 
@@ -345,8 +345,8 @@ class SplineEditorScene(QWidget):
         """
         pointIndex = -1
         distance = -1
-        for i in xrange(len(self.control_points) - 1):
-            d = QLineF(point, mapToCanvas(self.control_points[i])).length()
+        for i in xrange(len(self._control_points) - 1):
+            d = QLineF(point, mapToCanvas(self._control_points[i])).length()
             if distance < 0 and d < 10 or d < distance:
                 distance = d
                 pointIndex = i
@@ -377,12 +377,17 @@ class SplineEditorScene(QWidget):
             if i < self.number_of_segments - 1:
                 smooth = self.smooth_list[i]
 
-            segment_properties.setSegment(i, self.control_points[i*3:i*3+3], smooth, i == (self.number_of_segments - 1))
+            segment_properties.setSegment(i, self._control_points[i*3:i*3+3], smooth, i == (self.number_of_segments - 1))
 
     def generateCode(self):
         return "[" + \
-               ",".join(["{x:.3g}, {y:.3g}".format(x=point.x(), y=point.y()) for point in self.control_points])\
+               ",".join(["{x:.3g}, {y:.3g}".format(x=point.x(), y=point.y()) for point in [QPointF(0.0, 0.0)] + self._control_points])\
                + "]"
+
+    @property
+    def control_points(self):
+        for point in [QPointF(0.0, 0.0), ] + self._control_points:
+            yield (float(point.x()), float(point.y()))
 
 
 def veryFuzzyCompare(r1, r2):
@@ -484,7 +489,6 @@ def take(n, xs):
         return []
     else:
         return xs[:n]
-
 
 def drop(n, xs):
     if n > len(xs):

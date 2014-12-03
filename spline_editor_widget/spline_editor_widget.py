@@ -24,18 +24,22 @@ class SplineEditorWidget(QWidget):
 
         main_layout = QHBoxLayout()
         properties_widget = PropertiesWidget()
-        spline_editor_scene = SplineEditorScene(
+        self.spline_editor_scene = SplineEditorScene(
             parent_layout=properties_widget.control_points_group_box_layout)
 
         # Layouting
 
-        main_layout.addWidget(spline_editor_scene)
+        main_layout.addWidget(self.spline_editor_scene)
         main_layout.addWidget(properties_widget)
         self.setLayout(main_layout)
 
         # Connecting signals and slots
 
-        spline_editor_scene.easing_curve_code_changed.connect(properties_widget.processCodeChanged)
+        self.spline_editor_scene.easing_curve_code_changed.connect(properties_widget.processCodeChanged)
+
+    @property
+    def control_points(self):
+        return self.spline_editor_scene._control_points
 
 
 if __name__ == "__main__":

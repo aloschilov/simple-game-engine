@@ -2,6 +2,7 @@ from traits.api import HasTraits
 from mayavi import mlab
 import numpy as np
 
+
 class Force(HasTraits):
     """
     Force is about to specify influence on specific atoms
@@ -12,7 +13,7 @@ class Force(HasTraits):
 #    affects_on = List(trait = Instance(Atom))
 
     @staticmethod
-    def function(self):
+    def function():
         """
         Get force value basing on what? distance from the
         object? basing on relative coordinate?
@@ -30,7 +31,7 @@ class Force(HasTraits):
         """
 
         x, y = np.mgrid[-7.:7.00:100j, -7.:7.00:100j]
-        g = lambda u,v:  self.function()([u,v])
+        g = lambda u, v:  self.function()([u, v])
         g_vectorized= np.vectorize(g)
         s = mlab.surf(x, y, g_vectorized)
 
