@@ -2,23 +2,16 @@ from pyface.qt import QtGui
 
 from traits.api import HasTraits, Instance, on_trait_change
 from traitsui.api import View, Item
-from mayavi.core.ui.api import MayaviScene, MlabSceneModel, \
-        SceneEditor
-from pyface.api import GUI
+from mayavi.core.ui.api import MayaviScene, MlabSceneModel, SceneEditor
 from mayavi import mlab
 
 from engine.universe import Universe
-from engine.matter import Matter
-from engine.atom import Atom
-from engine.force import Force
-
 
 
 class Visualization(HasTraits):
     """
     The actual visualization
     """
-
 
     universe = Instance(Universe, Universe())
     scene = Instance(MlabSceneModel, ())
@@ -41,7 +34,6 @@ class Visualization(HasTraits):
         matter1.atoms[atom1] = 10
         matter1.position = (0.1, 0.1)
 
-
         matter2 = self.universe.create_matter()
         matter2.name = "2-nd matter"
 
@@ -53,7 +45,6 @@ class Visualization(HasTraits):
 
         matter3 = self.universe.create_matter()
         matter3.name = "3-rd matter"
-
         matter3.position = (4, -2)
         atom3 = self.universe.create_atom()
         force3 = self.universe.create_force()
@@ -75,7 +66,7 @@ class Visualization(HasTraits):
         mlab.view(focalpoint=(0, 0, 0))
 
         @mlab.animate(delay=10, ui=False)
-        def anim():
+        def animate():
             f = mlab.gcf()
             while 1:
                 self.universe.next_step()
@@ -83,14 +74,13 @@ class Visualization(HasTraits):
                 f.scene.render()
                 yield
 
-        self.a = anim() # Starts the animation.
+        self.a = animate() # Starts the animation.
 
 
     # the layout of the dialog screated
     view = View(Item('scene', editor=SceneEditor(scene_class=MayaviScene),
                      height=250, width=300, show_label=False),
-                resizable=True # We need this to resize with the parent widget
-                )
+                resizable=True)  # We need this to resize with the parent widget
 
 
 class MayaviQWidget(QtGui.QWidget):

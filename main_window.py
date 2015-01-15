@@ -9,6 +9,7 @@ import sys
 # First, and before importing any Enthought packages, set the ETS_TOOLKIT
 # environment variable to qt4, to tell Traits that we will use Qt.
 import os
+
 os.environ['ETS_TOOLKIT'] = 'qt4'
 
 # To be able to use PySide or PyQt4 and not run in conflicts with traits,
@@ -35,7 +36,6 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(QWidget())
         self.centralWidget().setLayout(main_layout)
-
 
 
 if __name__ == "__main__":
