@@ -61,10 +61,9 @@ def get_force_superposition(p,
     return scalar_to_return
 
 
-
 class Universe(HasTraits):
     """
-    A hypothetic Universe, where in its 2d Space, Forces
+    A hypothetical universe, where in its 2d Space, Forces
     control what happen. There is Matter build out of different
     Atoms able to move. Each Atom affect the Forces.
     The NaturalLaws define how Atoms convert into other Atoms,
@@ -171,14 +170,14 @@ class Universe(HasTraits):
             """
 
             gradient_components = []
-            dimentions = len(p)
+            dimensions = len(p)
 
-            for i in xrange(dimentions):
+            for i in xrange(dimensions):
 
                 # Let's introduce a function fixed along the
                 # direction in concern
 
-                g = lambda c: f([p[d] if d == i else c for d in xrange(dimentions)])
+                g = lambda c: f([p[d] if d == i else c for d in xrange(dimensions)])
 
                 # and the value of c_0
                 c_0 = p[i]
