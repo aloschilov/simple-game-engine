@@ -12,6 +12,11 @@ from PyQt4.QtGui import (QGraphicsItem, QPainterPath,
                          QGraphicsPathItem, QGraphicsEllipseItem, QGraphicsTextItem, QGraphicsItemGroup)
 
 
+# Dot uses a 72 DPI value for converting it's position coordinates
+# from points to pixels while we display at 96 DPI on most systems
+
+DOT_DEFAULT_DPI = 72.0
+
 class TreeNode(object):
 
     def __init__(self, item):
@@ -168,6 +173,19 @@ class UniverseScene(QtGui.QGraphicsScene):
     See also: UniverseWidget
     """
 
+    @staticmethod
+    def get_position(node):
+        return (float(node.attr['pos'].split(",")[0])/DOT_DEFAULT_DPI,
+                float(node.attr['pos'].split(",")[1])/DOT_DEFAULT_DPI)
+
+    @staticmethod
+    def get_width(node):
+        return float(node.attr['width'])
+
+    @staticmethod
+    def get_height(node):
+        return float(node.attr['height'])
+
     def __init__(self, parent=None):
         super(UniverseScene, self).__init__(parent)
 
@@ -175,6 +193,11 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.addItem(self.universe_item)
 
         self.graph = pgv.AGraph(directed=True)
+        self.graph.add_node(TreeNode(self.universe_item))
+        universe_item_node = self.graph.get_node(TreeNode(self.universe_item))
+        universe_item_node.attr['shape'] = 'circle'
+        universe_item_node.attr['width'] = self.universe_item.boundingRect().width()
+        universe_item_node.attr['height'] = self.universe_item.boundingRect().height()
 
         self.universe_item.matter_added.connect(self.add_matter)
 
@@ -185,16 +208,22 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.graphics_items.append(matter_item)
         self.addItem(matter_item)
         self.graph.add_node(TreeNode(matter_item))
+        matter_item_node = self.graph.get_node(TreeNode(matter_item))
+        matter_item_node.attr['shape'] = 'circle'
+        matter_item_node.attr['width'] = matter_item.boundingRect().width()
+        matter_item_node.attr['height'] = matter_item.boundingRect().height()
         self.graph.add_edge(TreeNode(self.universe_item),
                             TreeNode(matter_item))
+        self.update()
+
+    def update(self):
         self.graph.layout(prog='dot')
 
         for node in self.graph.nodes_iter():
-            x = float(node.attr['pos'].split(",")[0])
-            y = float(node.attr['pos'].split(",")[1])
+            (x, y) = self.get_position(node)
             self.get_graphics_item_by_repr(node).setPos(x, y)
 
-        self.update()
+        super(UniverseScene, self).update()
 
     def get_graphics_item_by_repr(self, repr_string):
         return filter(lambda graphics_item: graphics_item.__repr__() == repr_string, self.graphics_items)[0]

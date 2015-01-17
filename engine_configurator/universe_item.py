@@ -29,29 +29,21 @@ class UniverseItem(QGraphicsWidget):
 
     def dragEnterEvent(self, event):
         print "UniverseItem::dragEnterEvent"
-        if event.mimeData().hasText() and event.mimeData().text() in ["Matter","Force", "Atom"]:
-            print "dragEnterEvent"
-            event.accept()
-#            self.update()
-#            super(UniverseItem, self).dragEnterEvent(event)
+        if event.mimeData().hasText() and event.mimeData().text() in ["Matter", "Force", "Atom"]:
+            event.setAccepted(True)
+            self.update()
         else:
-            event.ignore()
-
-    def paint(self, painter, style, widget=None):
-        """
-        :type painter: QPainter
-        :type style: QStyleOptionGraphicsItem
-        :type widget: QWidget
-        :return:
-        """
-
-        painter.drawPixmap(0, 0, 100, 100, QPixmap(":/images/universe.png"))
-
-    def boundingRect(self):
-        return QRectF(0, 0, 100, 100)
+            event.setAccepted(False)
 
     def dragLeaveEvent(self, event):
+        """
+
+        :param event:
+        :type event: QGraphicsSceneDragDropEvent
+        :return:
+        """
         print "UniverseItem::dragLeaveEvent"
+        print event.pos()
         self.update()
 
     def dropEvent(self, event):
@@ -68,6 +60,22 @@ class UniverseItem(QGraphicsWidget):
 
         print "Drop event"
         self.update()
+
+
+
+    def paint(self, painter, style, widget=None):
+        """
+        :type painter: QPainter
+        :type style: QStyleOptionGraphicsItem
+        :type widget: QWidget
+        :return:
+        """
+
+        painter.drawPixmap(0, 0, 100, 100, QPixmap(":/images/universe.png"))
+        painter.drawRect(QRectF(0, 0, 100, 100))
+
+    def boundingRect(self):
+        return QRectF(0, 0, 100, 100)
 
     @property
     def universe(self):
