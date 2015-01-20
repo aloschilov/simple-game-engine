@@ -50,7 +50,7 @@ class UniverseItem(QGraphicsWidget):
         print "UniverseItem::dropEvent"
         if event.mimeData().hasText() and event.mimeData().text() == "Matter":
             matter = self._universe.create_matter()
-            matter_item = MatterItem()
+            matter_item = MatterItem(matter)
             self.matter_added.emit(matter_item)
             # 1) Create engine item
             # 2) Create graphics item

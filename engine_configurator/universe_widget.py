@@ -1,15 +1,13 @@
-from engine_configurator.matter_item import MatterItem
+import sys
+
+from engine_configurator.matter_toolbox_item import MatterToolboxItem
 from engine_configurator.universe_scene import UniverseScene
 
-import sys
 
 __author__ = 'aloschil'
 
-from pyface.qt.QtGui import (QWidget, QMenu, QAction, QPainter,
-                             QPen, QBrush, QPainterPath, QColor,
-                             QVBoxLayout, QApplication, QScrollArea,
-                             QFrame, QSpacerItem, QSizePolicy,
-                             QGraphicsView, QHBoxLayout, QToolBox, QGraphicsScene)
+from pyface.qt.QtGui import (QWidget, QPainter,
+                             QApplication, QGraphicsView, QHBoxLayout, QToolBox, QGraphicsScene)
 
 import engine_configurator_rc
 
@@ -27,7 +25,7 @@ class UniverseWidget(QWidget):
         self.matters_stencils_scene = QGraphicsScene()
         self.matters_stencils_view = QGraphicsView(self.matters_stencils_scene)
 
-        self.matters_stencils_scene.addItem(MatterItem())
+        self.matters_stencils_scene.addItem(MatterToolboxItem())
 
         self.atoms_stencils_view = QGraphicsView()
         self.forces_stencils_view = QGraphicsView()
