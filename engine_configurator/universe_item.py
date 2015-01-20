@@ -72,7 +72,6 @@ class UniverseItem(QGraphicsWidget):
         """
 
         painter.drawPixmap(0, 0, 100, 100, QPixmap(":/images/universe.png"))
-        painter.drawRect(QRectF(0, 0, 100, 100))
 
     def boundingRect(self):
         return QRectF(0, 0, 100, 100)

@@ -9,7 +9,8 @@ from collections import namedtuple
 import random
 
 from PyQt4.QtGui import (QGraphicsItem, QPainterPath,
-                         QGraphicsPathItem, QGraphicsEllipseItem, QGraphicsTextItem, QGraphicsItemGroup)
+                         QGraphicsPathItem, QGraphicsEllipseItem, QGraphicsTextItem, QGraphicsItemGroup, QPen)
+from PyQt4.Qt import Qt
 
 
 # Dot uses a 72 DPI value for converting it's position coordinates
@@ -186,6 +187,10 @@ class UniverseScene(QtGui.QGraphicsScene):
     def get_height(node):
         return float(node.attr['height'])
 
+    @staticmethod
+    def test_e_flag(edge):
+        return edge.attr['pos'].startswith("e,")
+
     def __init__(self, parent=None):
         super(UniverseScene, self).__init__(parent)
 
@@ -204,6 +209,8 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.graphics_items = list()
         self.graphics_items.append(self.universe_item)
 
+        self.edges_items = list()
+
     def add_matter(self, matter_item):
         self.graphics_items.append(matter_item)
         self.addItem(matter_item)
@@ -213,7 +220,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         matter_item_node.attr['width'] = matter_item.boundingRect().width()
         matter_item_node.attr['height'] = matter_item.boundingRect().height()
         self.graph.add_edge(TreeNode(self.universe_item),
-                            TreeNode(matter_item))
+                            TreeNode(matter_item), minlen=10)
         self.update()
 
     def update(self):
@@ -221,12 +228,63 @@ class UniverseScene(QtGui.QGraphicsScene):
 
         for node in self.graph.nodes_iter():
             (x, y) = self.get_position(node)
-            self.get_graphics_item_by_repr(node).setPos(x, y)
+            graphics_item = self.get_graphics_item_by_repr(node)
+            graphics_item.setPos(x - graphics_item.boundingRect().width()/2.0,
+                                 y - graphics_item.boundingRect().height()/2.0)
+
+        for edge_item in self.edges_items:
+            self.removeItem(edge_item)
+
+        self.edges_items = list()
+
+        for edge_item in self.get_edges():
+            self.addItem(edge_item)
+            self.edges_items.append(edge_item)
 
         super(UniverseScene, self).update()
 
     def get_graphics_item_by_repr(self, repr_string):
         return filter(lambda graphics_item: graphics_item.__repr__() == repr_string, self.graphics_items)[0]
+
+    def get_edges(self):
+        for edge in self.graph.edges_iter():
+            if self.test_e_flag(edge):
+
+                [x_str, y_str] = edge.attr['pos'].split(" ")[1].split(",")
+                x = float(x_str)/DOT_DEFAULT_DPI
+                y = float(y_str)/DOT_DEFAULT_DPI
+
+                path = QPainterPath()
+                path.moveTo(x, y)
+
+                points = list()
+                for i in edge.attr['pos'].split(" ")[2:]:
+                    [x_str, y_str] = i.split(",")
+                    x = float(x_str)/DOT_DEFAULT_DPI
+                    y = float(y_str)/DOT_DEFAULT_DPI
+                    points.append((x, y))
+
+                def chunks(l, n):
+                    """
+                    Yield successive n-sized chunks from l.
+                    """
+                    for i in xrange(0, len(l)-1, n):
+                        yield l[i:i+n]
+
+                for chunk in chunks(points, 3):
+                    path.cubicTo(chunk[0][0], chunk[0][1],
+                                 chunk[1][0], chunk[1][1],
+                                 chunk[2][0], chunk[2][1])
+
+                [x_str, y_str] = edge.attr['pos'].split(" ")[0][2:].split(",")
+                x = float(x_str)/DOT_DEFAULT_DPI
+                y = float(y_str)/DOT_DEFAULT_DPI
+                path.lineTo(x, y)
+
+                item = QGraphicsPathItem(path)
+                item.setPen(QPen(Qt.darkGreen, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                item.setZValue(100)
+                yield item
 
 
 # The first operation to consider is creating a new Matter within a scene

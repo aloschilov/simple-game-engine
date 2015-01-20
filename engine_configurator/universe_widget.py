@@ -22,6 +22,7 @@ class UniverseWidget(QWidget):
 
         self.universe_graphics_scene = UniverseScene(self)
         self.universe_graphics_view = QGraphicsView(self.universe_graphics_scene)
+        self.universe_graphics_view.setRenderHint(QPainter.Antialiasing)
 
         self.matters_stencils_scene = QGraphicsScene()
         self.matters_stencils_view = QGraphicsView(self.matters_stencils_scene)
