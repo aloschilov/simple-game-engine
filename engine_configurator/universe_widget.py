@@ -1,6 +1,7 @@
 import sys
 
 from engine_configurator.matter_toolbox_item import MatterToolboxItem
+from engine_configurator.properties_widget import PropertiesWidget
 from engine_configurator.universe_scene import UniverseScene
 
 
@@ -9,7 +10,9 @@ __author__ = 'aloschil'
 from pyface.qt.QtGui import (QWidget, QPainter,
                              QApplication, QGraphicsView, QHBoxLayout, QToolBox, QGraphicsScene)
 
+# noinspection PyUnresolvedReferences
 import engine_configurator_rc
+
 
 class UniverseWidget(QWidget):
     """
@@ -35,10 +38,19 @@ class UniverseWidget(QWidget):
         self.tool_box.addItem(self.atoms_stencils_view, "Atoms")
         self.tool_box.addItem(self.forces_stencils_view, "Forces")
 
+        self.properties_widget = PropertiesWidget()
+
         main_layout = QHBoxLayout()
         main_layout.addWidget(self.tool_box)
         main_layout.addWidget(self.universe_graphics_view)
+        main_layout.addWidget(self.properties_widget)
         self.setLayout(main_layout)
+
+        self.universe_graphics_scene.properties_bindings_update_required.connect(self.update_properties_bindings)
+
+    def update_properties_bindings(self):
+        for graphics_item in self.universe_graphics_scene.graphics_items:
+            graphics_item.clicked.connect(self.properties_widget.process_item_clicked)
 
 
 if __name__ == "__main__":

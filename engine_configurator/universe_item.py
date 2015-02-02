@@ -1,14 +1,15 @@
-from engine_configurator.matter_item import MatterItem
+from PyQt4.QtGui import QGraphicsPixmapItem
 
 from pyface.qt.QtGui import (QGraphicsItem,
-                             QDrag, QApplication, QPixmap,
-                             QPainter, QGraphicsPixmapItem,
-                             QGraphicsWidget, QGraphicsProxyWidget,
-                             QLabel)
-from pyface.qt.QtCore import (Qt, QRect, QRectF, QMimeData, QLineF, QPoint, pyqtSignal)
+                             QPixmap,
+                             QPainter)
+from pyface.qt.QtCore import (pyqtSignal)
+
+from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
+from engine_configurator.matter_item import MatterItem
 
 
-class UniverseItem(QGraphicsWidget):
+class UniverseItem(ClickableGraphicsWidget):
     """
     This item represents universe object at the scene
     where universe is configured.
@@ -18,14 +19,11 @@ class UniverseItem(QGraphicsWidget):
 
     def __init__(self, universe=None):
         super(UniverseItem, self).__init__()
-
-        #self.__universe_item__label = QLabel()
-        #self.__universe_item__label.setAcceptDrops(True)
         self.setAcceptDrops(True)
-#self.__universe_item__label.setPixmap(QPixmap(":/images/universe.png"))
-        #self.setWidget(self.__universe_item__label)
-
         self._universe = universe
+
+        self.underlying_pixmap_item = QGraphicsPixmapItem()
+        self.underlying_pixmap_item.setPixmap(QPixmap(":/images/universe.png"))
 
     def dragEnterEvent(self, event):
         print "UniverseItem::dragEnterEvent"
@@ -61,20 +59,20 @@ class UniverseItem(QGraphicsWidget):
         print "Drop event"
         self.update()
 
-
-
-    def paint(self, painter, style, widget=None):
+    def paint(self, painter, option, widget=None):
         """
         :type painter: QPainter
-        :type style: QStyleOptionGraphicsItem
+        :type option: QStyleOptionGraphicsItem
         :type widget: QWidget
         :return:
         """
-
-        painter.drawPixmap(0, 0, 100, 100, QPixmap(":/images/universe.png"))
+        self.underlying_pixmap_item.paint(painter, option, widget)
 
     def boundingRect(self):
-        return QRectF(0, 0, 100, 100)
+        return self.underlying_pixmap_item.boundingRect()
+
+    def shape(self):
+        return self.underlying_pixmap_item.shape()
 
     @property
     def universe(self):

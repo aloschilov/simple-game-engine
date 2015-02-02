@@ -1,10 +1,10 @@
-from atom import Atom
+from random import random
 
-from traits.api import (Delegate, HasTraits, Instance, Tuple,
-                                  Array, Dict, Int, String)
+from traits.api import (Array, Dict, Int, String)
 from tvtk.api import tvtk
 from traits.api import HasTraits, Instance, on_trait_change
-from random import random
+
+from atom import Atom
 
 
 class Matter(HasTraits):
@@ -34,9 +34,8 @@ class Matter(HasTraits):
             else:
                 self.transform.identity()
 
-            self.transform.translate((x,y,0))
+            self.transform.translate((x, y, 0))
             print self.transform
-
 
     def generate_actor(self):
         """
@@ -48,7 +47,7 @@ class Matter(HasTraits):
 
         sphere = tvtk.SphereSource(center=(0, 0, 0), radius=0.5)
         sphere_mapper = tvtk.PolyDataMapper(input=sphere.output)
-        p = tvtk.Property(opacity=1, color=(random(),random(),random()))
+        p = tvtk.Property(opacity=1, color=(random(), random(), random()))
         self.sphere_actor = tvtk.Actor(mapper=sphere_mapper, property=p)
         self.sphere_actor.user_transform = self.transform
         self.update_position(self)
