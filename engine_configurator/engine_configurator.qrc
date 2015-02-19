@@ -2,5 +2,6 @@
 	<qresource prefix="/">
 		<file>images/universe.png</file>
 		<file>images/matter.png</file>
+        <file>images/atom.png</file>
 	</qresource>
 </RCC>

@@ -19,10 +19,6 @@ class ClickableGraphicsWidget(QGraphicsWidget):
         :type event: QGraphicsSceneMouseEvent
         :return:
         """
-        print self
-        print "def mousePressEvent(self, event):"
-        print event.pos()
-#        super(ClickableGraphicsWidget, self).mousePressEvent(event)
         event.accept()
 
     def mouseReleaseEvent(self, event):
@@ -32,8 +28,6 @@ class ClickableGraphicsWidget(QGraphicsWidget):
         :type event: QGraphicsSceneMouseEvent
         :return:
         """
-        print self
-        print "def mouseReleaseEvent(self, event):"
         self.clicked.emit(self)
         super(ClickableGraphicsWidget, self).mouseReleaseEvent(event)
         event.accept()

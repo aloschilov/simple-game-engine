@@ -68,6 +68,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         universe_item_node.attr['height'] = self.universe_item.boundingRect().height()
 
         self.universe_item.matter_added.connect(self.add_matter)
+        self.universe_item.atom_added.connect(self.add_atom)
 
         self.graphics_items = list()
         self.graphics_items.append(self.universe_item)
@@ -84,6 +85,19 @@ class UniverseScene(QtGui.QGraphicsScene):
         matter_item_node.attr['height'] = matter_item.boundingRect().height()
         self.graph.add_edge(TreeNode(self.universe_item),
                             TreeNode(matter_item), minlen=10)
+        self.properties_bindings_update_required.emit()
+        self.update()
+
+    def add_atom(self, atom_item):
+        self.graphics_items.append(atom_item)
+        self.addItem(atom_item)
+        self.graph.add_node(TreeNode(atom_item))
+        atom_item_node = self.graph.get_node(TreeNode(atom_item))
+        atom_item_node.attr['shape'] = 'circle'
+        atom_item_node.attr['width'] = atom_item.boundingRect().width()
+        atom_item_node.attr['height'] = atom_item.boundingRect().height()
+        self.graph.add_edge(TreeNode(self.universe_item),
+                            TreeNode(atom_item), minlen=10)
         self.properties_bindings_update_required.emit()
         self.update()
 

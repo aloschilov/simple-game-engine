@@ -1,7 +1,7 @@
-from traits.api import (Delegate, HasTraits, Instance, Tuple,
-                                  Array, Dict, Str, List)
+from traits.api import (HasTraits, Instance, Str, List)
 
 from force import Force
+
 
 class Atom(HasTraits):
     """
@@ -9,4 +9,4 @@ class Atom(HasTraits):
     """
 
     name = Str
-    produced_forces = List(trait = Instance(Force))
+    produced_forces = List(trait=Instance(Force))

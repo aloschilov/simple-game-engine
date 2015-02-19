@@ -1,4 +1,5 @@
 import sys
+from engine_configurator.atom_toolbox_item import AtomToolboxItem
 
 from engine_configurator.matter_toolbox_item import MatterToolboxItem
 from engine_configurator.properties_widget import PropertiesWidget
@@ -27,10 +28,12 @@ class UniverseWidget(QWidget):
 
         self.matters_stencils_scene = QGraphicsScene()
         self.matters_stencils_view = QGraphicsView(self.matters_stencils_scene)
-
         self.matters_stencils_scene.addItem(MatterToolboxItem())
 
-        self.atoms_stencils_view = QGraphicsView()
+        self.atoms_stencils_scene = QGraphicsScene()
+        self.atoms_stencils_view = QGraphicsView(self.atoms_stencils_scene)
+        self.atoms_stencils_scene.addItem(AtomToolboxItem())
+
         self.forces_stencils_view = QGraphicsView()
 
         self.tool_box = QToolBox()

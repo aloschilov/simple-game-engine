@@ -1,4 +1,5 @@
-from pyface.qt.QtGui import QWidget, QDoubleSpinBox, QLabel, QGridLayout, QVBoxLayout
+from PyQt4.QtGui import QLineEdit, QHBoxLayout, QGroupBox
+from pyface.qt.QtGui import QWidget, QDoubleSpinBox, QLabel, QVBoxLayout
 
 
 class MatterPropertiesWidget(QWidget):
@@ -18,18 +19,31 @@ class MatterPropertiesWidget(QWidget):
         self.position_y_editor_label = QLabel("y")
         self.position_y_editor_label.setBuddy(self.position_y_editor)
 
-        position_layout = QGridLayout()
-        position_layout.addWidget(self.position_x_editor_label, 0, 0)
-        position_layout.addWidget(self.position_x_editor, 0, 1)
-        position_layout.addWidget(self.position_y_editor_label, 0, 2)
-        position_layout.addWidget(self.position_y_editor, 0, 3)
+        self.name_editor = QLineEdit()
+        self.name_editor_groupbox = QGroupBox("Name")
+        self.name_editor_groupbox_layout = QHBoxLayout()
+        self.name_editor_groupbox.setLayout(self.name_editor_groupbox_layout)
+        self.name_editor_groupbox_layout.addWidget(self.name_editor)
+        self.name_editor_groupbox_layout.addStretch()
+
+        self.position_groupbox = QGroupBox("Position")
+        self.position_groupbox_layout = QHBoxLayout()
+        self.position_groupbox.setLayout(self.position_groupbox_layout)
+        self.position_groupbox_layout.addWidget(self.position_x_editor_label)
+        self.position_groupbox_layout.addWidget(self.position_x_editor)
+        self.position_groupbox_layout.addWidget(self.position_y_editor_label)
+        self.position_groupbox_layout.addWidget(self.position_y_editor)
+        self.position_groupbox_layout.addStretch()
 
         main_layout = QVBoxLayout()
-        main_layout.addLayout(position_layout)
+        main_layout.addWidget(self.name_editor_groupbox)
+        main_layout.addWidget(self.position_groupbox)
+        main_layout.addStretch()
         self.setLayout(main_layout)
 
         self.position_x_editor.valueChanged.connect(self.position_x_editor_value_changed)
         self.position_y_editor.valueChanged.connect(self.position_y_editor_value_changed)
+        self.name_editor.textChanged.connect(self.name_editor_text_changed)
 
         self.setDisabled(True)
 
@@ -46,6 +60,7 @@ class MatterPropertiesWidget(QWidget):
         (x, y) = (self.matter.position[0], self.matter.position[1])
         self.position_x_editor.setValue(x)
         self.position_y_editor.setValue(y)
+        self.name_editor.setText(self.matter.name)
 
         self.setEnabled(True)
 
@@ -54,3 +69,6 @@ class MatterPropertiesWidget(QWidget):
 
     def position_y_editor_value_changed(self, value):
         self.matter.position[1] = value
+
+    def name_editor_text_changed(self, value):
+        self.matter.name = value

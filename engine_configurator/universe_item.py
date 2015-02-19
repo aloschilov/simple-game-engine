@@ -4,6 +4,7 @@ from pyface.qt.QtGui import (QGraphicsItem,
                              QPixmap,
                              QPainter)
 from pyface.qt.QtCore import (pyqtSignal)
+from engine_configurator.atom_item import AtomItem
 
 from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
 from engine_configurator.matter_item import MatterItem
@@ -16,6 +17,7 @@ class UniverseItem(ClickableGraphicsWidget):
     """
 
     matter_added = pyqtSignal(QGraphicsItem, name="matter_added")
+    atom_added = pyqtSignal(QGraphicsItem, name="atom_added")
 
     def __init__(self, universe=None):
         super(UniverseItem, self).__init__()
@@ -50,11 +52,10 @@ class UniverseItem(ClickableGraphicsWidget):
             matter = self._universe.create_matter()
             matter_item = MatterItem(matter)
             self.matter_added.emit(matter_item)
-            # 1) Create engine item
-            # 2) Create graphics item
-            # 3) Initiate re-layout, I believe this one we should implement via signal
-            # take a look at graphiviz_layouting implementation
-            print "Drop matter"
+        elif event.mimeData().hasText() and event.mimeData().text() == "Atom":
+            atom = self._universe.create_atom()
+            atom_item = AtomItem(atom)
+            self.atom_added.emit(atom_item)
 
         print "Drop event"
         self.update()
