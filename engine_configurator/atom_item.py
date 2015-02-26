@@ -1,6 +1,6 @@
 from pyface.qt.QtCore import (Qt, QMimeData, QLineF, QPoint)
-from pyface.qt.QtGui import (QPixmap, QGraphicsPixmapItem)
 from pyface.qt.QtGui import (QDrag, QApplication, QPixmap, QPainter, QGraphicsPixmapItem, QStyleOptionGraphicsItem)
+
 from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
 
 
@@ -28,6 +28,7 @@ class AtomItem(ClickableGraphicsWidget):
 
     def mousePressEvent(self, event):
         self.setCursor(Qt.ClosedHandCursor)
+        super(AtomItem, self).mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
 
@@ -35,8 +36,13 @@ class AtomItem(ClickableGraphicsWidget):
                   event.buttonDownScreenPos(Qt.LeftButton)).length() < QApplication.startDragDistance():
             return
 
+        print "AtomItem::mouseMoveEvent"
         drag = QDrag(event.widget())
         mime = QMimeData()
+        # A weak solution that could not be implemented in
+        # C++
+        mime.atom = self.atom
+        mime.atom_item = self
         drag.setMimeData(mime)
 
         mime.setText("AtomToMatter")
@@ -61,3 +67,4 @@ class AtomItem(ClickableGraphicsWidget):
 
     def mouseReleaseEvent(self, event):
         self.setCursor(Qt.OpenHandCursor)
+        super(AtomItem, self).mouseReleaseEvent(event)

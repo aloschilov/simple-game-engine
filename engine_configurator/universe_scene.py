@@ -74,9 +74,11 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.graphics_items.append(self.universe_item)
 
         self.edges_items = list()
+        self.matter_to_atom_edges = list()
 
     def add_matter(self, matter_item):
         self.graphics_items.append(matter_item)
+        matter_item.matter_and_atom_connected.connect(self.add_matter_and_atom_connection)
         self.addItem(matter_item)
         self.graph.add_node(TreeNode(matter_item))
         matter_item_node = self.graph.get_node(TreeNode(matter_item))
@@ -93,12 +95,21 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.addItem(atom_item)
         self.graph.add_node(TreeNode(atom_item))
         atom_item_node = self.graph.get_node(TreeNode(atom_item))
-        atom_item_node.attr['shape'] = 'circle'
+        atom_item_node.attr['shape'] = 'rect'
         atom_item_node.attr['width'] = atom_item.boundingRect().width()
         atom_item_node.attr['height'] = atom_item.boundingRect().height()
         self.graph.add_edge(TreeNode(self.universe_item),
                             TreeNode(atom_item), minlen=10)
         self.properties_bindings_update_required.emit()
+        self.update()
+
+    def add_matter_and_atom_connection(self, matter_item, atom_item):
+        self.graph.add_edge(TreeNode(matter_item),
+                            TreeNode(atom_item),
+                            minlen=10)
+
+        self.matter_to_atom_edges.append(self.graph.get_edge(TreeNode(matter_item),
+                                                             TreeNode(atom_item)))
         self.update()
 
     def update(self):
@@ -160,7 +171,11 @@ class UniverseScene(QtGui.QGraphicsScene):
                 path.lineTo(x, y)
 
                 item = QGraphicsPathItem(path)
-                item.setPen(QPen(Qt.darkGreen, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                if edge in self.matter_to_atom_edges:
+                    item.setPen(QPen(Qt.darkGreen, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                else:
+                    item.setPen(QPen(Qt.darkBlue, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+
                 item.setZValue(100)
                 yield item
 

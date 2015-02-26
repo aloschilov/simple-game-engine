@@ -9,13 +9,14 @@ class MatterItem(ClickableGraphicsWidget):
     This item represents matter object at UniverseScene
     """
 
-    atom_added = pyqtSignal(QGraphicsItem, name="atom_added")
+    matter_and_atom_connected = pyqtSignal(QGraphicsItem, QGraphicsItem, name="matter_and_atom_connected")
 
     def __init__(self, matter=None):
         super(MatterItem, self).__init__()
         self.matter = matter
         self.underlying_pixmap_item = QGraphicsPixmapItem()
         self.underlying_pixmap_item.setPixmap(QPixmap(":/images/matter.png"))
+        self.setAcceptDrops(True)
 
     def paint(self, painter, option, widget):
         self.underlying_pixmap_item.paint(painter, option, widget)
@@ -27,6 +28,7 @@ class MatterItem(ClickableGraphicsWidget):
         return self.underlying_pixmap_item.shape()
 
     def dragEnterEvent(self, event):
+        print "MatterItem::dragEnterEvent"
         if event.mimeData().hasText() and event.mimeData().text() in ["AtomToMatter"]:
             event.setAccepted(True)
             self.update()
@@ -44,10 +46,12 @@ class MatterItem(ClickableGraphicsWidget):
 
     def dropEvent(self, event):
         if event.mimeData().hasText() and event.mimeData().text() == "AtomToMatter":
-            # I need atom object reference here
-            # It could be implemented via either mineData specification
-            # or extracting information about sender from event
-            matter = self._universe.create_matter()
-            matter_item = MatterItem(matter)
-            self.matter_added.emit(matter_item)
+
+            if event.mimeData().atom not in self.matter.atoms:
+                print "Creating connection"
+                self.matter.atoms[event.mimeData().atom] = 1
+                self.matter_and_atom_connected.emit(self, event.mimeData().atom_item)
+            else:
+                print "No connection created since it's already exists"
+
         self.update()
