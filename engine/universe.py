@@ -88,7 +88,6 @@ class Universe(HasTraits):
         self.matters.append(matter)
         return matter
 
-
     def create_atom(self):
         """
 
@@ -103,7 +102,10 @@ class Universe(HasTraits):
 
         """
 
-        force = Force()
+        force = RadialForce()
+        force.set_bezier_curve(
+            [0, 0, 0.4, 0.075, 0.462, 0.252, 0.512, 0.512, 0.562, 0.772, 0.7, 0.9, 1, 1])
+
         self.forces.append(force)
         return force
 

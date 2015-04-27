@@ -3,6 +3,7 @@ from engine_configurator.atom_toolbox_item import AtomToolboxItem
 
 from engine_configurator.matter_toolbox_item import MatterToolboxItem
 from engine_configurator.properties_widget import PropertiesWidget
+from engine_configurator.radial_force_toolbox_item import RadialForceToolboxItem
 from engine_configurator.universe_scene import UniverseScene
 
 
@@ -34,7 +35,9 @@ class UniverseWidget(QWidget):
         self.atoms_stencils_view = QGraphicsView(self.atoms_stencils_scene)
         self.atoms_stencils_scene.addItem(AtomToolboxItem())
 
-        self.forces_stencils_view = QGraphicsView()
+        self.forces_stencils_scene = QGraphicsScene()
+        self.forces_stencils_view = QGraphicsView(self.forces_stencils_scene)
+        self.forces_stencils_scene.addItem(RadialForceToolboxItem())
 
         self.tool_box = QToolBox()
         self.tool_box.addItem(self.matters_stencils_view, "Matters")

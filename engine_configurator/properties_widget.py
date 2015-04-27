@@ -4,6 +4,8 @@ from engine_configurator.atom_item import AtomItem
 from engine_configurator.atom_properties_widget import AtomPropertiesWidget
 from engine_configurator.matter_item import MatterItem
 from engine_configurator.matter_properties_widget import MatterPropertiesWidget
+from engine_configurator.radial_force_item import RadialForceItem
+from engine_configurator.radial_force_properties_widget import RadialForcePropertiesWidget
 
 
 class NoObjectSelectedWidget(QWidget):
@@ -32,12 +34,14 @@ class PropertiesWidget(QWidget):
 
         self.matter_properties_widget = MatterPropertiesWidget()
         self.atom_properties_widget = AtomPropertiesWidget()
+        self.radial_force_properties_widget = RadialForcePropertiesWidget()
         self.no_object_selected_widget = NoObjectSelectedWidget()
 
         self.main_layout = QStackedLayout()
         self.main_layout.addWidget(self.no_object_selected_widget)
         self.main_layout.addWidget(self.matter_properties_widget)
         self.main_layout.addWidget(self.atom_properties_widget)
+        self.main_layout.addWidget(self.radial_force_properties_widget)
         self.setLayout(self.main_layout)
 
     def process_item_clicked(self, item):
@@ -53,5 +57,8 @@ class PropertiesWidget(QWidget):
         elif isinstance(item, AtomItem):
             self.main_layout.setCurrentWidget(self.atom_properties_widget)
             self.atom_properties_widget.switch_to_atom(item.atom)
+        elif isinstance(item, RadialForceItem):
+            self.main_layout.setCurrentWidget(self.radial_force_properties_widget)
+            self.radial_force_properties_widget.switch_to_radial_force(item.radial_force)
         else:
             self.main_layout.setCurrentWidget(self.no_object_selected_widget)

@@ -3,5 +3,6 @@
 		<file>images/universe.png</file>
 		<file>images/matter.png</file>
         <file>images/atom.png</file>
+        <file>images/radial_force.png</file>
 	</qresource>
 </RCC>

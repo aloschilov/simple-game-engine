@@ -37,9 +37,14 @@ class SplineEditorWidget(QWidget):
 
         self.spline_editor_scene.easing_curve_code_changed.connect(properties_widget.processCodeChanged)
 
-    @property
-    def control_points(self):
-        return self.spline_editor_scene._control_points
+    def get_control_points(self):
+        return list(self.spline_editor_scene.control_points)
+
+    def set_control_points(self, value):
+        pass
+
+    control_points = property(get_control_points, set_control_points)
+
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from traits.api import HasTraits
+from traits.api import HasTraits, String
 from mayavi import mlab
 import numpy as np
 
@@ -12,17 +12,13 @@ class Force(HasTraits):
 
 #    affects_on = List(trait = Instance(Atom))
 
-    @staticmethod
-    def function():
+    name = String()
+
+    def function(self):
         """
-        Get force value basing on what? distance from the
-        object? basing on relative coordinate?
-        Let's say we want some parameteric parameters,
-        the same as for texture, for example.
-        It will be easier manuplulatable for CG guys.
+        :return: callable with 2D-point as a parameter and value of the function as a result
         """
-        # TODO: update mechanism of specifying force
-        return lambda cg: 0.1e1 / (cg[0] ** 2.0 + cg[1] ** 2.0) if 0.5e0 < cg[0] ** 2.0 + cg[1] ** 2.0 else 2.0
+        raise NotImplemented
 
     def generate_actor(self):
         """

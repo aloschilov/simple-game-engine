@@ -8,6 +8,7 @@ from engine_configurator.atom_item import AtomItem
 
 from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
 from engine_configurator.matter_item import MatterItem
+from engine_configurator.radial_force_item import RadialForceItem
 
 
 class UniverseItem(ClickableGraphicsWidget):
@@ -18,6 +19,7 @@ class UniverseItem(ClickableGraphicsWidget):
 
     matter_added = pyqtSignal(QGraphicsItem, name="matter_added")
     atom_added = pyqtSignal(QGraphicsItem, name="atom_added")
+    radial_force_added = pyqtSignal(QGraphicsItem, name="radial_force_added")
 
     def __init__(self, universe=None):
         super(UniverseItem, self).__init__()
@@ -29,7 +31,7 @@ class UniverseItem(ClickableGraphicsWidget):
 
     def dragEnterEvent(self, event):
         print "UniverseItem::dragEnterEvent"
-        if event.mimeData().hasText() and event.mimeData().text() in ["Matter", "Force", "Atom"]:
+        if event.mimeData().hasText() and event.mimeData().text() in ["Matter", "Atom", "RadialForce"]:
             event.setAccepted(True)
             self.update()
         else:
@@ -56,6 +58,11 @@ class UniverseItem(ClickableGraphicsWidget):
             atom = self._universe.create_atom()
             atom_item = AtomItem(atom)
             self.atom_added.emit(atom_item)
+        elif event.mimeData().hasText() and event.mimeData().text() == "RadialForce":
+            radial_force = self._universe.create_radial_force(
+                [0, 0, 0.4, 0.075, 0.462, 0.252, 0.512, 0.512, 0.562, 0.772, 0.7, 0.9, 1, 1])
+            radial_force_item = RadialForceItem(radial_force)
+            self.radial_force_added.emit(radial_force_item)
 
         print "Drop event"
         self.update()

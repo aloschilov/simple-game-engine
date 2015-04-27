@@ -10,7 +10,7 @@ class ClickableGraphicsWidget(QGraphicsWidget):
     clicked = pyqtSignal(QGraphicsWidget, name="clicked")
 
     def __init__(self):
-        super(ClickableGraphicsWidget, self).__init__()
+        QGraphicsWidget.__init__(self)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
 
     def mousePressEvent(self, event):

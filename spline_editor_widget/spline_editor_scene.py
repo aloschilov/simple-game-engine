@@ -387,7 +387,8 @@ class SplineEditorScene(QWidget):
     @property
     def control_points(self):
         for point in [QPointF(0.0, 0.0), ] + self._control_points:
-            yield (float(point.x()), float(point.y()))
+            yield float(point.x())
+            yield float(point.y())
 
 
 def veryFuzzyCompare(r1, r2):

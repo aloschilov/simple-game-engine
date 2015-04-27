@@ -1,30 +1,26 @@
+from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtGui import QGraphicsItem
 from pyface.qt.QtCore import (Qt, QMimeData, QLineF, QPoint)
 from pyface.qt.QtGui import (QDrag, QApplication, QPixmap, QPainter, QGraphicsPixmapItem, QStyleOptionGraphicsItem)
 
 from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
+from engine_configurator.icon_graphics_widget import IconGraphicsWidget
 
 
-class AtomItem(ClickableGraphicsWidget):
+class AtomItem(ClickableGraphicsWidget, IconGraphicsWidget):
     """
     This item represents matter object at UniverseScene
     """
 
+    atom_and_force_connected = pyqtSignal(QGraphicsItem, QGraphicsItem, name="atom_and_force_connected")
+
     def __init__(self, atom=None):
-        super(AtomItem, self).__init__()
+        ClickableGraphicsWidget.__init__(self)
+        IconGraphicsWidget.__init__(self, ":/images/atom.png")
         self.atom = atom
-        self.underlying_pixmap_item = QGraphicsPixmapItem()
-        self.underlying_pixmap_item.setPixmap(QPixmap(":/images/atom.png"))
-
+        self.atom.on_trait_change(self.setText, 'name')
         self.setCursor(Qt.OpenHandCursor)
-
-    def paint(self, painter, option, widget):
-        self.underlying_pixmap_item.paint(painter, option, widget)
-
-    def boundingRect(self):
-        return self.underlying_pixmap_item.boundingRect()
-
-    def shape(self):
-        return self.underlying_pixmap_item.shape()
+        self.setAcceptDrops(True)
 
     def mousePressEvent(self, event):
         self.setCursor(Qt.ClosedHandCursor)
@@ -68,3 +64,32 @@ class AtomItem(ClickableGraphicsWidget):
     def mouseReleaseEvent(self, event):
         self.setCursor(Qt.OpenHandCursor)
         super(AtomItem, self).mouseReleaseEvent(event)
+
+    def dragEnterEvent(self, event):
+        print "AtomItem::dragEnterEvent"
+        if event.mimeData().hasText() and event.mimeData().text() in ["ForceToAtom"]:
+            event.setAccepted(True)
+            self.update()
+        else:
+            event.setAccepted(False)
+
+    def dragLeaveEvent(self, event):
+        """
+
+        :param event:
+        :type event: QGraphicsSceneDragDropEvent
+        :return:
+        """
+        self.update()
+
+    def dropEvent(self, event):
+        if event.mimeData().hasText() and event.mimeData().text() == "ForceToAtom":
+
+            if event.mimeData().force not in self.atom.produced_forces:
+                print "Creating ForceToAtom connection"
+                self.atom.produced_forces.append(event.mimeData().force)
+                self.atom_and_force_connected.emit(self, event.mimeData().force_item)
+            else:
+                print "No ForceToAtom connection created since it's already exists"
+
+        self.update()

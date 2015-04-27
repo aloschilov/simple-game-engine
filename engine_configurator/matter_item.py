@@ -1,10 +1,11 @@
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui import QGraphicsItem
-from pyface.qt.QtGui import (QPixmap, QGraphicsPixmapItem)
+from pyface.qt.QtGui import (QPixmap, QGraphicsPixmapItem, QPainter)
 from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
+from engine_configurator.icon_graphics_widget import IconGraphicsWidget
 
 
-class MatterItem(ClickableGraphicsWidget):
+class MatterItem(ClickableGraphicsWidget, IconGraphicsWidget):
     """
     This item represents matter object at UniverseScene
     """
@@ -12,20 +13,11 @@ class MatterItem(ClickableGraphicsWidget):
     matter_and_atom_connected = pyqtSignal(QGraphicsItem, QGraphicsItem, name="matter_and_atom_connected")
 
     def __init__(self, matter=None):
-        super(MatterItem, self).__init__()
+        ClickableGraphicsWidget.__init__(self)
+        IconGraphicsWidget.__init__(self, ":/images/matter.png")
         self.matter = matter
-        self.underlying_pixmap_item = QGraphicsPixmapItem()
-        self.underlying_pixmap_item.setPixmap(QPixmap(":/images/matter.png"))
+        self.matter.on_trait_change(self.setText, 'name')
         self.setAcceptDrops(True)
-
-    def paint(self, painter, option, widget):
-        self.underlying_pixmap_item.paint(painter, option, widget)
-
-    def boundingRect(self):
-        return self.underlying_pixmap_item.boundingRect()
-
-    def shape(self):
-        return self.underlying_pixmap_item.shape()
 
     def dragEnterEvent(self, event):
         print "MatterItem::dragEnterEvent"
