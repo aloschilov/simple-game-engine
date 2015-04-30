@@ -3,7 +3,7 @@
 #
 # Imports
 #
-
+from PyQt4.QtCore import pyqtSignal
 
 from pyface.qt.QtGui import (QWidget, QHBoxLayout)
 
@@ -15,6 +15,8 @@ class SplineEditorWidget(QWidget):
     """
 
     """
+
+    control_points_changed = pyqtSignal(list, name="control_points_changed")
 
     def __init__(self, parent=None):
         """
@@ -36,12 +38,16 @@ class SplineEditorWidget(QWidget):
         # Connecting signals and slots
 
         self.spline_editor_scene.easing_curve_code_changed.connect(properties_widget.processCodeChanged)
+        self.spline_editor_scene.easing_curve_code_changed.connect(self.process_easing_curve_code_changed)
+
+    def process_easing_curve_code_changed(self):
+        self.control_points_changed.emit(self.control_points)
 
     def get_control_points(self):
-        return list(self.spline_editor_scene.control_points)
+        return self.spline_editor_scene.get_control_points()
 
     def set_control_points(self, value):
-        pass
+        self.spline_editor_scene.set_control_points(value)
 
     control_points = property(get_control_points, set_control_points)
 

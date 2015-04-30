@@ -20,15 +20,18 @@ class RadialForce(Force):
 
     def __init__(self):
         self.bezier_curve_points = None
+        self.control_points = None
 
     def set_bezier_curve(self,
                          control_points,
-                         points_per_segment=10000):
+                         points_per_segment=10):
         """
 
         :param control_points:
         :return:
         """
+
+        self.control_points = control_points
 
         number_of_points = len(control_points)/2
         number_of_segments = int(number_of_points/3)

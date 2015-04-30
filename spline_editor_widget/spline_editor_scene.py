@@ -4,16 +4,49 @@ from pyface.qt.QtGui import (QWidget, QMenu, QAction, QPainter,
                              QFrame, QSpacerItem, QSizePolicy)
 from pyface.qt.QtCore import (QPoint, QPointF, QRectF, QLineF, Qt,
                               qFuzzyCompare, qRound, pyqtSignal)
-
 from segment_properties_widget import PaneWidget, SegmentPropertiesWidget
-
 from copy import deepcopy
+import itertools
+
 
 canvas_width = 640.0
 canvas_height = 320.0
 canvas_margin = 160.0
 
 BezierSpline = 45
+
+
+def group(lst, n):
+    """group([0,3,4,10,2,3], 2) => iterator
+
+    Group an iterable into an n-tuples iterable. Incomplete tuples
+    are discarded e.g.
+
+    >>> list(group(range(10), 3))
+    [(0, 1, 2), (3, 4, 5), (6, 7, 8)]
+    """
+    return itertools.izip(*[itertools.islice(lst, i, None, n) for i in range(n)])
+
+
+def tail(iterable):
+    it = iter(iterable)
+    it.next()
+    return it
+
+
+def take(n, xs):
+    if n <= 0:
+        return []
+    else:
+        return xs[:n]
+
+
+def drop(n, xs):
+    if n > len(xs):
+        return []
+    else:
+        return xs[n:]
+
 
 
 class SplineEditorScene(QWidget):
@@ -381,14 +414,38 @@ class SplineEditorScene(QWidget):
 
     def generateCode(self):
         return "[" + \
-               ",".join(["{x:.3g}, {y:.3g}".format(x=point.x(), y=point.y()) for point in [QPointF(0.0, 0.0)] + self._control_points])\
+               ",".join(["{x:.3g}, {y:.3g}".format(x=point.x(), y=point.y())
+                         for point in [QPointF(0.0, 0.0)] + self._control_points])\
                + "]"
 
-    @property
-    def control_points(self):
-        for point in [QPointF(0.0, 0.0), ] + self._control_points:
-            yield float(point.x())
-            yield float(point.y())
+    def get_control_points(self):
+        """
+        Returns the control point except for the first one in the following format
+        [x_0, y_0, x_1, y_1, ..., x_n, y_n]
+        x_0 and y_0 are always of zero value
+        """
+
+        def get_points_iterator():
+            for point in [QPointF(0.0, 0.0), ] + self._control_points:
+                yield float(point.x())
+                yield float(point.y())
+
+        return list(get_points_iterator())
+
+    def set_control_points(self, control_points_to_set):
+
+        self._control_points = list()
+
+        for (x, y) in tail(group(control_points_to_set, 2)):
+            self._control_points.append(QPointF(x, y))
+
+        self.number_of_segments = 2
+        self.active_control_point = -1
+
+        self.invalidate()
+        self.update()
+
+    control_points = property(get_control_points, set_control_points)
 
 
 def veryFuzzyCompare(r1, r2):
@@ -483,16 +540,3 @@ def paintControlPoint(controlPoint, painter, edit, realPoint, active, smooth):
         painter.drawRect(QRectF(mapToCanvas(controlPoint).x() - pointSize + 0.5,
                                 mapToCanvas(controlPoint).y() - pointSize + 0.5,
                                 pointSize * 2, pointSize * 2))
-
-
-def take(n, xs):
-    if n <= 0:
-        return []
-    else:
-        return xs[:n]
-
-def drop(n, xs):
-    if n > len(xs):
-        return []
-    else:
-        return xs[n:]

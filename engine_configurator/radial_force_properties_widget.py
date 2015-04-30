@@ -30,6 +30,7 @@ class RadialForcePropertiesWidget(QWidget):
         self.setLayout(main_layout)
 
         self.name_editor.textChanged.connect(self.name_editor_text_changed)
+        self.spline_editor.control_points_changed.connect(self.spline_editor_points_changed)
 
         self.setDisabled(True)
 
@@ -45,9 +46,12 @@ class RadialForcePropertiesWidget(QWidget):
         """
         self.radial_force = radial_force
         self.name_editor.setText(self.radial_force.name)
-        # self.radial_force.set_bezier_curve(self.spline_editor.control_points)
+        self.spline_editor.control_points = self.radial_force.control_points
 
         self.setEnabled(True)
 
     def name_editor_text_changed(self, value):
         self.radial_force.name = value
+
+    def spline_editor_points_changed(self, control_points):
+        self.radial_force.set_bezier_curve(control_points)
