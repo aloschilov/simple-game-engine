@@ -1,8 +1,5 @@
 #!/usr/bin/python
 
-#
-# Imports
-#
 from PyQt4.QtCore import pyqtSignal
 
 from pyface.qt.QtGui import (QWidget, QHBoxLayout)
@@ -50,7 +47,6 @@ class SplineEditorWidget(QWidget):
         self.spline_editor_scene.set_control_points(value)
 
     control_points = property(get_control_points, set_control_points)
-
 
 
 if __name__ == "__main__":
