@@ -13,7 +13,7 @@ from . import Matter
 
 def move_to_position(functions_to_move, position):
     """
-    functions_to_move - list of callable
+    functions_to_move - list of callaeble
     position - vector
     """
 
