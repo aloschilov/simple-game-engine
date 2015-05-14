@@ -11,11 +11,11 @@ class PolynomLabelWidget(FigureCanvas):
 
     """
 
-    def __init__(self, parent=None, width=4, height=1, dpi=100):
+    def __init__(self, parent=None, width=10, height=1, dpi=100):
 
         figure = Figure(figsize=(width, height), dpi=dpi)
         figure.patch.set_facecolor('white')
-        figure.patch.set_alpha(0.0)
+        #figure.patch.set_alpha(0.0)
         self.axes = figure.add_subplot(111)
         self.axes.axis('off')
         self.axes.hold(False)
@@ -26,14 +26,15 @@ class PolynomLabelWidget(FigureCanvas):
         self.setParent(parent)
         FigureCanvas.setSizePolicy(self,
                                    QtGui.QSizePolicy.Expanding,
-                                   QtGui.QSizePolicy.Expanding)
+                                   QtGui.QSizePolicy.Fixed)
         FigureCanvas.updateGeometry(self)
 
     def compute_initial_figure(self):
-        self.axes.text(0.0, 0.3, '$\\int \\sqrt{\\frac{1}{x}}\\, dx$')
+        self.text = self.axes.text(0.0, 0.3, '')
 
     def set_latex_expression(self, expression):
-        self.axes.text(0.0, 0.3, expression)
+        self.text.set_text("$ y(x) = " + expression + "$")
+        self.draw()
 
 
 if __name__ == '__main__':

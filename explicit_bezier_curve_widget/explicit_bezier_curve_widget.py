@@ -2,8 +2,11 @@ from PyQt4.QtCore import QRectF, Qt
 from PyQt4.QtGui import QHBoxLayout, QWidget, QGraphicsView, QResizeEvent, QApplication, QPainter, QGroupBox, \
     QVBoxLayout, QLabel, QSpinBox, QDoubleSpinBox
 from explicit_bezier_curve_scene import ExplicitBezierCurveScene
+from polynom_label_widget import PolynomLabelWidget
 from settings import SCENE_SIZE, SCENE_SIZE_2, MIN_POLYNOMIAL_DEGREE, MAX_POLYNOMIAL_DEGREE, POLYNOMIAL_DEGREE_DEFAULT, \
     DEFAULT_MAX_VALUE, DEFAULT_MIN_VALUE, MAX_Y_VALUE, MIN_Y_RANGE, MIN_Y_VALUE
+from scipy.special import binom
+from sympy import symbols, simplify, expand, latex, N
 
 
 class ExplicitBezierCurveWidget(QWidget):
@@ -19,7 +22,7 @@ class ExplicitBezierCurveWidget(QWidget):
             super(QGraphicsView, graphics_view).resizeEvent(event)
 
         graphics_view.resizeEvent = graphics_view_resize_event
-        self.explicit_bezier_curve_scene = ExplicitBezierCurveScene()
+        self.explicit_bezier_curve_scene = ExplicitBezierCurveScene(self)
         graphics_view.setScene(self.explicit_bezier_curve_scene)
         graphics_view.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
 
@@ -70,21 +73,51 @@ class ExplicitBezierCurveWidget(QWidget):
 
         properties_group_box_layout.addStretch()
 
-        main_layout = QHBoxLayout()
-        main_layout.addWidget(graphics_view)
-        main_layout.addWidget(properties_group_box)
+        self.polynom_widget = PolynomLabelWidget()
+
+        main_layout = QVBoxLayout()
+
+        upper_layout = QHBoxLayout()
+        upper_layout.addWidget(graphics_view)
+        upper_layout.addWidget(properties_group_box)
+
+        main_layout.addLayout(upper_layout)
+        main_layout.addWidget(self.polynom_widget)
 
         self.setLayout(main_layout)
+        self.process_control_points_changed()
 
     def process_degree_changed(self, value):
         self.explicit_bezier_curve_scene.set_polynomial_degree(value)
+        self.process_control_points_changed()
 
     def process_max_value_changed(self, max_value):
         self.min_value_spinbox.setRange(MIN_Y_VALUE, max_value-MIN_Y_RANGE)
+        self.process_control_points_changed()
 
     def process_min_value_changed(self, min_value):
         self.max_value_spinbox.setRange(min_value - MIN_Y_RANGE, MAX_Y_VALUE)
+        self.process_control_points_changed()
 
+    def process_control_points_changed(self):
+
+        control_points = self.explicit_bezier_curve_scene.control_points
+
+        n = len(control_points) - 1
+
+        x_0 = control_points[0].pos().x()
+        x_1 = control_points[-1].pos().x()
+
+        x, result = symbols('x result')
+
+        result = 0
+
+        for i in range(0, n + 1):
+            y_i = control_points[i].pos().y()
+            result += binom(n, i) * ((x_1 - x) / (x_1 - x_0)) ** (n - i) * ((x - x_0) / (x_1 - x_0)) ** i * y_i
+
+        self.polynom_widget.set_latex_expression(
+            latex(N(simplify(expand(result)), 3)))
 
 
 if __name__ == "__main__":

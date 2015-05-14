@@ -4,7 +4,6 @@ import numpy
 from control_point_graphics_item import ControlPointGraphicsItem
 from connector import Connector
 from curve_item import CurveItem
-from polynom_label_widget import PolynomLabelWidget
 from settings import SCENE_SIZE, SCENE_SIZE_2
 
 
@@ -17,14 +16,11 @@ class ExplicitBezierCurveScene(QGraphicsScene):
         :return:
         """
         super(ExplicitBezierCurveScene, self).__init__(parent)
+
         # A list that contains only the second coordinate of control points
         self.control_points = list()
         self.connectors = list()
         self.curve_item = None
-
-        self.polynom_widget = PolynomLabelWidget()
-        self.addWidget(self.polynom_widget)
-        self.polynom_widget.setStyleSheet("* {background-color: transparent;}")
 
         # A degree of polynomial
         self.n = 3
@@ -72,6 +68,7 @@ class ExplicitBezierCurveScene(QGraphicsScene):
 
         for control_point_item in self.control_points:
             self.removeItem(control_point_item)
+            control_point_item.position_changed.disconnect(self.parent().process_control_points_changed)
 
         for connector in self.connectors:
             self.removeItem(connector)
@@ -88,6 +85,8 @@ class ExplicitBezierCurveScene(QGraphicsScene):
             control_point_item.x = x
             self.control_points.append(control_point_item)
             self.addItem(control_point_item)
+
+            control_point_item.position_changed.connect(self.parent().process_control_points_changed)
 
         for i in xrange(len(self.control_points)-1):
             connector = Connector(self.control_points[i], self.control_points[i+1])
