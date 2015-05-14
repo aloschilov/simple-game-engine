@@ -1,5 +1,5 @@
 from PyQt4.QtCore import QPointF
-from PyQt4.QtGui import QGraphicsPathItem, QPainterPath
+from PyQt4.QtGui import QGraphicsPathItem, QPainterPath, QPen, QColor
 from scipy.special import binom
 from numpy import linspace
 from settings import SCENE_SIZE
@@ -12,6 +12,11 @@ class CurveItem(QGraphicsPathItem):
 
         for control_point in self.control_points:
             control_point.add_curve(self)
+
+        pen = QPen()
+        pen.setWidth(3)
+        pen.setColor(QColor(120, 0, 14))
+        self.setPen(pen)
 
         self.update_position()
 

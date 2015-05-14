@@ -38,9 +38,9 @@ class ControlPointGraphicsItem(QGraphicsWidget):
     def mouseMoveEvent(self, event):
         assert isinstance(event, QGraphicsSceneMouseEvent)
 
-        if event.scenePos().y() > MAX_LINE_Y:
+        if event.scenePos().y() < MAX_LINE_Y:
             self.setPos(self._x, MAX_LINE_Y)
-        elif event.scenePos().y() < MIN_LINE_Y:
+        elif event.scenePos().y() > MIN_LINE_Y:
             self.setPos(self._x, MIN_LINE_Y)
         else:
             self.setPos(self._x, event.scenePos().y())

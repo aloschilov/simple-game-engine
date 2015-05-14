@@ -4,7 +4,8 @@ from PyQt4.QtGui import QHBoxLayout, QWidget, QGraphicsView, QResizeEvent, QAppl
 from explicit_bezier_curve_scene import ExplicitBezierCurveScene
 from polynom_label_widget import PolynomLabelWidget
 from settings import SCENE_SIZE, SCENE_SIZE_2, MIN_POLYNOMIAL_DEGREE, MAX_POLYNOMIAL_DEGREE, POLYNOMIAL_DEGREE_DEFAULT, \
-    DEFAULT_MAX_VALUE, DEFAULT_MIN_VALUE, MAX_Y_VALUE, MIN_Y_RANGE, MIN_Y_VALUE
+    DEFAULT_MAX_Y_VALUE, DEFAULT_MIN_Y_VALUE, MAX_Y_VALUE, MIN_Y_RANGE, MIN_Y_VALUE, MAX_LINE_Y, MIN_LINE_Y, \
+    DEFAULT_MIN_X_VALUE, MIN_X_RANGE, MAX_X_VALUE, DEFAULT_MAX_X_VALUE, MIN_X_VALUE, MAX_LINE_X, MIN_LINE_X
 from scipy.special import binom
 from sympy import symbols, simplify, expand, latex, N
 
@@ -45,31 +46,53 @@ class ExplicitBezierCurveWidget(QWidget):
         degree_layout.addWidget(degree_label)
         degree_layout.addWidget(degree_spinbox)
 
-        # Max value
+        # X - range
 
-        max_value_layout = QHBoxLayout()
-        properties_group_box_layout.addLayout(max_value_layout)
-        max_value_label = QLabel("Max")
-        self.max_value_spinbox = QDoubleSpinBox()
-        self.max_value_spinbox.setRange(DEFAULT_MIN_VALUE - MIN_Y_RANGE, MAX_Y_VALUE)
-        self.max_value_spinbox.setValue(DEFAULT_MAX_VALUE)
-        self.max_value_spinbox.valueChanged.connect(self.process_max_value_changed)
-        max_value_label.setBuddy(self.max_value_spinbox)
-        max_value_layout.addWidget(max_value_label)
-        max_value_layout.addWidget(self.max_value_spinbox)
+        x_layout = QHBoxLayout()
+        x_label = QLabel("X:")
+        x_layout.addWidget(x_label)
+        properties_group_box_layout.addLayout(x_layout)
 
-        # Min value
+        min_x_value_label = QLabel("Min")
+        x_layout.addWidget(min_x_value_label)
+        self.min_x_value_spinbox = QDoubleSpinBox()
+        x_layout.addWidget(self.min_x_value_spinbox)
+        self.min_x_value_spinbox.setRange(MIN_X_VALUE, DEFAULT_MAX_X_VALUE-MIN_X_RANGE)
+        self.min_x_value_spinbox.setValue(DEFAULT_MIN_X_VALUE)
+        self.min_x_value_spinbox.valueChanged.connect(self.process_min_x_value_changed)
 
-        min_value_layout = QHBoxLayout()
-        properties_group_box_layout.addLayout(min_value_layout)
-        min_value_label = QLabel("Min")
-        self.min_value_spinbox = QDoubleSpinBox()
-        self.min_value_spinbox.setRange(MIN_Y_VALUE, DEFAULT_MAX_VALUE-MIN_Y_RANGE)
-        self.min_value_spinbox.setValue(DEFAULT_MIN_VALUE)
-        self.min_value_spinbox.valueChanged.connect(self.process_min_value_changed)
-        min_value_label.setBuddy(self.min_value_spinbox)
-        min_value_layout.addWidget(min_value_label)
-        min_value_layout.addWidget(self.min_value_spinbox)
+        max_x_value_label = QLabel("Max")
+        x_layout.addWidget(max_x_value_label)
+        self.max_x_value_spinbox = QDoubleSpinBox()
+        x_layout.addWidget(self.max_x_value_spinbox)
+        self.max_x_value_spinbox.setRange(DEFAULT_MIN_X_VALUE - MIN_X_RANGE, MAX_X_VALUE)
+        self.max_x_value_spinbox.setValue(DEFAULT_MAX_X_VALUE)
+        self.max_x_value_spinbox.valueChanged.connect(self.process_max_x_value_changed)
+
+        # Y - range
+
+        y_layout = QHBoxLayout()
+        properties_group_box_layout.addLayout(y_layout)
+        y_label = QLabel("Y:")
+        y_layout.addWidget(y_label)
+
+        min_y_value_label = QLabel("Min")
+        y_layout.addWidget(min_y_value_label)
+        self.min_y_value_spinbox = QDoubleSpinBox()
+        self.min_y_value_spinbox.setRange(MIN_Y_VALUE, DEFAULT_MAX_Y_VALUE-MIN_Y_RANGE)
+        self.min_y_value_spinbox.setValue(DEFAULT_MIN_Y_VALUE)
+        self.min_y_value_spinbox.valueChanged.connect(self.process_min_value_changed)
+        min_y_value_label.setBuddy(self.min_y_value_spinbox)
+        y_layout.addWidget(self.min_y_value_spinbox)
+
+        max_y_value_label = QLabel("Max")
+        y_layout.addWidget(max_y_value_label)
+        self.max_y_value_spinbox = QDoubleSpinBox()
+        self.max_y_value_spinbox.setRange(DEFAULT_MIN_Y_VALUE - MIN_Y_RANGE, MAX_Y_VALUE)
+        self.max_y_value_spinbox.setValue(DEFAULT_MAX_Y_VALUE)
+        self.max_y_value_spinbox.valueChanged.connect(self.process_max_value_changed)
+        max_y_value_label.setBuddy(self.max_y_value_spinbox)
+        y_layout.addWidget(self.max_y_value_spinbox)
 
         properties_group_box_layout.addStretch()
 
@@ -91,12 +114,20 @@ class ExplicitBezierCurveWidget(QWidget):
         self.explicit_bezier_curve_scene.set_polynomial_degree(value)
         self.process_control_points_changed()
 
+    def process_max_x_value_changed(self, max_x_value):
+        self.min_x_value_spinbox.setRange(MIN_X_VALUE, max_x_value-MIN_X_RANGE)
+        self.process_control_points_changed()
+
+    def process_min_x_value_changed(self, min_x_value):
+        self.max_y_value_spinbox.setRange(min_x_value - MIN_X_RANGE, MAX_X_VALUE)
+        self.process_control_points_changed()
+
     def process_max_value_changed(self, max_value):
-        self.min_value_spinbox.setRange(MIN_Y_VALUE, max_value-MIN_Y_RANGE)
+        self.min_y_value_spinbox.setRange(MIN_Y_VALUE, max_value-MIN_Y_RANGE)
         self.process_control_points_changed()
 
     def process_min_value_changed(self, min_value):
-        self.max_value_spinbox.setRange(min_value - MIN_Y_RANGE, MAX_Y_VALUE)
+        self.max_y_value_spinbox.setRange(min_value - MIN_Y_RANGE, MAX_Y_VALUE)
         self.process_control_points_changed()
 
     def process_control_points_changed(self):
@@ -105,19 +136,33 @@ class ExplicitBezierCurveWidget(QWidget):
 
         n = len(control_points) - 1
 
-        x_0 = control_points[0].pos().x()
-        x_1 = control_points[-1].pos().x()
+        x_0 = self.map_x_from_scene(control_points[0].pos().x())
+        x_1 = self.map_x_from_scene(control_points[-1].pos().x())
 
         x, result = symbols('x result')
 
         result = 0
 
         for i in range(0, n + 1):
-            y_i = control_points[i].pos().y()
+            y_i = self.map_y_from_scene(control_points[i].pos().y())
             result += binom(n, i) * ((x_1 - x) / (x_1 - x_0)) ** (n - i) * ((x - x_0) / (x_1 - x_0)) ** i * y_i
 
         self.polynom_widget.set_latex_expression(
             latex(N(simplify(expand(result)), 3)))
+
+    def map_y_from_scene(self, y):
+        max_y = self.max_y_value_spinbox.value()
+        min_y = self.min_y_value_spinbox.value()
+        a = (max_y-min_y)/(MAX_LINE_Y-MIN_LINE_Y)
+        b = -(max_y*MIN_LINE_Y-min_y*MAX_LINE_Y)/(MAX_LINE_Y-MIN_LINE_Y)
+        return a*y+b
+
+    def map_x_from_scene(self, x):
+        max_x = self.max_x_value_spinbox.value()
+        min_x = self.min_x_value_spinbox.value()
+        a = (max_x-min_x)/(MAX_LINE_X-MIN_LINE_X)
+        b = -(max_x*MIN_LINE_X-min_x*MAX_LINE_X)/(MAX_LINE_X-MIN_LINE_X)
+        return a*x+b
 
 
 if __name__ == "__main__":

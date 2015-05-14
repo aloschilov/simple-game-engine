@@ -4,7 +4,7 @@ import numpy
 from control_point_graphics_item import ControlPointGraphicsItem
 from connector import Connector
 from curve_item import CurveItem
-from settings import SCENE_SIZE, SCENE_SIZE_2
+from settings import SCENE_SIZE, SCENE_SIZE_2, MIN_LINE_X, MAX_LINE_X, MIN_LINE_Y, MAX_LINE_Y
 
 
 class ExplicitBezierCurveScene(QGraphicsScene):
@@ -45,14 +45,16 @@ class ExplicitBezierCurveScene(QGraphicsScene):
         top = rect.top()
         bottom = rect.bottom()
 
-        for x in numpy.linspace(0.02*SCENE_SIZE, 0.98*SCENE_SIZE, num=self.n + 1):
+        for x in numpy.linspace(MIN_LINE_X, MAX_LINE_X, num=self.n + 1):
             painter.drawLine(QLineF(x, top, x, bottom))
 
-        # draw max line
-        painter.drawLine(QLineF(left, -0.02*SCENE_SIZE + SCENE_SIZE_2, right, -0.02*SCENE_SIZE + SCENE_SIZE_2))
-
         # draw min line
-        painter.drawLine(QLineF(left, 0.02*SCENE_SIZE - SCENE_SIZE_2, right, 0.02*SCENE_SIZE - SCENE_SIZE_2))
+        painter.setPen(Qt.blue)
+        painter.drawLine(QLineF(left, MIN_LINE_Y, right, MIN_LINE_Y))
+
+        # draw max line
+        painter.setPen(Qt.red)
+        painter.drawLine(QLineF(left, MAX_LINE_Y, right, MAX_LINE_Y))
 
     def set_polynomial_degree(self, n):
         """
