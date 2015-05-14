@@ -13,6 +13,8 @@ class ControlPointGraphicsItem(QGraphicsEllipseItem):
         self._x = 0
         self.setRect(-POINT_SIZE_2, -POINT_SIZE_2, POINT_SIZE, POINT_SIZE)
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
+        self.connectors = list()
+        self.curve_item = None
 
     def set_x(self, value):
         """
@@ -36,5 +38,27 @@ class ControlPointGraphicsItem(QGraphicsEllipseItem):
         else:
             self.setPos(self._x, event.scenePos().y())
 
+        for connector in self.connectors:
+            connector.update_position()
+
+        if self.curve_item:
+            self.curve_item.update_position()
 
     x = property(get_x, set_x)
+
+    def remove_connector(self, connector):
+        from connector import Connector
+        assert isinstance(connector, Connector)
+        self.connectors.remove(connector)
+
+    def remove_connectors(self):
+        for connector in self.connectors:
+            connector.start_item.remove_connector(connector)
+            connector.end_item.remove_connector(connector)
+            self.scene().removeItem(connector)
+
+    def add_connector(self, connector):
+        self.connectors.append(connector)
+
+    def add_curve(self, curve_item):
+        self.curve_item = curve_item
