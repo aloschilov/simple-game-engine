@@ -56,3 +56,5 @@ target/
 
 *.wpr
 *.wpu
+
+engine_configurator/engine_configurator_rc.py
