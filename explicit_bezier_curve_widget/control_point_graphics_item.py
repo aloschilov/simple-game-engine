@@ -45,15 +45,19 @@ class ControlPointGraphicsItem(QGraphicsWidget):
         else:
             self.setPos(self._x, event.scenePos().y())
 
-        for connector in self.connectors:
-            connector.update_position()
-
-        if self.curve_item:
-            self.curve_item.update_position()
-
-        self.position_changed.emit()
-
     x = property(get_x, set_x)
+
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemPositionHasChanged:
+            for connector in self.connectors:
+                connector.update_position()
+
+            if self.curve_item:
+                self.curve_item.update_position()
+
+            self.position_changed.emit()
+
+        return super(ControlPointGraphicsItem, self).itemChange(change, value)
 
     def remove_connector(self, connector):
         from connector import Connector

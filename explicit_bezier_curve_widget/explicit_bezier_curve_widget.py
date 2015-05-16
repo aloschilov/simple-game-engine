@@ -1,6 +1,7 @@
-from PyQt4.QtCore import QRectF, Qt
+from PyQt4.QtCore import QRectF, Qt, QPointF
 from PyQt4.QtGui import QHBoxLayout, QWidget, QGraphicsView, QResizeEvent, QApplication, QPainter, QGroupBox, \
     QVBoxLayout, QLabel, QSpinBox, QDoubleSpinBox
+from numpy import linspace
 from explicit_bezier_curve_scene import ExplicitBezierCurveScene
 from polynom_label_widget import PolynomLabelWidget
 from settings import SCENE_SIZE, SCENE_SIZE_2, MIN_POLYNOMIAL_DEGREE, MAX_POLYNOMIAL_DEGREE, POLYNOMIAL_DEGREE_DEFAULT, \
@@ -38,13 +39,13 @@ class ExplicitBezierCurveWidget(QWidget):
         degree_layout = QHBoxLayout()
         properties_group_box_layout.addLayout(degree_layout)
         degree_label = QLabel("Polynomial degree")
-        degree_spinbox = QSpinBox()
-        degree_spinbox.setRange(MIN_POLYNOMIAL_DEGREE, MAX_POLYNOMIAL_DEGREE)
-        degree_spinbox.setValue(POLYNOMIAL_DEGREE_DEFAULT)
-        degree_spinbox.valueChanged.connect(self.process_degree_changed)
-        degree_label.setBuddy(degree_spinbox)
+        self.degree_spinbox = QSpinBox()
+        self.degree_spinbox.setRange(MIN_POLYNOMIAL_DEGREE, MAX_POLYNOMIAL_DEGREE)
+        self.degree_spinbox.setValue(POLYNOMIAL_DEGREE_DEFAULT)
+        self.degree_spinbox.valueChanged.connect(self.process_degree_changed)
+        degree_label.setBuddy(self.degree_spinbox)
         degree_layout.addWidget(degree_label)
-        degree_layout.addWidget(degree_spinbox)
+        degree_layout.addWidget(self.degree_spinbox)
 
         # X - range
 
@@ -164,6 +165,65 @@ class ExplicitBezierCurveWidget(QWidget):
         b = -(max_x*MIN_LINE_X-min_x*MAX_LINE_X)/(MAX_LINE_X-MIN_LINE_X)
         return a*x+b
 
+    def map_y_to_scene(self, y):
+        max_y = self.max_y_value_spinbox.value()
+        min_y = self.min_y_value_spinbox.value()
+        a = (MAX_LINE_Y-MIN_LINE_Y)/(max_y-min_y)
+        b = (max_y*MIN_LINE_Y-min_y*MAX_LINE_Y)/(max_y-min_y)
+        return a*y+b
+
+    def serialize(self):
+        """
+        :return: widget state in the following format
+        {
+          "min_x" : -10,
+          "max_x" :  10,
+          "min_y" : -10,
+          "max_y" :  10,
+          "degree": 3,
+          "ys"    : [3, 3, 3, 2]
+        }
+        """
+
+        control_points = self.explicit_bezier_curve_scene.control_points
+
+        state = dict()
+        state["min_x"] = self.min_x_value_spinbox.value()
+        state["max_x"] = self.max_x_value_spinbox.value()
+        state["min_y"] = self.min_y_value_spinbox.value()
+        state["max_y"] = self.max_y_value_spinbox.value()
+        state["degree"] = self.degree_spinbox.value()
+        state["ys"] = [self.map_y_from_scene(control_point.pos().y()) for control_point in control_points]
+        return state
+
+    def deserialize(self, state):
+        """
+        This method setups widget controls to the state specified.
+        :param state: widget state in the following format
+        {
+          "min_x" : -10,
+          "max_x" :  10,
+          "min_y" : -10,
+          "max_y" :  10,
+          "degree": 3,
+          "ys"    : [3, 3, 3, 2]
+        }
+        :return:
+        """
+
+        self.min_x_value_spinbox.setValue(state["min_x"])
+        self.max_x_value_spinbox.setValue(state["max_x"])
+        self.min_y_value_spinbox.setValue(state["min_y"])
+        self.max_y_value_spinbox.setValue(state["max_y"])
+        self.degree_spinbox.setValue(state["degree"])
+
+        ys = [self.map_y_to_scene(y) for y in state["ys"]]
+
+        n = self.degree_spinbox.value()
+
+        for i, (x, y) in enumerate(zip(linspace(0.02*SCENE_SIZE, 0.98*SCENE_SIZE, num=n + 1), ys)):
+            self.explicit_bezier_curve_scene.control_points[i].setPos(QPointF(x, y))
+
 
 if __name__ == "__main__":
 
@@ -174,6 +234,14 @@ if __name__ == "__main__":
     # '.instance()' method to retrieve the existing one.
     app = QApplication(sys.argv)#QApplication.instance()
     widget = ExplicitBezierCurveWidget()
+    widget.deserialize({
+          "min_x" : -10,
+          "max_x" :  20,
+          "min_y" : -30,
+          "max_y" :  40,
+          "degree": 4,
+          "ys"    : [-30, 0, 40, 10, 20]
+        })
     widget.show()
 
     # Start the main event loop.
