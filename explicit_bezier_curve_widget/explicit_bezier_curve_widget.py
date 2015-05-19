@@ -103,7 +103,7 @@ class ExplicitBezierCurveWidget(QWidget):
 
         main_layout = QVBoxLayout()
 
-        upper_layout = QHBoxLayout()
+        upper_layout = QVBoxLayout()
         upper_layout.addWidget(graphics_view)
         upper_layout.addWidget(properties_group_box)
 

@@ -47,9 +47,9 @@ class UniverseWidget(QWidget):
         self.properties_widget = PropertiesWidget()
 
         main_layout = QHBoxLayout()
-        main_layout.addWidget(self.tool_box)
-        main_layout.addWidget(self.universe_graphics_view)
-        main_layout.addWidget(self.properties_widget)
+        main_layout.addWidget(self.tool_box, 1)
+        main_layout.addWidget(self.universe_graphics_view, 3)
+        main_layout.addWidget(self.properties_widget, 1)
         self.setLayout(main_layout)
 
         self.universe_graphics_scene.properties_bindings_update_required.connect(self.update_properties_bindings)
