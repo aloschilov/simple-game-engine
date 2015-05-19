@@ -28,8 +28,15 @@ class Visualization(HasTraits):
         matter1.name = "1-st matter"
 
         atom1 = self.universe.create_atom()
-        force1 = self.universe.create_radial_force(
-            [0, 0, 0.4, 0.075, 0.462, 0.252, 0.512, 0.512, 0.562, 0.772, 0.7, 0.9, 1, 1])
+        force1 = self.universe.create_radial_force({
+                                                       "min_x" :   0,
+                                                       "max_x" :  10,
+                                                       "min_y" : -10,
+                                                       "max_y" :  10,
+                                                       "degree": 3,
+                                                       "ys"    : [3, 3, 3, 2]
+                                                       }
+        )
         atom1.produced_forces.append(force1)
         matter1.atoms[atom1] = 10
         matter1.position = (0.1, 0.1)

@@ -2,12 +2,8 @@ from force import Force
 
 import numpy as np
 
-from math import sqrt
-
-
-def find_nearest_element_index(array, value):
-    idx = (np.abs(array-value)).argmin()
-    return idx
+from sympy import symbols, simplify, expand, latex, N, lambdify, sqrt
+from scipy.special import binom
 
 
 class RadialForce(Force):
@@ -19,61 +15,76 @@ class RadialForce(Force):
     """
 
     def __init__(self):
-        self.bezier_curve_points = None
-        self.control_points = None
+        self.min_rho = None
+        self.max_rho = None
+        self.min_z = None
+        self.max_z = None
+        self.degree = None
+        self.zs = list()
 
-    def set_bezier_curve(self,
-                         control_points,
-                         points_per_segment=10):
+    def set_bezier_curve(self, state):
         """
-
-        :param control_points:
+        :param state: parameters required to build a polynomial with the following
+        format
+        {
+          "min_x" : -10,
+          "max_x" :  10,
+          "min_y" : -10,
+          "max_y" :  10,
+          "degree": 3,
+          "ys"    : [3, 3, 3, 2]
+        }
         :return:
         """
 
-        self.control_points = control_points
+        self.min_rho = state["min_x"]
+        self.max_rho = state["max_x"]
+        self.min_z = state["min_y"]
+        self.max_z = state["max_y"]
+        self.degree = state["degree"]
+        self.zs = state["ys"]
 
-        number_of_points = len(control_points)/2
-        number_of_segments = int(number_of_points/3)
-        numpy_points = np.array(control_points)
-        numpy_points = numpy_points.reshape((number_of_points, 2))
+    def get_bezier_curve(self):
+        """
 
-        gamma_0 = 3
-        gamma_1 = 3
+        :return: parameters required to build an explicit bezier curve in the following format
+        {
+          "min_x" : -10,
+          "max_x" :  10,
+          "min_y" : -10,
+          "max_y" :  10,
+          "degree": 3,
+          "ys"    : [3, 3, 3, 2]
+        }
+        """
+        return {"min_x": self.min_rho,
+                "max_x": self.max_rho,
+                "min_y": self.min_z,
+                "max_y": self.max_z,
+                "degree": self.degree,
+                "ys": self.zs
+                }
 
-        b_0 = lambda t: 1 - gamma_0*t + (2*gamma_0 - 3)*t**2 + (2 - gamma_0)*t**3
-        b_1 = lambda t: gamma_0*t*(1-t)**2
-        b_2 = lambda t: gamma_1*t**2*(1-t)
-        b_3 = lambda t: (3-gamma_1)*t**2 + (gamma_1-2)*t**3
-
-        p = lambda u_0, v_0, v_1, u_1, t: b_0(t)*u_0 + b_1(t)*v_0 + b_2(t)*v_1 + b_3(t)*u_1
-
-        bezier_curve_points = np.empty((0, 2))
-
-        for i in xrange(number_of_segments):
-            u_0 = numpy_points[0+i*3, :]
-            v_0 = numpy_points[1+i*3, :]
-            v_1 = numpy_points[2+i*3, :]
-            u_1 = numpy_points[3+i*3, :]
-            p_current = np.frompyfunc(lambda t: p(u_0, v_0, v_1, u_1, t), 1, 1)
-            segment_points = np.vstack(p_current(np.linspace(0, 1, points_per_segment)))
-            segment_points.reshape((points_per_segment, 2))
-            bezier_curve_points = np.concatenate((bezier_curve_points, segment_points))
-
-        self.bezier_curve_points = bezier_curve_points
+    bezier_curve = property(get_bezier_curve, set_bezier_curve)
 
     def function(self):
         """
-
-        :return:
+        :return: a callable that takes two parameters and represents and explicit function z = f(x, y)
         """
 
-        def cartesian_function(point):
-            x, y = (point[0]/10.0, point[1]/10.0)
-            rho = sqrt(x*x+y*y)
-            h_idx = find_nearest_element_index(self.bezier_curve_points[:, 0], rho)
-            h = self.bezier_curve_points[h_idx, 1]
-            return h*10
+        x, y, rho, result = symbols('x y rho result')
+        expr = 0
+        n = self.degree
 
-        return cartesian_function
+        rho_0 = self.min_rho
+        rho_1 = self.max_rho
+
+        for i, z in enumerate(self.zs):
+            expr += binom(n, i) * \
+                    ((rho_1 - rho) / (rho_1 - rho_0)) ** (n - i) * \
+                    ((rho - rho_0) / (rho_1 - rho_0)) ** i \
+                    * z
+
+        expr = expr.subs(rho, sqrt(x * x + y * y))
+        return lambdify((x, y), expr, "numpy")
 

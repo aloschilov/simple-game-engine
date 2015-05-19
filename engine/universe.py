@@ -13,12 +13,12 @@ from . import Matter
 
 def move_to_position(functions_to_move, position):
     """
-    functions_to_move - list of callaeble
+    functions_to_move - list of callable
     position - vector
     """
 
     for f in functions_to_move:
-        yield lambda p: f(list(np.array(p) - np.array(position)))
+        yield lambda p: f(*tuple(np.array(p) - np.array(position)))
 
 
 def get_force_superposition(p,
@@ -38,10 +38,10 @@ def get_force_superposition(p,
 
     @param matters_to_exclude_from_field: indexes of matters not to consider
     in calculation
-    @type matters_to_exclude_from_field: list of intergers
+    @type matters_to_exclude_from_field: list of integers
     """
 
-    # I believe that there is no reason to vectorize potential,
+    # I believe that there is no reason to vectorized potential,
     # that is why we are free to return scalar
 
     scalar_to_return = 0
@@ -103,15 +103,21 @@ class Universe(HasTraits):
         """
 
         force = RadialForce()
-        force.set_bezier_curve(
-            [0, 0, 0.4, 0.075, 0.462, 0.252, 0.512, 0.512, 0.562, 0.772, 0.7, 0.9, 1, 1])
+        force.set_bezier_curve({
+                                                       "min_x" :   0,
+                                                       "max_x" :  10,
+                                                       "min_y" : -10,
+                                                       "max_y" :  10,
+                                                       "degree": 3,
+                                                       "ys"    : [0, 1, -1, 3]
+                                                       })
 
         self.forces.append(force)
         return force
 
-    def create_radial_force(self, control_points):
+    def create_radial_force(self, bezier_curve):
         force = RadialForce()
-        force.set_bezier_curve(control_points)
+        force.bezier_curve = bezier_curve
         self.forces.append(force)
         return force
 
@@ -204,7 +210,6 @@ class Universe(HasTraits):
                                                          forces_functions,
                                                          matters_to_exclude_from_field=[matter_index, ])
             matter.position = tuple(h*np.array(get_gradient(f, matter.position)) + np.array((x, y)))
-
 
     def bind_to_scene(self, scene):
         """

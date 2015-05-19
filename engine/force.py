@@ -27,9 +27,9 @@ class Force(HasTraits):
         """
 
         x, y = np.mgrid[-7.:7.00:100j, -7.:7.00:100j]
-        g = lambda u, v:  self.function()([u, v])
-        g_vectorized= np.vectorize(g)
-        s = mlab.surf(x, y, g_vectorized)
+#        g = lambda u, v:  self.function()([u, v])
+#        g_vectorized= np.vectorize(g)
+        s = mlab.surf(x, y, self.function()(x, y))
 
         # I need to get tvkt.Actor for surf
 

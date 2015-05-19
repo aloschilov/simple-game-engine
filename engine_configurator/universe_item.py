@@ -59,8 +59,14 @@ class UniverseItem(ClickableGraphicsWidget):
             atom_item = AtomItem(atom)
             self.atom_added.emit(atom_item)
         elif event.mimeData().hasText() and event.mimeData().text() == "RadialForce":
-            radial_force = self._universe.create_radial_force(
-                [0, 0, 0.4, 0.075, 0.462, 0.252, 0.512, 0.512, 0.562, 0.772, 0.7, 0.9, 1, 1])
+            radial_force = self._universe.create_radial_force({"min_x": 0,
+                                                               "max_x": 10,
+                                                               "min_y": -10,
+                                                               "max_y": 10,
+                                                               "degree": 3,
+                                                               "ys": [3, 3, 3, 2]
+                                                               }
+                                                              )
             radial_force_item = RadialForceItem(radial_force)
             self.radial_force_added.emit(radial_force_item)
 

@@ -1,4 +1,4 @@
-from PyQt4.QtCore import QRectF, Qt, QPointF
+from PyQt4.QtCore import QRectF, Qt, QPointF, pyqtSignal
 from PyQt4.QtGui import QHBoxLayout, QWidget, QGraphicsView, QResizeEvent, QApplication, QPainter, QGroupBox, \
     QVBoxLayout, QLabel, QSpinBox, QDoubleSpinBox
 from numpy import linspace
@@ -12,6 +12,8 @@ from sympy import symbols, simplify, expand, latex, N
 
 
 class ExplicitBezierCurveWidget(QWidget):
+
+    bezier_curve_changed = pyqtSignal(dict, name="bezier_curve_changed")
 
     def __init__(self, parent=None):
         super(ExplicitBezierCurveWidget, self).__init__(parent)
@@ -150,6 +152,8 @@ class ExplicitBezierCurveWidget(QWidget):
 
         self.polynom_widget.set_latex_expression(
             latex(N(simplify(expand(result)), 3)))
+
+        self.bezier_curve_changed.emit(self.serialize())
 
     def map_y_from_scene(self, y):
         max_y = self.max_y_value_spinbox.value()
