@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QLineEdit, QHBoxLayout, QGroupBox
+from pyface.qt.QtGui import QLineEdit, QHBoxLayout, QGroupBox
 from pyface.qt.QtGui import QWidget, QDoubleSpinBox, QLabel, QVBoxLayout
 
 
@@ -65,10 +65,14 @@ class MatterPropertiesWidget(QWidget):
         self.setEnabled(True)
 
     def position_x_editor_value_changed(self, value):
-        self.matter.position[0] = value
+        position_to_setup = self.matter.position
+        position_to_setup[0] = value
+        self.matter.position = tuple(position_to_setup)
 
     def position_y_editor_value_changed(self, value):
-        self.matter.position[1] = value
+        position_to_setup = self.matter.position
+        position_to_setup[1] = value
+        self.matter.position = tuple(position_to_setup)
 
     def name_editor_text_changed(self, value):
         self.matter.name = value

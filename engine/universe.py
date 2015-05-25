@@ -3,6 +3,7 @@ from traits.api import (HasTraits, Instance, List,
                                   ListClass, ListThis, Dict, Int)
 import numpy as np
 from numpy.matlib import zeros
+from mayavi.core.ui.api import MayaviScene, MlabSceneModel, SceneEditor
 
 
 from . import Atom
@@ -76,6 +77,7 @@ class Universe(HasTraits):
 
     #atoms_to_forces_matrix = Instance(np.matrix)
     matters_to_atoms_matrix = Instance(np.matrix)
+    scene = Instance(MlabSceneModel, ())
     #matters_positions = list_of_tuples
     #forces_list = list_of_callable
 
@@ -86,6 +88,7 @@ class Universe(HasTraits):
 
         matter = Matter()
         self.matters.append(matter)
+        self.scene.add_actor(matter.generate_actor())
         return matter
 
     def create_atom(self):
@@ -121,14 +124,13 @@ class Universe(HasTraits):
         self.forces.append(force)
         return force
 
-
     @on_trait_change('matters.position')
     def positions_changed(self, arg1, arg2, arg3):
+        self.scene.render()
         print "The time to update callable"
         print arg1
         print arg2
         print arg3
-
 
     def create_matters_to_atoms_matrix(self):
         """
@@ -146,7 +148,6 @@ class Universe(HasTraits):
 
         return matrix_to_return
 
-
     def create_atoms_to_forces_matrix(self):
         """
 
@@ -162,7 +163,6 @@ class Universe(HasTraits):
                     matrix_to_return[atom_index, force_index] = 0
 
         return matrix_to_return
-
 
     def next_step(self):
         """
@@ -189,9 +189,9 @@ class Universe(HasTraits):
 
                 # and the value of c_0
                 c_0 = p[i]
-                partial_direviate_value = (g(c_0+h) - g(c_0-h))/(2*h)
+                partial_derivative_value = (g(c_0+h) - g(c_0-h))/(2*h)
 
-                gradient_components.append(partial_direviate_value)
+                gradient_components.append(partial_derivative_value)
 
             return gradient_components
 
@@ -211,6 +211,7 @@ class Universe(HasTraits):
                                                          matters_to_exclude_from_field=[matter_index, ])
             matter.position = tuple(h*np.array(get_gradient(f, matter.position)) + np.array((x, y)))
 
+    @on_trait_change('scene')
     def bind_to_scene(self, scene):
         """
         This method binds TVTK actors accossiated
@@ -224,8 +225,5 @@ class Universe(HasTraits):
 
                 for force in atom.produced_forces:
                     force_actor = force.generate_actor()
-                    force_actor.user_transform = matter.transform
+                    force_actor.position = matter.actor.position
                     scene.add_actor(force_actor)
-
-
-

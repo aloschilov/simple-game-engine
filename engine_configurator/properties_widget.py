@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QLabel, QVBoxLayout
+from pyface.qt.QtGui import QLabel, QVBoxLayout
 from pyface.qt.QtGui import QWidget, QStackedLayout
 from engine_configurator.atom_item import AtomItem
 from engine_configurator.atom_properties_widget import AtomPropertiesWidget

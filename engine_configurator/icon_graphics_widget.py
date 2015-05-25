@@ -1,5 +1,5 @@
-from PyQt4.QtCore import QRectF, Qt
-from PyQt4.QtGui import QGraphicsWidget, QPainterPath
+from pyface.qt.QtCore import QRectF, Qt
+from pyface.qt.QtGui import QGraphicsWidget, QPainterPath
 from pyface.qt.QtGui import (QPixmap, QGraphicsPixmapItem, QPainter)
 
 
@@ -10,9 +10,9 @@ class IconGraphicsWidget(QGraphicsWidget):
 
     def __init__(self, path_to_image):
         super(IconGraphicsWidget, self).__init__()
+        self.initialize(path_to_image)
 
-        # QRectF rectangle(10.0, 20.0, 80.0, 60.0);
-
+    def initialize(self, path_to_image):
         self.underlying_pixmap_item = QGraphicsPixmapItem()
         self.underlying_pixmap_item.setPixmap(QPixmap(path_to_image))
 

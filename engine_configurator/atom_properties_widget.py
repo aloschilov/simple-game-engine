@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QLineEdit, QGroupBox, QHBoxLayout, QVBoxLayout
+from pyface.qt.QtGui import QLineEdit, QGroupBox, QHBoxLayout, QVBoxLayout
 from pyface.qt.QtGui import QWidget
 
 

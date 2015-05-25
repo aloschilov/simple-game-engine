@@ -1,5 +1,5 @@
-from PyQt4.QtCore import QLineF
-from PyQt4.QtGui import QGraphicsItem, QGraphicsLineItem
+from pyface.qt.QtCore import QLineF
+from pyface.qt.QtGui import QGraphicsItem, QGraphicsLineItem
 from control_point_graphics_item import ControlPointGraphicsItem
 
 

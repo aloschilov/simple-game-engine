@@ -16,7 +16,7 @@ os.environ['ETS_TOOLKIT'] = 'qt4'
 # we need to import QtGui and QtCore from pyface.qt
 from pyface.qt.QtGui import (QMainWindow, QApplication, QGridLayout, QWidget)
 
-from mayavi_qwidget import MayaviQWidget
+from engine_configurator.universe_widget import UniverseWidget
 
 #
 # Classes
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     # set by Traits on the existing QApplication. Simply use the
     # '.instance()' method to retrieve the existing one.
     app = QApplication.instance()
-    main_window = MainWindow()
+    main_window = UniverseWidget()
     main_window.show()
 
     # Start the main event loop.

@@ -1,5 +1,5 @@
-from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui import QGraphicsItem
+from pyface.qt.QtCore import Signal
+from pyface.qt.QtGui import QGraphicsItem
 from pyface.qt.QtGui import (QPixmap, QGraphicsPixmapItem, QPainter)
 from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
 from engine_configurator.icon_graphics_widget import IconGraphicsWidget
@@ -10,11 +10,11 @@ class MatterItem(ClickableGraphicsWidget, IconGraphicsWidget):
     This item represents matter object at UniverseScene
     """
 
-    matter_and_atom_connected = pyqtSignal(QGraphicsItem, QGraphicsItem, name="matter_and_atom_connected")
+    matter_and_atom_connected = Signal(QGraphicsItem, QGraphicsItem, name="matter_and_atom_connected")
 
     def __init__(self, matter=None):
         ClickableGraphicsWidget.__init__(self)
-        IconGraphicsWidget.__init__(self, ":/images/matter.png")
+        self.initialize(":/images/matter.png")
         self.matter = matter
         self.matter.on_trait_change(self.setText, 'name')
         self.setAcceptDrops(True)

@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
-from PyQt4.QtCore import pyqtSignal
-
+from pyface.qt.QtCore import Signal
 from pyface.qt.QtGui import (QWidget, QHBoxLayout)
 
 from spline_editor_scene import SplineEditorScene
@@ -13,7 +12,7 @@ class SplineEditorWidget(QWidget):
 
     """
 
-    control_points_changed = pyqtSignal(list, name="control_points_changed")
+    control_points_changed = Signal(list, name="control_points_changed")
 
     def __init__(self, parent=None):
         """

@@ -3,7 +3,7 @@ from pyface.qt.QtGui import (QWidget, QMenu, QAction, QPainter,
                              QVBoxLayout, QApplication, QScrollArea,
                              QFrame, QSpacerItem, QSizePolicy)
 from pyface.qt.QtCore import (QPoint, QPointF, QRectF, QLineF, Qt,
-                              qFuzzyCompare, qRound, pyqtSignal)
+                              qFuzzyCompare, qRound, Signal)
 from segment_properties_widget import PaneWidget, SegmentPropertiesWidget
 from copy import deepcopy
 import itertools
@@ -54,7 +54,7 @@ class SplineEditorScene(QWidget):
 
     """
 
-    easing_curve_code_changed = pyqtSignal(basestring, name="easingCurveCodeChanged")
+    easing_curve_code_changed = Signal(basestring, name="easingCurveCodeChanged")
 
     def __init__(self, parent_layout, parent=None):
         """

@@ -1,9 +1,9 @@
-from PyQt4.QtGui import QGraphicsPixmapItem
+from pyface.qt.QtGui import QGraphicsPixmapItem
 
 from pyface.qt.QtGui import (QGraphicsItem,
                              QPixmap,
                              QPainter)
-from pyface.qt.QtCore import (pyqtSignal)
+from pyface.qt.QtCore import Signal
 from engine_configurator.atom_item import AtomItem
 
 from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
@@ -17,9 +17,9 @@ class UniverseItem(ClickableGraphicsWidget):
     where universe is configured.
     """
 
-    matter_added = pyqtSignal(QGraphicsItem, name="matter_added")
-    atom_added = pyqtSignal(QGraphicsItem, name="atom_added")
-    radial_force_added = pyqtSignal(QGraphicsItem, name="radial_force_added")
+    matter_added = Signal(QGraphicsItem, name="matter_added")
+    atom_added = Signal(QGraphicsItem, name="atom_added")
+    radial_force_added = Signal(QGraphicsItem, name="radial_force_added")
 
     def __init__(self, universe=None):
         super(UniverseItem, self).__init__()

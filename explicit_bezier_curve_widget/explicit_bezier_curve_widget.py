@@ -1,5 +1,5 @@
-from PyQt4.QtCore import QRectF, Qt, QPointF, pyqtSignal
-from PyQt4.QtGui import QHBoxLayout, QWidget, QGraphicsView, QResizeEvent, QApplication, QPainter, QGroupBox, \
+from pyface.qt.QtCore import QRectF, Qt, QPointF, Signal
+from pyface.qt.QtGui import QHBoxLayout, QWidget, QGraphicsView, QResizeEvent, QApplication, QPainter, QGroupBox, \
     QVBoxLayout, QLabel, QSpinBox, QDoubleSpinBox
 from numpy import linspace
 from explicit_bezier_curve_scene import ExplicitBezierCurveScene
@@ -13,7 +13,7 @@ from sympy import symbols, simplify, expand, latex, N
 
 class ExplicitBezierCurveWidget(QWidget):
 
-    bezier_curve_changed = pyqtSignal(dict, name="bezier_curve_changed")
+    bezier_curve_changed = Signal(dict, name="bezier_curve_changed")
 
     def __init__(self, parent=None):
         super(ExplicitBezierCurveWidget, self).__init__(parent)

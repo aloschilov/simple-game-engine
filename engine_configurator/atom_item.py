@@ -1,7 +1,5 @@
-from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui import QGraphicsItem
-from pyface.qt.QtCore import (Qt, QMimeData, QLineF, QPoint)
-from pyface.qt.QtGui import (QDrag, QApplication, QPixmap, QPainter, QGraphicsPixmapItem, QStyleOptionGraphicsItem)
+from pyface.qt.QtCore import (Qt, QMimeData, QLineF, QPoint, Signal)
+from pyface.qt.QtGui import (QDrag, QApplication, QPixmap, QPainter, QGraphicsPixmapItem, QStyleOptionGraphicsItem, QGraphicsItem)
 
 from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
 from engine_configurator.icon_graphics_widget import IconGraphicsWidget
@@ -12,11 +10,11 @@ class AtomItem(ClickableGraphicsWidget, IconGraphicsWidget):
     This item represents matter object at UniverseScene
     """
 
-    atom_and_force_connected = pyqtSignal(QGraphicsItem, QGraphicsItem, name="atom_and_force_connected")
+    atom_and_force_connected = Signal(QGraphicsItem, QGraphicsItem, name="atom_and_force_connected")
 
     def __init__(self, atom=None):
         ClickableGraphicsWidget.__init__(self)
-        IconGraphicsWidget.__init__(self, ":/images/atom.png")
+        self.initialize(":/images/atom.png")
         self.atom = atom
         self.atom.on_trait_change(self.setText, 'name')
         self.setCursor(Qt.OpenHandCursor)

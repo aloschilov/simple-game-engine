@@ -1,10 +1,10 @@
-from PyQt4.QtCore import pyqtSignal
+from pyface.qt.QtCore import Signal
 
 from pyface.qt import QtGui
 import pygraphviz as pgv
-from PyQt4.QtGui import (QGraphicsItem, QPainterPath,
+from pyface.qt.QtGui import (QGraphicsItem, QPainterPath,
                          QGraphicsPathItem, QPen)
-from PyQt4.Qt import Qt
+from pyface.qt.QtCore import Qt
 
 from engine_configurator.universe_item import UniverseItem
 from engine_configurator.icon_graphics_widget import IconGraphicsWidget
@@ -29,7 +29,7 @@ class TreeNode(object):
         self.item = item
 
     def __repr__(self):
-        return str(self.item)
+        return str(id(self.item))
 
 
 class UniverseScene(QtGui.QGraphicsScene):
@@ -39,7 +39,7 @@ class UniverseScene(QtGui.QGraphicsScene):
     See also: UniverseWidget
     """
 
-    properties_bindings_update_required = pyqtSignal(name="propertiesBindingsUpdateRequired")
+    properties_bindings_update_required = Signal(name="propertiesBindingsUpdateRequired")
 
     @staticmethod
     def get_position(node):
@@ -167,7 +167,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         super(UniverseScene, self).update()
 
     def get_graphics_item_by_repr(self, repr_string):
-        return filter(lambda graphics_item: graphics_item.__repr__() == repr_string, self.graphics_items)[0]
+        return filter(lambda graphics_item: str(id(graphics_item)) == repr_string, self.graphics_items)[0]
 
     def get_edges(self):
         for index, edge in enumerate(self.graph.edges_iter()):

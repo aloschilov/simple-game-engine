@@ -1,5 +1,5 @@
-from PyQt4.QtCore import pyqtSignal, QRectF
-from PyQt4.QtGui import QGraphicsWidget, QGraphicsItem
+from pyface.qt.QtCore import Signal, QRectF
+from pyface.qt.QtGui import QGraphicsWidget, QGraphicsItem
 
 
 class ClickableGraphicsWidget(QGraphicsWidget):
@@ -7,7 +7,7 @@ class ClickableGraphicsWidget(QGraphicsWidget):
 
     """
 
-    clicked = pyqtSignal(QGraphicsWidget, name="clicked")
+    clicked = Signal(QGraphicsWidget, name="clicked")
 
     def __init__(self):
         QGraphicsWidget.__init__(self)

@@ -1,8 +1,7 @@
 __author__ = 'aloschil'
 
-from pyface.qt.QtGui import (QWidget, QLabel, QPlainTextEdit, QGridLayout, QGroupBox, QVBoxLayout)
-
-from pyface.qt.QtCore import (pyqtSlot,)
+from pyface.qt.QtGui import QWidget, QLabel, QPlainTextEdit, QGridLayout, QGroupBox, QVBoxLayout
+from pyface.qt.QtCore import Slot
 
 class PropertiesWidget(QWidget):
     """
@@ -33,7 +32,7 @@ class PropertiesWidget(QWidget):
 
         self.setLayout(main_layout)
 
-    @pyqtSlot(basestring)
+    @Slot(basestring)
     def processCodeChanged(self, code_string):
         """
         """

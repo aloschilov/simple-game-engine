@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QLineEdit, QGroupBox, QHBoxLayout, QVBoxLayout, QScrollArea
+from pyface.qt.QtGui import QLineEdit, QGroupBox, QHBoxLayout, QVBoxLayout, QScrollArea
 from pyface.qt.QtGui import QWidget
 from explicit_bezier_curve_widget.explicit_bezier_curve_widget import ExplicitBezierCurveWidget
 from spline_editor_widget.spline_editor_widget import SplineEditorWidget

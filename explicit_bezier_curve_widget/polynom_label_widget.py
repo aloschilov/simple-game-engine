@@ -1,7 +1,7 @@
 import sys
 
-from PyQt4 import QtGui
-from PyQt4.QtCore import Qt
+from pyface.qt import QtGui
+from pyface.qt.QtCore import Qt
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 

@@ -1,5 +1,5 @@
-from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui import QGraphicsSceneMouseEvent, QGraphicsItem, QGraphicsWidget, QGraphicsEllipseItem, QPainter
+from pyface.qt.QtCore import Signal
+from pyface.qt.QtGui import QGraphicsSceneMouseEvent, QGraphicsItem, QGraphicsWidget, QGraphicsEllipseItem, QPainter
 
 from settings import POINT_SIZE_2, POINT_SIZE, MAX_LINE_Y, MIN_LINE_Y
 
@@ -9,7 +9,7 @@ class ControlPointGraphicsItem(QGraphicsWidget):
     This item represents a point on a scene
     """
 
-    position_changed = pyqtSignal(name="position_changed")
+    position_changed = Signal(name="position_changed")
 
     def __init__(self, parent=None):
         super(ControlPointGraphicsItem, self).__init__(parent)

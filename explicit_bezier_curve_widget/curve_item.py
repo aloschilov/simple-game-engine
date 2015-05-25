@@ -1,5 +1,5 @@
-from PyQt4.QtCore import QPointF
-from PyQt4.QtGui import QGraphicsPathItem, QPainterPath, QPen, QColor
+from pyface.qt.QtCore import QPointF
+from pyface.qt.QtGui import QGraphicsPathItem, QPainterPath, QPen, QColor
 from scipy.special import binom
 from numpy import linspace
 from settings import SCENE_SIZE

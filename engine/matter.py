@@ -3,6 +3,7 @@ from random import random
 from traits.api import (Array, Dict, Int, String)
 from tvtk.api import tvtk
 from traits.api import HasTraits, Instance, on_trait_change
+from mayavi import mlab
 
 from atom import Atom
 
@@ -16,7 +17,7 @@ class Matter(HasTraits):
                      desc='Position of an object in 2D-space')
     atoms = Dict(key_trait=Instance(Atom), value_trait=Int)
 
-    transform = Instance(tvtk.Transform)
+    actor = Instance(tvtk.Actor)
 
     name = String()
 
@@ -28,14 +29,7 @@ class Matter(HasTraits):
         if affected_object is self.position:
             print "I expect this to be update_position"
             (x, y) = (self.position[0], self.position[1])
-
-            if self.transform is None:
-                self.transform = tvtk.Transform()
-            else:
-                self.transform.identity()
-
-            self.transform.translate((x, y, 0))
-            print self.transform
+            self.actor.position = (x, y, 0)
 
     def generate_actor(self):
         """
@@ -45,11 +39,9 @@ class Matter(HasTraits):
         an so on.
         """
 
-        sphere = tvtk.SphereSource(center=(0, 0, 0), radius=0.5)
-        sphere_mapper = tvtk.PolyDataMapper(input=sphere.output)
-        p = tvtk.Property(opacity=1, color=(random(), random(), random()))
-        self.sphere_actor = tvtk.Actor(mapper=sphere_mapper, property=p)
-        self.sphere_actor.user_transform = self.transform
-        self.update_position(self)
+        self.sphere = tvtk.SphereSource(center=(0, 0, 0), radius=0.5)
+        sphere_mapper = tvtk.PolyDataMapper(input=self.sphere.output)
+        p = tvtk.Property(opacity=0.4, color=(random(), random(), random()))
+        self.actor = tvtk.Actor(mapper=sphere_mapper, property=p)
 
-        return self.sphere_actor
+        return self.actor

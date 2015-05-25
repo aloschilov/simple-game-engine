@@ -1,5 +1,5 @@
-from PyQt4.QtCore import Qt, QLineF, QPoint, QMimeData
-from PyQt4.QtGui import QApplication, QPixmap, QPainter, QStyleOptionGraphicsItem, QDrag
+from pyface.qt.QtCore import Qt, QLineF, QPoint, QMimeData
+from pyface.qt.QtGui import QApplication, QPixmap, QPainter, QStyleOptionGraphicsItem, QDrag
 
 from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
 from engine_configurator.icon_graphics_widget import IconGraphicsWidget
@@ -12,7 +12,7 @@ class RadialForceItem(ClickableGraphicsWidget, IconGraphicsWidget):
 
     def __init__(self, force=None):
         ClickableGraphicsWidget.__init__(self)
-        IconGraphicsWidget.__init__(self, ":/images/radial_force.png")
+        self.initialize(":/images/radial_force.png")
         self.radial_force = force
         self.radial_force.on_trait_change(self.setText, 'name')
         self.setCursor(Qt.OpenHandCursor)
