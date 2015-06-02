@@ -41,28 +41,23 @@ fs = [get_three_edges_pyramid_expression(),
       get_eight_edges_pyramid_expression()]
 
 
-pprint(fs[0], num_columns=160)
-pprint(diff(fs[0], x), num_columns=160)
-
 F = Matrix(len(p), len(fs), lambda i, j: fs[j].subs(x, x-p[i][0]).subs(y, y-p[i][1]))
 
+
 # Sl stands for sum from the left
-Sl = ones(1, len(p))
+Sl = ones(1, len(p) - 1)
 
 # Sr stands for sum from the right
 Sr = ones(len(fs), 1)
 
 # P stands for potential
-P = Sl*(Nu*G).multiply_elementwise(F) #*Sr
+P = [Matrix(1, len(p), lambda i, j: 0 if j == k else 1)*((Nu*G).multiply_elementwise(F)) for k in xrange(0, len(p))]
 
-# P describes what potential is produced by specific force
-M = P*E*Nu.T
+# Every P[i] is a vector of potentials that affect i-th matter
 
-pprint(P.shape)
-pprint(E*Nu.T)
-# Nu*E.T
-
-pprint(P, num_columns=320)
+# Let us reduce this potential against weighted against
+# force affect on atoms and number of atoms in specific matter
+M = [(P[i]*E*Nu[i, :].T)[0] for i in xrange(0, len(p))]
 
 m_0 = lambdify((x, y), M[0])
 m_1 = lambdify((x, y), M[1])
@@ -71,10 +66,6 @@ m_2 = lambdify((x, y), M[2])
 vectorized_m_0 = vectorize(m_0)
 vectorized_m_1 = vectorize(m_1)
 vectorized_m_2 = vectorize(m_2)
-
-pprint(vectorized_m_0(1000, 1000))
-pprint(vectorized_m_1(1000, 1000))
-pprint(vectorized_m_2(1000, 1000))
 
 x, y = mgrid[-10.:10:100j, -10.0:10.:100j]
 
