@@ -1,9 +1,7 @@
-from force import Force
-
-import numpy as np
-
-from sympy import symbols, simplify, expand, latex, N, lambdify, sqrt
+from sympy import symbols, sqrt
 from scipy.special import binom
+
+from force import Force
 
 
 class RadialForce(Force):
@@ -87,5 +85,5 @@ class RadialForce(Force):
 
         expr = expr.subs(rho, sqrt(x * x + y * y))
         return expr
-#        return lambdify((x, y), expr, "numpy")
+
 

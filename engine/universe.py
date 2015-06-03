@@ -1,14 +1,12 @@
 from traits.api import HasTraits, Instance, List, on_trait_change
-from sympy import Matrix, init_printing, pprint, Piecewise, symbols, And, lambdify, diag, ones, diff
+from sympy import Matrix, symbols, lambdify, diff
 from numpy import vectorize, array
 from mayavi.core.ui.api import MlabSceneModel
 
-
 from . import Atom
+from . import RadialForce
 from . import Force
-from radial_force import RadialForce
 from . import Matter
-
 
 
 class Universe(HasTraits):
@@ -113,16 +111,11 @@ class Universe(HasTraits):
         # force affect on atoms and number of atoms in specific matter
         M = [(P[i]*E*Nu[i, :].T)[0] for i in xrange(0, len(ps))]
 
-        pprint(M)
-
         grad_M_u = [vectorize(lambdify((x, y), diff(M[i], x), "numpy")) for i in xrange(len(ps))]
         grad_M_v = [vectorize(lambdify((x, y), diff(M[i], y), "numpy")) for i in xrange(len(ps))]
 
         for mi, matter in enumerate(self.matters):
             (x, y) = matter.position
-            print "gradient"
-            print array((grad_M_u[mi](float(x), float(y)), grad_M_v[mi](float(x), float(y))))
-            print "end gradient"
             matter.position = tuple(array((grad_M_u[mi](x, y), grad_M_v[mi](x, y))) + array((x, y)))
 
     @on_trait_change('scene')
