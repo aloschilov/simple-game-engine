@@ -1,9 +1,7 @@
-from traits.api import (HasTraits, Instance, List,
-                                  on_trait_change, ListInstance,
-                                  ListClass, ListThis, Dict, Int)
-import numpy as np
-from numpy.matlib import zeros
-from mayavi.core.ui.api import MayaviScene, MlabSceneModel, SceneEditor
+from traits.api import HasTraits, Instance, List, on_trait_change
+from sympy import Matrix, init_printing, pprint, Piecewise, symbols, And, lambdify, diag, ones, diff
+from numpy import vectorize, array
+from mayavi.core.ui.api import MlabSceneModel
 
 
 from . import Atom
@@ -11,55 +9,6 @@ from . import Force
 from radial_force import RadialForce
 from . import Matter
 
-
-def move_to_position(functions_to_move, position):
-    """
-    functions_to_move - list of callable
-    position - vector
-    """
-
-    for f in functions_to_move:
-        yield lambda p: f(*tuple(np.array(p) - np.array(position)))
-
-
-def get_force_superposition(p,
-                            matters_to_forces_matrix,
-                            matters_positions,
-                            forces_list,
-                            matters_to_exclude_from_field=list()):
-    """
-    @param p: the point where we would like to get forces superposition
-    @type p: numpy.matrix
-
-    @param matter_to_forces_matrix: business logic coefficients atoms and stuff
-    @type matter_to_forces_matrix: numpy.matrix
-
-    @param matters_positions: where each matter resides
-    @type matters_positions: list of numpy.matrix
-
-    @param matters_to_exclude_from_field: indexes of matters not to consider
-    in calculation
-    @type matters_to_exclude_from_field: list of integers
-    """
-
-    # I believe that there is no reason to vectorized potential,
-    # that is why we are free to return scalar
-
-    scalar_to_return = 0
-
-    for (matter_index, matter_position) in enumerate(matters_positions):
-        if matter_index not in matters_to_exclude_from_field:
-
-            forces_at_moved_to_position = list(move_to_position(forces_list,
-                                                                matters_positions[matter_index]))
-            for (force_index, force) in enumerate(forces_list):
-                pre_force_coefficient = matters_to_forces_matrix[matter_index,
-                                                                 force_index]
-
-                scalar_to_return += pre_force_coefficient * \
-                    forces_at_moved_to_position[force_index](p)
-
-    return scalar_to_return
 
 
 class Universe(HasTraits):
@@ -74,12 +23,7 @@ class Universe(HasTraits):
     atoms = List(trait=Instance(Atom))
     forces = List(trait=Instance(Force))
     matters = List(trait=Instance(Matter))
-
-    #atoms_to_forces_matrix = Instance(np.matrix)
-    matters_to_atoms_matrix = Instance(np.matrix)
     scene = Instance(MlabSceneModel, ())
-    #matters_positions = list_of_tuples
-    #forces_list = list_of_callable
 
     def create_matter(self):
         """
@@ -107,13 +51,13 @@ class Universe(HasTraits):
 
         force = RadialForce()
         force.set_bezier_curve({
-                                                       "min_x" :   0,
-                                                       "max_x" :  10,
-                                                       "min_y" : -10,
-                                                       "max_y" :  10,
-                                                       "degree": 3,
-                                                       "ys"    : [0, 1, -1, 3]
-                                                       })
+            "min_x": 0,
+            "max_x": 10,
+            "min_y": -10,
+            "max_y": 10,
+            "degree": 3,
+            "ys": [0, 1, -1, 3]
+        })
 
         self.forces.append(force)
         return force
@@ -132,98 +76,61 @@ class Universe(HasTraits):
         print arg2
         print arg3
 
-    def create_matters_to_atoms_matrix(self):
-        """
-
-        """
-
-        matrix_to_return = zeros(shape=(len(self.matters), len(self.atoms)))
-
-        for matter_index, matter in enumerate(self.matters):
-            for atom_index, atom in enumerate(self.atoms):
-                if atom in matter.atoms:
-                    matrix_to_return[matter_index, atom_index] = matter.atoms[atom]
-                else:
-                    matrix_to_return[matter_index, atom_index] = 0
-
-        return matrix_to_return
-
-    def create_atoms_to_forces_matrix(self):
-        """
-
-        """
-
-        matrix_to_return = zeros(shape=(len(self.atoms),len(self.forces)))
-
-        for atom_index, atom in enumerate(self.atoms):
-            for force_index, force in enumerate(self.forces):
-                if force in atom.produced_forces:
-                    matrix_to_return[atom_index, force_index] = 1
-                else:
-                    matrix_to_return[atom_index, force_index] = 0
-
-        return matrix_to_return
-
     def next_step(self):
         """
         This method evaluates entire universe along the time
         """
 
-        h = 0.01
+        ps = [matter.position for matter in self.matters]
+        fs = [force.function() for force in self.forces]
 
-        def get_gradient(f, p):
-            """
-            @param p: a point to calculate gradient at
-            @type p: iterable
-            """
+        # Nu stands for the greek letter, that is used to described measure of something
+        Nu = Matrix(len(self.matters),
+                    len(self.atoms),
+                    lambda i, j: self.matters[i].atoms.get(self.atoms[j], 0))
 
-            gradient_components = []
-            dimensions = len(p)
+        # G stands for "generated functions"
+        G = Matrix(len(self.atoms),
+                   len(self.forces),
+                   lambda i, j: 1 if self.forces[j] in self.atoms[i].produced_forces else 0)
 
-            for i in xrange(dimensions):
+        E = Matrix(len(self.forces),
+                   len(self.atoms),
+                   lambda i, j: 1 if self.atoms[j] in self.forces[i].atoms_to_produce_effect_on else 0)
 
-                # Let's introduce a function fixed along the
-                # direction in concern
+        x, y = symbols('x y')
 
-                g = lambda c: f([p[d] if d == i else c for d in xrange(dimensions)])
+        F = Matrix(len(ps),
+                   len(fs),
+                   lambda i, j: fs[j].subs(x, x-ps[i][0]).subs(y, y-ps[i][1]))
 
-                # and the value of c_0
-                c_0 = p[i]
-                partial_derivative_value = (g(c_0+h) - g(c_0-h))/(2*h)
+        # P stands for potential
+        P = [Matrix(1, len(ps), lambda i, j: 0 if j == k else 1)*((Nu*G).multiply_elementwise(F)) for k in xrange(0, len(ps))]
 
-                gradient_components.append(partial_derivative_value)
+        # Every P[i] is a vector of potentials that affect i-th matter
 
-            return gradient_components
+        # Let us reduce this potential against weighted against
+        # force affect on atoms and number of atoms in specific matter
+        M = [(P[i]*E*Nu[i, :].T)[0] for i in xrange(0, len(ps))]
 
-        matters_positions = [matter.position for matter in self.matters]
-        matters_to_atoms_matrix = self.create_matters_to_atoms_matrix()
-        atoms_to_forces_matrix = self.create_atoms_to_forces_matrix()
-        forces_functions = [ force.function() for force in  self.forces ]
+        pprint(M)
 
-        for matter_index, matter in enumerate(self.matters):
+        grad_M_u = [vectorize(lambdify((x, y), diff(M[i], x), "numpy")) for i in xrange(len(ps))]
+        grad_M_v = [vectorize(lambdify((x, y), diff(M[i], y), "numpy")) for i in xrange(len(ps))]
+
+        for mi, matter in enumerate(self.matters):
             (x, y) = matter.position
-
-            # Force field that influence a specific atom
-            f = lambda position: get_force_superposition(position,
-                                                         matters_to_atoms_matrix * atoms_to_forces_matrix,
-                                                         matters_positions,
-                                                         forces_functions,
-                                                         matters_to_exclude_from_field=[matter_index, ])
-            matter.position = tuple(h*np.array(get_gradient(f, matter.position)) + np.array((x, y)))
+            print "gradient"
+            print array((grad_M_u[mi](float(x), float(y)), grad_M_v[mi](float(x), float(y))))
+            print "end gradient"
+            matter.position = tuple(array((grad_M_u[mi](x, y), grad_M_v[mi](x, y))) + array((x, y)))
 
     @on_trait_change('scene')
     def bind_to_scene(self, scene):
         """
-        This method binds TVTK actors accossiated
+        This method binds TVTK actors associated
         with visual objects to scene
         """
 
         for matter in self.matters:
             scene.add_actor(matter.generate_actor())
-
-            for atom in matter.atoms:
-
-                for force in atom.produced_forces:
-                    force_actor = force.generate_actor()
-                    force_actor.position = matter.actor.position
-                    scene.add_actor(force_actor)
