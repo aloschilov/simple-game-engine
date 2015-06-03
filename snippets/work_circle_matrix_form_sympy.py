@@ -43,13 +43,6 @@ fs = [get_three_edges_pyramid_expression(),
 
 F = Matrix(len(p), len(fs), lambda i, j: fs[j].subs(x, x-p[i][0]).subs(y, y-p[i][1]))
 
-
-# Sl stands for sum from the left
-Sl = ones(1, len(p) - 1)
-
-# Sr stands for sum from the right
-Sr = ones(len(fs), 1)
-
 # P stands for potential
 P = [Matrix(1, len(p), lambda i, j: 0 if j == k else 1)*((Nu*G).multiply_elementwise(F)) for k in xrange(0, len(p))]
 
@@ -59,19 +52,40 @@ P = [Matrix(1, len(p), lambda i, j: 0 if j == k else 1)*((Nu*G).multiply_element
 # force affect on atoms and number of atoms in specific matter
 M = [(P[i]*E*Nu[i, :].T)[0] for i in xrange(0, len(p))]
 
-m_0 = lambdify((x, y), M[0])
-m_1 = lambdify((x, y), M[1])
-m_2 = lambdify((x, y), M[2])
+grad_M_u = [vectorize(lambdify((x, y), diff(M[i], x), "numpy")) for i in xrange(len(p))]
+grad_M_v = [vectorize(lambdify((x, y), diff(M[i], y), "numpy")) for i in xrange(len(p))]
 
-vectorized_m_0 = vectorize(m_0)
-vectorized_m_1 = vectorize(m_1)
-vectorized_m_2 = vectorize(m_2)
+import matplotlib.pylab as plt
 
-x, y = mgrid[-10.:10:100j, -10.0:10.:100j]
+y, x = mgrid[-10.:10:100j, -10.0:10.:100j]
 
-s0 = surf(x, y, vectorized_m_0(x, y)/100.0,  color=(1, 0, 0), opacity=0.5)
-s1 = surf(x, y, vectorized_m_1(x, y)/100.0,  color=(0, 1, 0), opacity=0.5)
-s2 = surf(x, y, vectorized_m_2(x, y)/100.0,  color=(0, 0, 1), opacity=0.5)
+#U = -1 - x**2 + y
+#V = 1 + x - y**2
 
+U = grad_M_u[0](x, y)
+V = grad_M_v[0](x, y)
 
-show()
+plt.streamplot(x, y, U, V, color=U, linewidth=2, cmap=plt.cm.autumn)
+plt.colorbar()
+
+plt.show()
+
+# m_0 = lambdify((x, y), M[0], "numpy")
+# m_1 = lambdify((x, y), M[1], "numpy")
+# m_2 = lambdify((x, y), M[2], "numpy")
+#
+# vectorized_m_0 = vectorize(m_0)
+# vectorized_m_1 = vectorize(m_1)
+# vectorized_m_2 = vectorize(m_2)
+#
+# x, y = mgrid[-10.:10:100j, -10.0:10.:100j]
+#
+# s0 = surf(x, y, vectorized_m_0(x, y)/100.0)
+# s0.actor.actor.position = (20, 0, 0)
+# s1 = surf(x, y, vectorized_m_1(x, y)/100.0)
+# s1.actor.actor.position = (0, 0, 0)
+# s2 = surf(x, y, vectorized_m_2(x, y)/100.0)
+# s2.actor.actor.position = (-20, 0, 0)
+#
+#
+# show()

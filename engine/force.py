@@ -1,16 +1,14 @@
-from traits.api import HasTraits, String
+from traits.api import HasTraits, String, List
 from mayavi import mlab
 import numpy as np
 
 
 class Force(HasTraits):
     """
-    Force is about to specify influence on specific atoms
-    The more atoms involved - the stronger force.
-    It means a force that influence specific atom.
+    Force affects atoms.
     """
 
-#    affects_on = List(trait = Instance(Atom))
+    atoms_to_produce_effect_on = List()
 
     name = String()
 
