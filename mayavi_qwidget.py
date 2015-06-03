@@ -24,7 +24,7 @@ from traitsui.api import View, Item
 from mayavi.core.ui.api import MayaviScene, MlabSceneModel, SceneEditor
 from mayavi import mlab
 
-from engine.universe import Universe
+from engine import Universe
 
 
 class Visualization(HasTraits):
@@ -76,6 +76,8 @@ class Visualization(HasTraits):
         force3 = self.universe.create_force()
         atom3.produced_forces.append(force3)
         matter3.atoms[atom3] = 15
+
+        force1.atoms_to_produce_effect_on.append(atom3)
 
         # TODO: reconsider representation.
         # There could be more obvious way to represent

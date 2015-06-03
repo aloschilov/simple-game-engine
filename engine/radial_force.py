@@ -86,5 +86,6 @@ class RadialForce(Force):
                     * z
 
         expr = expr.subs(rho, sqrt(x * x + y * y))
-        return lambdify((x, y), expr, "numpy")
+        return expr
+#        return lambdify((x, y), expr, "numpy")
 
