@@ -40,7 +40,7 @@ class Visualization(HasTraits):
                 f.scene.render()
                 yield
 
-        #self.a = animate() # Starts the animation.
+        self.a = animate() # Starts the animation.
 
     @on_trait_change('universe')
     def update_universe(self):

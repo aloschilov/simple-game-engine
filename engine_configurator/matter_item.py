@@ -21,7 +21,7 @@ class MatterItem(ClickableGraphicsWidget, IconGraphicsWidget):
 
     def dragEnterEvent(self, event):
         print "MatterItem::dragEnterEvent"
-        if event.mimeData().hasText() and event.mimeData().text() in ["AtomToMatter"]:
+        if event.mimeData().hasText() and event.mimeData().text() in ["Atom"]:
             event.setAccepted(True)
             self.update()
         else:
@@ -37,7 +37,7 @@ class MatterItem(ClickableGraphicsWidget, IconGraphicsWidget):
         self.update()
 
     def dropEvent(self, event):
-        if event.mimeData().hasText() and event.mimeData().text() == "AtomToMatter":
+        if event.mimeData().hasText() and event.mimeData().text() == "Atom":
 
             if event.mimeData().atom not in self.matter.atoms:
                 print "Creating connection"

@@ -8,8 +8,6 @@ from engine_configurator.radial_force_toolbox_item import RadialForceToolboxItem
 from engine_configurator.universe_scene import UniverseScene
 
 
-__author__ = 'aloschil'
-
 from pyface.qt.QtGui import (QWidget, QPainter,
                              QApplication, QGraphicsView, QHBoxLayout, QToolBox, QGraphicsScene, QTabWidget)
 

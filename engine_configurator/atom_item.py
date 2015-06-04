@@ -39,7 +39,7 @@ class AtomItem(ClickableGraphicsWidget, IconGraphicsWidget):
         mime.atom_item = self
         drag.setMimeData(mime)
 
-        mime.setText("AtomToMatter")
+        mime.setText("Atom")
 
         pixmap = QPixmap(int(self.boundingRect().width()),
                          int(self.boundingRect().height()))
@@ -65,7 +65,7 @@ class AtomItem(ClickableGraphicsWidget, IconGraphicsWidget):
 
     def dragEnterEvent(self, event):
         print "AtomItem::dragEnterEvent"
-        if event.mimeData().hasText() and event.mimeData().text() in ["ForceToAtom"]:
+        if event.mimeData().hasText() and event.mimeData().text() in ["Force"]:
             event.setAccepted(True)
             self.update()
         else:
@@ -81,13 +81,13 @@ class AtomItem(ClickableGraphicsWidget, IconGraphicsWidget):
         self.update()
 
     def dropEvent(self, event):
-        if event.mimeData().hasText() and event.mimeData().text() == "ForceToAtom":
+        if event.mimeData().hasText() and event.mimeData().text() == "Force":
 
             if event.mimeData().force not in self.atom.produced_forces:
-                print "Creating ForceToAtom connection"
+                print "Creating Force connection"
                 self.atom.produced_forces.append(event.mimeData().force)
                 self.atom_and_force_connected.emit(self, event.mimeData().force_item)
             else:
-                print "No ForceToAtom connection created since it's already exists"
+                print "No Force connection created since it's already exists"
 
         self.update()

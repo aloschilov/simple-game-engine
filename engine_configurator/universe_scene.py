@@ -84,6 +84,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.edges_items = list()
         self.matter_to_atom_edges = list()
         self.atom_to_force_edges = list()
+        self.force_to_atom_edges = list()
 
     def add_matter(self, matter_item):
         self.graphics_items.append(matter_item)
@@ -115,6 +116,7 @@ class UniverseScene(QtGui.QGraphicsScene):
 
     def add_radial_force(self, radial_force_item):
         self.graphics_items.append(radial_force_item)
+        radial_force_item.force_and_atom_connected.connect(self.add_force_and_atom_connection)
         self.addItem(radial_force_item)
         self.graph.add_node(TreeNode(radial_force_item))
         atom_item_node = self.graph.get_node(TreeNode(radial_force_item))
@@ -143,6 +145,15 @@ class UniverseScene(QtGui.QGraphicsScene):
 
         self.atom_to_force_edges.append(self.graph.get_edge(TreeNode(atom_item),
                                                             TreeNode(force_item)))
+        self.update()
+
+    def add_force_and_atom_connection(self, force_item, atom_item):
+        self.graph.add_edge(TreeNode(force_item),
+                            TreeNode(atom_item),
+                            minlen=10)
+
+        self.force_to_atom_edges.append(self.graph.get_edge(TreeNode(force_item),
+                                                            TreeNode(atom_item)))
         self.update()
 
     def update(self):
@@ -219,6 +230,8 @@ class UniverseScene(QtGui.QGraphicsScene):
                     item.setPen(QPen(Qt.darkGreen, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
                 elif edge in self.atom_to_force_edges:
                     item.setPen(QPen(Qt.darkGray, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                elif edge in self.force_to_atom_edges:
+                    item.setPen(QPen(Qt.darkRed, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
                 else:
                     item.setPen(QPen(Qt.darkBlue, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
 
