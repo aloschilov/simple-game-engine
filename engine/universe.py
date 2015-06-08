@@ -116,7 +116,12 @@ class Universe(HasTraits):
 
         for mi, matter in enumerate(self.matters):
             (x, y) = matter.position
-            matter.position = tuple(array((grad_M_u[mi](x, y), grad_M_v[mi](x, y))) + array((x, y)))
+            (x_, y_) = tuple(array((grad_M_u[mi](x, y), grad_M_v[mi](x, y))) + array((x, y)))
+            x_ = x_ if x_ > -10 else -10
+            x_ = x_ if x_ < 10 else 10
+            y_ = y_ if y_ > -10 else -10
+            y_ = y_ if y_ < 10 else 10
+            matter.position = (x_, y_)
 
     @on_trait_change('scene')
     def bind_to_scene(self, scene):
