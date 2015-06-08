@@ -1,8 +1,9 @@
-from sympy import Matrix, init_printing, pprint, Piecewise, symbols, And, lambdify, diag, ones, diff
+from sympy import Matrix, init_printing, symbols
+from sympy.physics.vector import ReferenceFrame, gradient
+from mayavi import mlab
 
-from mayavi.mlab import surf, show
-from numpy import mgrid, vectorize
-
+from vector_field_to_image import vector_field_to_image
+from imshow_mayavi import mlab_imshowColor
 from predefined_functions import (get_three_edges_pyramid_expression,
                                   get_four_edges_pyramid_expression,
                                   get_five_edges_pyramid_expression,
@@ -50,42 +51,13 @@ P = [Matrix(1, len(p), lambda i, j: 0 if j == k else 1)*((Nu*G).multiply_element
 
 # Let us reduce this potential against weighted against
 # force affect on atoms and number of atoms in specific matter
-M = [(P[i]*E*Nu[i, :].T)[0] for i in xrange(0, len(p))]
+#M = [(P[i]*E*Nu[i, :].T)[0] for i in xrange(0, len(p))]
 
-grad_M_u = [vectorize(lambdify((x, y), diff(M[i], x), "numpy")) for i in xrange(len(p))]
-grad_M_v = [vectorize(lambdify((x, y), diff(M[i], y), "numpy")) for i in xrange(len(p))]
+R = ReferenceFrame('R')
+M = [(P[i]*E*Nu[i, :].T)[0].subs(x, R[0]).subs(y, R[1]) for i in xrange(0, len(p))]
+W = [gradient(M[i], R) for i in xrange(len(p))]
 
-import matplotlib.pylab as plt
+im = vector_field_to_image(W[0], R, (-10, 10, 10, -10))
+mlab_imshowColor(im[:, :, :3], im[:, :, -1])
 
-y, x = mgrid[-10.:10:100j, -10.0:10.:100j]
-
-#U = -1 - x**2 + y
-#V = 1 + x - y**2
-
-U = grad_M_u[0](x, y)
-V = grad_M_v[0](x, y)
-
-plt.streamplot(x, y, U, V, color=U, linewidth=2, cmap=plt.cm.autumn)
-plt.colorbar()
-
-plt.show()
-
-# m_0 = lambdify((x, y), M[0], "numpy")
-# m_1 = lambdify((x, y), M[1], "numpy")
-# m_2 = lambdify((x, y), M[2], "numpy")
-#
-# vectorized_m_0 = vectorize(m_0)
-# vectorized_m_1 = vectorize(m_1)
-# vectorized_m_2 = vectorize(m_2)
-#
-# x, y = mgrid[-10.:10:100j, -10.0:10.:100j]
-#
-# s0 = surf(x, y, vectorized_m_0(x, y)/100.0)
-# s0.actor.actor.position = (20, 0, 0)
-# s1 = surf(x, y, vectorized_m_1(x, y)/100.0)
-# s1.actor.actor.position = (0, 0, 0)
-# s2 = surf(x, y, vectorized_m_2(x, y)/100.0)
-# s2.actor.actor.position = (-20, 0, 0)
-#
-#
-# show()
+mlab.show()
