@@ -192,8 +192,6 @@ class UniverseScene(QtGui.QGraphicsScene):
                 path.moveTo(x, y)
 
                 points = list()
-                print 40*"=" + " " + str(index) + " " + 40*"="
-                print edge.attr['pos']
                 for i in edge.attr['pos'].split(" ")[2:]:
                     [x_str, y_str] = i.split(",")
                     x = float(x_str)/DOT_DEFAULT_DPI
@@ -207,13 +205,6 @@ class UniverseScene(QtGui.QGraphicsScene):
                     for i in xrange(0, len(l), n):
                         if not (l[i:i+n][0] == l[i:i+n][1] == l[i:i+n][2]):
                             yield l[i:i+n]
-
-                print "xs"
-                print([point[0] for point in points])
-                print "ys"
-                print([point[1] for point in points])
-                pprint(points)
-                pprint([chunk for chunk in chunks(points, 3)])
 
                 for chunk in chunks(points, 3):
                     path.cubicTo(chunk[0][0], chunk[0][1],

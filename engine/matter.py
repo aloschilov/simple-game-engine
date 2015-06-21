@@ -27,7 +27,6 @@ class Matter(HasTraits):
         Make visualization position consistent with model
         """
         if affected_object is self.position:
-            print "I expect this to be update_position"
             (x, y) = (self.position[0], self.position[1])
             self.actor.position = (x, y, 0)
 

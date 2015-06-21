@@ -28,6 +28,5 @@ def alpha_composite(src, dst):
     np.clip(out,0,255)
     # astype('uint8') maps np.nan (and np.inf) to 0
     out = out.astype('uint8')
-    out = Image.fromarray(out, 'RGBA')
     return out
 

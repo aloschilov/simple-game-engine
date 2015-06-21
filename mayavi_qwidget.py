@@ -93,7 +93,7 @@ class Visualization(HasTraits):
         mlab.view(distance=20)
         mlab.view(focalpoint=(0, 0, 0))
 
-        @mlab.animate(delay=100, ui=False)
+        @mlab.animate(delay=500, ui=False)
         def animate():
             f = mlab.gcf()
             while 1:
