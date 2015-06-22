@@ -135,7 +135,9 @@ class Universe(HasTraits):
                         self.render_force_image(image)
 
                 self.vector_field_rendering_countdown = 100
-                self.future = self.vector_field_rendering_actor.ask({"W": W, "bounding_rect": (-10, 10, 10, -10)}, block=False)
+                self.future = self.vector_field_rendering_actor.ask({"W": W,
+                                                                     "colors": [matter.color for matter in self.matters],
+                                                                    "bounding_rect": (-10, 10, 10, -10)}, block=False)
             else:
                 self.vector_field_rendering_countdown -= 1
 

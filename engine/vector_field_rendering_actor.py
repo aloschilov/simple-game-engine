@@ -1,4 +1,5 @@
 from multiprocessing import Pool
+from itertools import izip
 
 import pykka
 import parmap
@@ -22,15 +23,17 @@ class VectorFieldRenderingActor(pykka.ThreadingActor):
         try:
             W = message["W"]
             bounding_rect = message["bounding_rect"]
+            colors = message["colors"]
 
             if not W:
                 return None
 
-            images = parmap.map(vector_field_to_image, W, bounding_rect, pool=self.pool)
+            images = parmap.map(vector_field_to_image, zip(W, colors), bounding_rect, pool=self.pool)
 
             image = reduce(alpha_composite, images) if len(W) > 1 else images[0]
 
             return image
         except Exception as e:
+            print "Exception"
             print e
             return None

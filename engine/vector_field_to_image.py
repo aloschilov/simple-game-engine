@@ -1,8 +1,10 @@
-def vector_field_to_image(vector_field, rect):
+def vector_field_to_image(vector_field_and_color, rect):
     """
     :param vector_field:
     :return: ndarray with shape (width, height, 4) and dtype=uint8
     """
+
+    vector_field, color = vector_field_and_color
 
     from sympy import lambdify, symbols
     from numpy import mgrid, frombuffer, uint8, vectorize
@@ -31,7 +33,7 @@ def vector_field_to_image(vector_field, rect):
     figure.patch.set_visible(False)
     figure.subplots_adjust(left=0, right=1, top=1, bottom=0)
     axes = figure.add_subplot(111)
-    axes.streamplot(x, y, U, V)
+    axes.streamplot(x, y, U, V, color=color)
     axes.axis('off')
     axes.patch.set_visible(False)
 
