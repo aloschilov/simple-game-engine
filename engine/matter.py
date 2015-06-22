@@ -1,6 +1,6 @@
 from random import random
 
-from traits.api import (Array, Dict, Int, String)
+from traits.api import (Array, Dict, Int, String, RGBColor)
 from tvtk.api import tvtk
 from traits.api import HasTraits, Instance, on_trait_change
 from mayavi import mlab
@@ -21,6 +21,8 @@ class Matter(HasTraits):
 
     name = String()
 
+    color = RGBColor((0.0, 0.0, 0.0))
+
     @on_trait_change('position')
     def update_position(self, affected_object):
         """
@@ -29,6 +31,12 @@ class Matter(HasTraits):
         if affected_object is self.position:
             (x, y) = (self.position[0], self.position[1])
             self.actor.position = (x, y, 0)
+
+    @on_trait_change('color')
+    def update_color(self, color):
+        if color is self.color:
+            p = tvtk.Property(color=color)
+            self.actor.property = p
 
     def generate_actor(self):
         """
@@ -40,7 +48,7 @@ class Matter(HasTraits):
 
         self.sphere = tvtk.SphereSource(center=(0, 0, 0), radius=0.5)
         sphere_mapper = tvtk.PolyDataMapper(input=self.sphere.output)
-        p = tvtk.Property(opacity=0.4, color=(random(), random(), random()))
+        p = tvtk.Property(opacity=0.4, color=self.color)
         self.actor = tvtk.Actor(mapper=sphere_mapper, property=p)
 
         return self.actor
