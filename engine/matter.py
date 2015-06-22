@@ -1,9 +1,6 @@
-from random import random
-
-from traits.api import (Array, Dict, Int, String, RGBColor)
+from traits.api import (Array, Dict, Int, String, RGBColor, Bool)
 from tvtk.api import tvtk
 from traits.api import HasTraits, Instance, on_trait_change
-from mayavi import mlab
 
 from atom import Atom
 
@@ -22,6 +19,8 @@ class Matter(HasTraits):
     name = String()
 
     color = RGBColor((0.0, 0.0, 0.0))
+
+    vector_field_is_visible = Bool(False)
 
     @on_trait_change('position')
     def update_position(self, affected_object):

@@ -1,5 +1,5 @@
 from pyface.qt.QtGui import QLineEdit, QHBoxLayout, QGroupBox, QToolButton, QColor, QPixmap, QIcon, QColorDialog
-from pyface.qt.QtGui import QWidget, QDoubleSpinBox, QLabel, QVBoxLayout
+from pyface.qt.QtGui import QWidget, QDoubleSpinBox, QLabel, QVBoxLayout, QCheckBox
 from pyface.qt.QtCore import Qt
 
 
@@ -57,10 +57,17 @@ class MatterPropertiesWidget(QWidget):
         self.color_groupbox_layout.addWidget(self.color_tool_button)
         self.color_groupbox_layout.addStretch()
 
+        self.vector_field_is_visible_checkbox = QCheckBox("visible")
+        self.vector_field__groupbox = QGroupBox("Vector field")
+        self.vector_field__groupbox_layout = QVBoxLayout()
+        self.vector_field__groupbox.setLayout(self.vector_field__groupbox_layout)
+        self.vector_field__groupbox_layout.addWidget(self.vector_field_is_visible_checkbox)
+
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.name_editor_groupbox)
         main_layout.addWidget(self.position_groupbox)
         main_layout.addWidget(self.color_groupbox)
+        main_layout.addWidget(self.vector_field__groupbox)
         main_layout.addStretch()
         self.setLayout(main_layout)
 
@@ -68,6 +75,7 @@ class MatterPropertiesWidget(QWidget):
         self.position_y_editor.valueChanged.connect(self.position_y_editor_value_changed)
         self.name_editor.textChanged.connect(self.name_editor_text_changed)
         self.color_tool_button.clicked.connect(self.choose_color)
+        self.vector_field_is_visible_checkbox.stateChanged.connect(self.vector_field_visibility_state_changed)
 
         self.setDisabled(True)
 
@@ -86,6 +94,7 @@ class MatterPropertiesWidget(QWidget):
         self.position_y_editor.setValue(y)
         self.name_editor.setText(self.matter.name)
         self.color_tool_button.setIcon(get_icon_filled_with_color(QColor.fromRgbF(*self.matter.color)))
+        self.vector_field_is_visible_checkbox.setChecked(self.matter.vector_field_is_visible)
 
         self.setEnabled(True)
 
@@ -108,3 +117,6 @@ class MatterPropertiesWidget(QWidget):
         if color.isValid():
             self.matter.color = (color.redF(), color.greenF(), color.blueF())
             self.color_tool_button.setIcon(get_icon_filled_with_color(color))
+
+    def vector_field_visibility_state_changed(self, state):
+        self.matter.vector_field_is_visible = True if state == Qt.Checked else False
