@@ -1,6 +1,6 @@
 from pyface.qt.QtGui import QLineEdit, QHBoxLayout, QGroupBox, QToolButton, QColor, QPixmap, QIcon, QColorDialog
-from pyface.qt.QtGui import QWidget, QDoubleSpinBox, QLabel, QVBoxLayout, QCheckBox
-from pyface.qt.QtCore import Qt
+from pyface.qt.QtGui import QWidget, QDoubleSpinBox, QLabel, QVBoxLayout, QCheckBox, QTableView, QStyledItemDelegate
+from pyface.qt.QtCore import Qt, QAbstractTableModel, QModelIndex
 
 
 def get_icon_filled_with_color(color):
@@ -14,6 +14,72 @@ def get_icon_filled_with_color(color):
     pixmap = QPixmap(24, 24)
     pixmap.fill(color)
     return QIcon(pixmap)
+
+
+class AtomsTableModel(QAbstractTableModel):
+
+    def __init__(self):
+        super(AtomsTableModel, self).__init__()
+        self.matter = None
+
+    def set_matter(self, matter):
+        self.matter = matter
+        self.reset()
+
+    def rowCount(self, parent=QModelIndex()):
+        if parent.isValid() or self.matter is None:
+            return 0
+        else:
+            return len(self.matter.atoms)
+
+    def columnCount(self, parent=QModelIndex()):
+        if parent.isValid():
+            return 0
+        else:
+            return 2
+
+    def data(self, index, role):
+        if role == Qt.DisplayRole:
+            atom, value = self.matter.atoms.items()[index.row()]
+            if index.column() == 0:
+                return atom.name
+            elif index.column() == 1:
+                return value
+            else:
+                return None
+        else:
+            return None
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if section == 0 and role == Qt.DisplayRole and orientation == Qt.Horizontal:
+            return "Atom name"
+        elif section == 1 and role == Qt.DisplayRole and orientation == Qt.Horizontal:
+            return "Quantity"
+        else:
+            return None
+
+    def setData(self, index, value, role=Qt.EditRole):
+
+        if role == Qt.EditRole:
+            atom, quantity = self.matter.atoms.items()[index.row()]
+
+            if index.column() == 0:
+                atom.name = str(value)
+                self.dataChanged.emit(index, index)
+                return True
+            elif index.column() == 1:
+                self.matter.atoms[atom] = int(value)
+                self.dataChanged.emit(index, index)
+                return True
+
+        return False
+
+    def flags(self, index):
+        return Qt.ItemIsEditable^Qt.ItemIsEnabled
+
+
+
+# Editable models need to implement setData(), and implement flags() to return a value containing Qt::ItemIsEditable.
 
 class MatterPropertiesWidget(QWidget):
     """
@@ -58,16 +124,26 @@ class MatterPropertiesWidget(QWidget):
         self.color_groupbox_layout.addStretch()
 
         self.vector_field_is_visible_checkbox = QCheckBox("visible")
-        self.vector_field__groupbox = QGroupBox("Vector field")
-        self.vector_field__groupbox_layout = QVBoxLayout()
-        self.vector_field__groupbox.setLayout(self.vector_field__groupbox_layout)
-        self.vector_field__groupbox_layout.addWidget(self.vector_field_is_visible_checkbox)
+        self.vector_field_groupbox = QGroupBox("Vector field")
+        self.vector_field_groupbox_layout = QVBoxLayout()
+        self.vector_field_groupbox.setLayout(self.vector_field_groupbox_layout)
+        self.vector_field_groupbox_layout.addWidget(self.vector_field_is_visible_checkbox)
+
+        self.connected_atoms_table_model = AtomsTableModel()
+        self.connected_atoms_table_view = QTableView()
+        self.connected_atoms_table_view.setItemDelegate(QStyledItemDelegate())
+        self.connected_atoms_table_view.setModel(self.connected_atoms_table_model)
+        self.connected_atoms_groupbox = QGroupBox("Atoms")
+        self.connected_atoms_groupbox_layout = QVBoxLayout()
+        self.connected_atoms_groupbox.setLayout(self.connected_atoms_groupbox_layout)
+        self.connected_atoms_groupbox_layout.addWidget(self.connected_atoms_table_view)
 
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.name_editor_groupbox)
         main_layout.addWidget(self.position_groupbox)
         main_layout.addWidget(self.color_groupbox)
-        main_layout.addWidget(self.vector_field__groupbox)
+        main_layout.addWidget(self.vector_field_groupbox)
+        main_layout.addWidget(self.connected_atoms_groupbox)
         main_layout.addStretch()
         self.setLayout(main_layout)
 
@@ -95,6 +171,7 @@ class MatterPropertiesWidget(QWidget):
         self.name_editor.setText(self.matter.name)
         self.color_tool_button.setIcon(get_icon_filled_with_color(QColor.fromRgbF(*self.matter.color)))
         self.vector_field_is_visible_checkbox.setChecked(self.matter.vector_field_is_visible)
+        self.connected_atoms_table_model.set_matter(matter)
 
         self.setEnabled(True)
 
