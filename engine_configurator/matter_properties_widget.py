@@ -39,7 +39,7 @@ class AtomsTableModel(QAbstractTableModel):
             return 2
 
     def data(self, index, role):
-        if role == Qt.DisplayRole:
+        if role == Qt.DisplayRole or role == Qt.EditRole:
             atom, value = self.matter.atoms.items()[index.row()]
             if index.column() == 0:
                 return atom.name
@@ -75,7 +75,7 @@ class AtomsTableModel(QAbstractTableModel):
         return False
 
     def flags(self, index):
-        return Qt.ItemIsEditable^Qt.ItemIsEnabled
+        return Qt.ItemIsEditable ^ Qt.ItemIsEnabled
 
 
 
