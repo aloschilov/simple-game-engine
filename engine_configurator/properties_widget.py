@@ -21,6 +21,9 @@ class NoObjectSelectedWidget(QWidget):
         main_layout.addWidget(self.label)
         self.setLayout(main_layout)
 
+    def invalidate(self):
+        pass
+
 
 class PropertiesWidget(QWidget):
     """
@@ -62,3 +65,6 @@ class PropertiesWidget(QWidget):
             self.radial_force_properties_widget.switch_to_radial_force(item.radial_force)
         else:
             self.main_layout.setCurrentWidget(self.no_object_selected_widget)
+
+    def invalidate(self):
+        self.main_layout.currentWidget().invalidate()

@@ -54,3 +54,6 @@ class RadialForcePropertiesWidget(QWidget):
 
     def bezier_curve_changed(self, bezier_curve):
         self.radial_force.bezier_curve = bezier_curve
+
+    def invalidate(self):
+        self.switch_to_radial_force(self.radial_force)

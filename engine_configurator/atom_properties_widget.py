@@ -43,3 +43,6 @@ class AtomPropertiesWidget(QWidget):
 
     def name_editor_text_changed(self, value):
         self.atom.name = value
+
+    def invalidate(self):
+        self.switch_to_atom(self.atom)

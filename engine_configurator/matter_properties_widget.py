@@ -78,9 +78,6 @@ class AtomsTableModel(QAbstractTableModel):
         return Qt.ItemIsEditable ^ Qt.ItemIsEnabled
 
 
-
-# Editable models need to implement setData(), and implement flags() to return a value containing Qt::ItemIsEditable.
-
 class MatterPropertiesWidget(QWidget):
     """
     This widget modifies properties of a specific matter
@@ -197,3 +194,6 @@ class MatterPropertiesWidget(QWidget):
 
     def vector_field_visibility_state_changed(self, state):
         self.matter.vector_field_is_visible = True if state == Qt.Checked else False
+
+    def invalidate(self):
+        self.switch_to_matter(self.matter)

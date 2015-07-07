@@ -64,6 +64,8 @@ class UniverseWidget(QWidget):
         for graphics_item in self.universe_graphics_scene.graphics_items:
             graphics_item.clicked.connect(self.properties_widget.process_item_clicked)
 
+        self.properties_widget.invalidate()
+
 
 if __name__ == "__main__":
     # Don't create a new QApplication, it would unhook the Events

@@ -128,7 +128,6 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.properties_bindings_update_required.emit()
         self.update()
 
-
     def add_matter_and_atom_connection(self, matter_item, atom_item):
         self.graph.add_edge(TreeNode(matter_item),
                             TreeNode(atom_item),
@@ -137,6 +136,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.matter_to_atom_edges.append(self.graph.get_edge(TreeNode(matter_item),
                                                              TreeNode(atom_item)))
         self.update()
+        self.properties_bindings_update_required.emit()
 
     def add_atom_and_force_connection(self, atom_item, force_item):
         self.graph.add_edge(TreeNode(atom_item),
@@ -146,6 +146,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.atom_to_force_edges.append(self.graph.get_edge(TreeNode(atom_item),
                                                             TreeNode(force_item)))
         self.update()
+        self.properties_bindings_update_required.emit()
 
     def add_force_and_atom_connection(self, force_item, atom_item):
         self.graph.add_edge(TreeNode(force_item),
@@ -155,6 +156,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.force_to_atom_edges.append(self.graph.get_edge(TreeNode(force_item),
                                                             TreeNode(atom_item)))
         self.update()
+        self.properties_bindings_update_required.emit()
 
     def update(self):
         self.graph.layout(prog='dot')
