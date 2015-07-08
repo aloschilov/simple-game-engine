@@ -10,6 +10,7 @@ from . import Atom
 from . import RadialForce
 from . import Force
 from . import Matter
+from . import NaturalLaw
 from vector_field_rendering_actor import VectorFieldRenderingActor
 
 
@@ -25,6 +26,7 @@ class Universe(HasTraits):
     atoms = List(trait=Instance(Atom))
     forces = List(trait=Instance(Force))
     matters = List(trait=Instance(Matter))
+#    natural_laws = List(trait=Instance(NaturalLaw))
     scene = Instance(MlabSceneModel, ())
     vector_field_rendering_actor = Instance(ActorRef, None)
 
@@ -43,6 +45,7 @@ class Universe(HasTraits):
         matter = Matter()
         self.matters.append(matter)
         self.scene.add_actor(matter.generate_actor())
+        self.scene.add_actor(matter.generate_legend_actor())
         return matter
 
     def create_atom(self):
@@ -114,6 +117,13 @@ class Universe(HasTraits):
                    len(fs),
                    lambda i, j: fs[j].subs(x, x-ps[i][0]).subs(y, y-ps[i][1]))
 
+        Alpha = Matrix()
+
+        # matter affect forces
+        # ((Nu*G).multiply_elementwise(F)) I am modifying force field equation which is lighter
+
+        # Forces affect matter
+
         # P stands for potential
         P = [Matrix(1, len(ps), lambda i, j: 0 if j == k else 1)*((Nu*G).multiply_elementwise(F)) for k in xrange(0, len(ps))]
 
@@ -141,7 +151,7 @@ class Universe(HasTraits):
                         "colors": [matter.color for matter in self.matters],
                         "bounding_rect": (-10, 10, 10, -10),
                         "vector_field_is_visible": [matter.vector_field_is_visible for matter in self.matters]
-                      }, block=False)
+                    }, block=False)
             else:
                 self.vector_field_rendering_countdown -= 1
 
@@ -150,10 +160,9 @@ class Universe(HasTraits):
         for mi, matter in enumerate(self.matters):
             (x_v, y_v) = matter.position
             (x_, y_) = tuple(array((
-                float(W[mi][0].subs({x : x_v, y : y_v}))*delta_t,
-                float(W[mi][1].subs({x : x_v, y : y_v}))*delta_t
-            )) +
-                             array((x_v, y_v)))
+                float(W[mi][0].subs({x: x_v, y: y_v}))*delta_t,
+                float(W[mi][1].subs({x: x_v, y: y_v}))*delta_t
+            )) + array((x_v, y_v)))
             x_ = x_ if x_ > -10 else -10
             x_ = x_ if x_ < 10 else 10
             y_ = y_ if y_ > -10 else -10
