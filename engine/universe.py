@@ -1,5 +1,5 @@
 from traits.api import HasTraits, Instance, List, on_trait_change
-from sympy import Matrix, symbols
+from sympy import Matrix, symbols, diag, Piecewise, ones, pprint
 from sympy.physics.vector import ReferenceFrame, gradient
 from numpy import array, zeros, uint8
 from mayavi.core.ui.api import MlabSceneModel
@@ -12,6 +12,7 @@ from . import Force
 from . import Matter
 from . import NaturalLaw
 from vector_field_rendering_actor import VectorFieldRenderingActor
+from natural_law import get_matrix_of_converting_atoms, get_matrix_of_converted_atoms
 
 
 class Universe(HasTraits):
@@ -26,7 +27,7 @@ class Universe(HasTraits):
     atoms = List(trait=Instance(Atom))
     forces = List(trait=Instance(Force))
     matters = List(trait=Instance(Matter))
-#    natural_laws = List(trait=Instance(NaturalLaw))
+    natural_laws = List(trait=Instance(NaturalLaw))
     scene = Instance(MlabSceneModel, ())
     vector_field_rendering_actor = Instance(ActorRef, None)
 
@@ -81,6 +82,11 @@ class Universe(HasTraits):
         self.forces.append(force)
         return force
 
+    def create_natural_law(self):
+        natural_law = NaturalLaw()
+        self.natural_laws.append(natural_law)
+        return natural_law
+
     @on_trait_change('matters.position')
     def positions_changed(self, arg1, arg2, arg3):
         self.scene.render()
@@ -89,10 +95,13 @@ class Universe(HasTraits):
         #print arg2
         #print arg3
 
+    # noinspection PyShadowingNames,PyTypeChecker,PyPep8Naming
     def next_step(self):
         """
         This method evaluates entire universe along the time
         """
+
+        x, y = symbols('x y')
 
         ps = [matter.position for matter in self.matters]
         fs = [force.function() for force in self.forces]
@@ -107,22 +116,35 @@ class Universe(HasTraits):
                    len(self.forces),
                    lambda i, j: 1 if self.forces[j] in self.atoms[i].produced_forces else 0)
 
+        # E stands for "effect"
         E = Matrix(len(self.forces),
                    len(self.atoms),
                    lambda i, j: 1 if self.atoms[j] in self.forces[i].atoms_to_produce_effect_on else 0)
-
-        x, y = symbols('x y')
 
         F = Matrix(len(ps),
                    len(fs),
                    lambda i, j: fs[j].subs(x, x-ps[i][0]).subs(y, y-ps[i][1]))
 
-        Alpha = Matrix()
+        # Accelerator force
+        Alpha = Matrix(len(self.natural_laws),
+                       len(self.forces),
+                       lambda i, j: 1 if self.forces[j] is self.natural_laws[i].force else 0)
 
-        # matter affect forces
-        # ((Nu*G).multiply_elementwise(F)) I am modifying force field equation which is lighter
+        # Multiplicative component of natural law
+        Upsilon = diag(*[natural_law.multiplicative_component for natural_law in self.natural_laws])
 
-        # Forces affect matter
+        # Additive component of natural law
+        S = diag(*[natural_law.additive_component for natural_law in self.natural_laws])
+
+        # Omicron stands for origin
+        Omicron = Matrix(len(self.natural_laws),
+                         len(self.atoms),
+                         lambda i, j: 1 if self.atoms[j] is self.natural_laws[i].atom_in else 0)
+
+        # D stands for destination
+        D = Matrix(len(self.natural_laws),
+                   len(self.atoms),
+                   lambda i, j: 1 if self.atoms[j] is self.natural_laws[i].atom_out else 0)
 
         # P stands for potential
         P = [Matrix(1, len(ps), lambda i, j: 0 if j == k else 1)*((Nu*G).multiply_elementwise(F)) for k in xrange(0, len(ps))]
@@ -168,6 +190,23 @@ class Universe(HasTraits):
             y_ = y_ if y_ > -10 else -10
             y_ = y_ if y_ < 10 else 10
             matter.position = (x_, y_)
+
+        # Natural laws transformation calculation
+
+        natural_field = diag(*(ones(1, len(self.matters)) * ((Nu*G).multiply_elementwise(F))))
+
+        force_is_present = diag(*(ones(1, len(self.matters))*(Nu*G).multiply_elementwise(F)).applyfunc(
+            lambda exp: Piecewise((1.0, exp > 0.0), (0.0, exp <= 0.0))))
+
+        natural_influence = (Upsilon * Alpha * natural_field + S * Alpha)*force_is_present*ones(len(fs), 1)
+        pending_transformation_vector = Omicron.transpose()*natural_influence
+
+        pprint(pending_transformation_vector)
+
+        get_matrix_of_converting_atoms(Nu, ps, pending_transformation_vector)
+        get_matrix_of_converted_atoms(Nu, ps, pending_transformation_vector, natural_influence, Omicron, D)
+
+        # The only thing left here is application of natural law to current atoms quantities.
 
     @on_trait_change('scene')
     def bind_to_scene(self, scene):
