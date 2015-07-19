@@ -5,24 +5,26 @@ from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidge
 from engine_configurator.icon_graphics_widget import IconGraphicsWidget
 
 
-class RadialForceItem(ClickableGraphicsWidget, IconGraphicsWidget):
+class NaturalLawItem(ClickableGraphicsWidget, IconGraphicsWidget):
     """
-    This item represents force object at UniverseScene
+    This items represents natural law object at UniverseScene
     """
 
-    force_and_atom_connected = Signal(QGraphicsItem, QGraphicsItem, name="force_and_atom_connected")
+    atom_and_natural_law_connected = Signal(QGraphicsItem, QGraphicsItem, name="atom_and_natural_law_connected")
+    natural_law_and_atom_connected = Signal(QGraphicsItem, QGraphicsItem, name="natural_law_and_atom_connected")
+    force_and_natural_law_connected = Signal(QGraphicsItem, QGraphicsItem, name="force_and_natural_law_connected")
 
-    def __init__(self, force=None):
+    def __init__(self, natural_law=None):
         ClickableGraphicsWidget.__init__(self)
-        self.initialize(":/images/radial_force.png")
-        self.radial_force = force
-        self.radial_force.on_trait_change(self.setText, 'name')
+        self.initialize(":/images/natural_law.png")
+        self.natural_law = natural_law
+        self.natural_law.on_trait_change(self.setText, "name")
         self.setCursor(Qt.OpenHandCursor)
         self.setAcceptDrops(True)
 
     def mousePressEvent(self, event):
         self.setCursor(Qt.ClosedHandCursor)
-        super(RadialForceItem, self).mousePressEvent(event)
+        super(NaturalLawItem, self).mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
 
@@ -32,13 +34,12 @@ class RadialForceItem(ClickableGraphicsWidget, IconGraphicsWidget):
 
         drag = QDrag(event.widget())
         mime = QMimeData()
-        # A weak solution that could not be implemented in
-        # C++
-        mime.force = self.radial_force
-        mime.force_item = self
+
+        mime.natural_law = self.natural_law
+        mime.natural_law_item = self
         drag.setMimeData(mime)
 
-        mime.setText("Force")
+        mime.setText("NaturalLaw")
 
         pixmap = QPixmap(int(self.boundingRect().width()),
                          int(self.boundingRect().height()))
@@ -60,31 +61,32 @@ class RadialForceItem(ClickableGraphicsWidget, IconGraphicsWidget):
 
     def mouseReleaseEvent(self, event):
         self.setCursor(Qt.OpenHandCursor)
-        super(RadialForceItem, self).mouseReleaseEvent(event)
+        super(NaturalLawItem, self).mouseReleaseEvent(event)
 
     def dragEnterEvent(self, event):
-        print "RadialForceItem::dragEnterEvent"
-        if event.mimeData().hasText() and event.mimeData().text() in ["Atom"]:
+        if event.mimeData().hasText() and event.mimeData().text() in ["Atom", "Force"]:
             event.setAccepted(True)
             self.update()
         else:
             event.setAccepted(False)
 
     def dragLeaveEvent(self, event):
-        """
-
-        :param event:
-        :type event: QGraphicsSceneDragDropEvent
-        :return:
-        """
         self.update()
 
     def dropEvent(self, event):
         if event.mimeData().hasText() and event.mimeData().text() == "Atom":
-            if event.mimeData().atom not in self.radial_force.atoms_to_produce_effect_on:
-                self.radial_force.atoms_to_produce_effect_on.append(event.mimeData().atom)
-                self.force_and_atom_connected.emit(self, event.mimeData().atom_item)
+            if self.natural_law.atom_in is None:
+                self.natural_law.atom_in = event.mimeData().atom
+                self.atom_and_natural_law_connected.emit(event.mimeData().atom_item, self)
             else:
-                print "No connection created since it's already exists"
+                print "No atom_in connection was created, since it already exists."
+
+        if event.mimeData().hasText() and event.mimeData().text() == "Force":
+            if self.natural_law.accelerator is None:
+                self.natural_law.accelerator = event.mimeData().force
+                self.force_and_natural_law_connected.emit(event.mimeData().force_item, self)
+            else:
+                print "No accelerator connection was created, since it already exists."
 
         self.update()
+

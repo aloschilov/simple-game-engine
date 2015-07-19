@@ -5,6 +5,7 @@ from engine_configurator.game_scene_widget import GameSceneWidget
 from engine_configurator.matter_toolbox_item import MatterToolboxItem
 from engine_configurator.properties_widget import PropertiesWidget
 from engine_configurator.radial_force_toolbox_item import RadialForceToolboxItem
+from engine_configurator.natural_law_toolbox_item import NaturalLawToolboxItem
 from engine_configurator.universe_scene import UniverseScene
 
 
@@ -45,10 +46,15 @@ class UniverseWidget(QWidget):
         self.forces_stencils_view = QGraphicsView(self.forces_stencils_scene)
         self.forces_stencils_scene.addItem(RadialForceToolboxItem())
 
+        self.natural_laws_stencils_scene = QGraphicsScene()
+        self.natural_laws_stencils_view = QGraphicsView(self.natural_laws_stencils_scene)
+        self.natural_laws_stencils_scene.addItem(NaturalLawToolboxItem())
+
         self.tool_box = QToolBox()
         self.tool_box.addItem(self.matters_stencils_view, "Matters")
         self.tool_box.addItem(self.atoms_stencils_view, "Atoms")
         self.tool_box.addItem(self.forces_stencils_view, "Forces")
+        self.tool_box.addItem(self.natural_laws_stencils_view, "Natural laws")
 
         self.properties_widget = PropertiesWidget()
 

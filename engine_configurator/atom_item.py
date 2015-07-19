@@ -65,7 +65,7 @@ class AtomItem(ClickableGraphicsWidget, IconGraphicsWidget):
 
     def dragEnterEvent(self, event):
         print "AtomItem::dragEnterEvent"
-        if event.mimeData().hasText() and event.mimeData().text() in ["Force"]:
+        if event.mimeData().hasText() and event.mimeData().text() in ["Force", "NaturalLaw"]:
             event.setAccepted(True)
             self.update()
         else:
@@ -84,10 +84,18 @@ class AtomItem(ClickableGraphicsWidget, IconGraphicsWidget):
         if event.mimeData().hasText() and event.mimeData().text() == "Force":
 
             if event.mimeData().force not in self.atom.produced_forces:
-                print "Creating Force connection"
                 self.atom.produced_forces.append(event.mimeData().force)
                 self.atom_and_force_connected.emit(self, event.mimeData().force_item)
             else:
                 print "No Force connection created since it's already exists"
+
+        if event.mimeData().hasText() and event.mimeData().text() == "NaturalLaw":
+
+            if event.mimeData().natural_law.atom_out is None:
+                event.mimeData().natural_law.atom_out = self.atom
+                event.mimeData().natural_law_item.atom_and_natural_law_connected.emit(self,
+                                                                                      event.mimeData().natural_law_item)
+            else:
+                print "No atom_out connection was created, since it already exists."
 
         self.update()

@@ -3,13 +3,11 @@ from pyface.qt.QtCore import Signal
 from pyface.qt import QtGui
 import pygraphviz as pgv
 from pyface.qt.QtGui import (QGraphicsItem, QPainterPath,
-                         QGraphicsPathItem, QPen)
+                             QGraphicsPathItem, QPen)
 from pyface.qt.QtCore import Qt
 
 from engine_configurator.universe_item import UniverseItem
 from engine_configurator.icon_graphics_widget import IconGraphicsWidget
-
-from pprint import pprint
 
 from engine import Universe
 
@@ -61,8 +59,6 @@ class UniverseScene(QtGui.QGraphicsScene):
     def __init__(self, parent=None):
         super(UniverseScene, self).__init__(parent)
 
-        #self.addItem(IconGraphicsWidget(":/images/matter.png"))
-
         self.universe_item = UniverseItem(universe=Universe())
         self.addItem(self.universe_item)
 
@@ -77,6 +73,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.universe_item.matter_added.connect(self.add_matter)
         self.universe_item.atom_added.connect(self.add_atom)
         self.universe_item.radial_force_added.connect(self.add_radial_force)
+        self.universe_item.natural_law_added.connect(self.add_natural_law)
 
         self.graphics_items = list()
         self.graphics_items.append(self.universe_item)
@@ -85,6 +82,10 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.matter_to_atom_edges = list()
         self.atom_to_force_edges = list()
         self.force_to_atom_edges = list()
+
+        self.natural_law_to_atom_edges = list()
+        self.atom_to_natural_law_edges = list()
+        self.force_to_natural_law_edges = list()
 
     def add_matter(self, matter_item):
         self.graphics_items.append(matter_item)
@@ -128,6 +129,22 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.properties_bindings_update_required.emit()
         self.update()
 
+    def add_natural_law(self, natural_law_item):
+        self.graphics_items.append(natural_law_item)
+        natural_law_item.atom_and_natural_law_connected.connect(self.add_atom_and_natural_law_connection)
+        natural_law_item.natural_law_and_atom_connected.connect(self.add_natural_law_and_atom_connection)
+        natural_law_item.force_and_natural_law_connected.connect(self.add_force_and_natural_law_connection)
+        self.addItem(natural_law_item)
+        self.graph.add_node(TreeNode(natural_law_item))
+        natural_law_item_node = self.graph.get_node(TreeNode(natural_law_item))
+        natural_law_item_node.attr['shape'] = 'box3d'
+        natural_law_item_node.attr['width'] = natural_law_item.boundingRect().width()
+        natural_law_item_node.attr['height'] = natural_law_item.boundingRect().height()
+        self.graph.add_edge(TreeNode(self.universe_item),
+                            TreeNode(natural_law_item), minlen=10)
+        self.properties_bindings_update_required.emit()
+        self.update()
+
     def add_matter_and_atom_connection(self, matter_item, atom_item):
         self.graph.add_edge(TreeNode(matter_item),
                             TreeNode(atom_item),
@@ -155,6 +172,36 @@ class UniverseScene(QtGui.QGraphicsScene):
 
         self.force_to_atom_edges.append(self.graph.get_edge(TreeNode(force_item),
                                                             TreeNode(atom_item)))
+        self.update()
+        self.properties_bindings_update_required.emit()
+
+    def add_atom_and_natural_law_connection(self, atom_item, natural_law_item):
+        self.graph.add_edge(TreeNode(atom_item),
+                            TreeNode(natural_law_item),
+                            minlen=10)
+
+        self.atom_to_natural_law_edges.append(self.graph.get_edge(TreeNode(atom_item),
+                                                                  TreeNode(natural_law_item)))
+        self.update()
+        self.properties_bindings_update_required.emit()
+
+    def add_natural_law_and_atom_connection(self, natural_law_item, atom_item):
+        self.graph.add_edge(TreeNode(natural_law_item),
+                            TreeNode(atom_item),
+                            minlen=10)
+
+        self.natural_law_to_atom_edges.append(self.graph.get_edge(TreeNode(natural_law_item),
+                                                                  TreeNode(atom_item)))
+        self.update()
+        self.properties_bindings_update_required.emit()
+
+    def add_force_and_natural_law_connection(self, force_item, natural_law_item):
+        self.graph.add_edge(TreeNode(force_item),
+                            TreeNode(natural_law_item),
+                            minlen=10)
+
+        self.force_to_natural_law_edges.append(self.graph.get_edge(TreeNode(force_item),
+                                                                   TreeNode(natural_law_item)))
         self.update()
         self.properties_bindings_update_required.emit()
 

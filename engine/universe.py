@@ -128,7 +128,7 @@ class Universe(HasTraits):
         # Accelerator force
         Alpha = Matrix(len(self.natural_laws),
                        len(self.forces),
-                       lambda i, j: 1 if self.forces[j] is self.natural_laws[i].force else 0)
+                       lambda i, j: 1 if self.forces[j] is self.natural_laws[i].accelerator else 0)
 
         # Multiplicative component of natural law
         Upsilon = diag(*[natural_law.multiplicative_component for natural_law in self.natural_laws])
@@ -201,7 +201,7 @@ class Universe(HasTraits):
         natural_influence = (Upsilon * Alpha * natural_field + S * Alpha)*force_is_present*ones(len(fs), 1)
         pending_transformation_vector = Omicron.transpose()*natural_influence
 
-        pprint(pending_transformation_vector)
+        #pprint(pending_transformation_vector)
 
         get_matrix_of_converting_atoms(Nu, ps, pending_transformation_vector)
         get_matrix_of_converted_atoms(Nu, ps, pending_transformation_vector, natural_influence, Omicron, D)

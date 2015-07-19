@@ -9,6 +9,7 @@ from engine_configurator.atom_item import AtomItem
 from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
 from engine_configurator.matter_item import MatterItem
 from engine_configurator.radial_force_item import RadialForceItem
+from engine_configurator.natural_law_item import NaturalLawItem
 
 
 class UniverseItem(ClickableGraphicsWidget):
@@ -20,6 +21,7 @@ class UniverseItem(ClickableGraphicsWidget):
     matter_added = Signal(QGraphicsItem, name="matter_added")
     atom_added = Signal(QGraphicsItem, name="atom_added")
     radial_force_added = Signal(QGraphicsItem, name="radial_force_added")
+    natural_law_added = Signal(QGraphicsItem, name="natural_law_added")
 
     def __init__(self, universe=None):
         super(UniverseItem, self).__init__()
@@ -31,7 +33,7 @@ class UniverseItem(ClickableGraphicsWidget):
 
     def dragEnterEvent(self, event):
         print "UniverseItem::dragEnterEvent"
-        if event.mimeData().hasText() and event.mimeData().text() in ["Matter", "Atom", "RadialForce"]:
+        if event.mimeData().hasText() and event.mimeData().text() in ["Matter", "Atom", "RadialForce", "NaturalLaw"]:
             event.setAccepted(True)
             self.update()
         else:
@@ -69,6 +71,10 @@ class UniverseItem(ClickableGraphicsWidget):
                                                               )
             radial_force_item = RadialForceItem(radial_force)
             self.radial_force_added.emit(radial_force_item)
+        elif event.mimeData().hasText() and event.mimeData().text() == "NaturalLaw":
+            natural_law = self._universe.create_natural_law()
+            natural_law_item = NaturalLawItem(natural_law)
+            self.natural_law_added.emit(natural_law_item)
 
         print "Drop event"
         self.update()
