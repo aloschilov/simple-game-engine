@@ -5,6 +5,7 @@ import pygraphviz as pgv
 from pyface.qt.QtGui import (QGraphicsItem, QPainterPath,
                              QGraphicsPathItem, QPen)
 from pyface.qt.QtCore import Qt
+from engine_configurator.graphics_path_item_with_arrow_heads import GraphicsPathItemWithArrowHeads
 
 from engine_configurator.universe_item import UniverseItem
 from engine_configurator.icon_graphics_widget import IconGraphicsWidget
@@ -65,6 +66,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.graph = pgv.AGraph(directed=True)
         self.graph.add_node(TreeNode(self.universe_item))
         self.graph.graph_attr['nodesep'] = 20
+        self.graph.graph_attr['ranksep'] = 5
         universe_item_node = self.graph.get_node(TreeNode(self.universe_item))
         universe_item_node.attr['shape'] = 'circle'
         universe_item_node.attr['width'] = self.universe_item.boundingRect().width()
@@ -107,7 +109,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         atom_item.atom_and_force_connected.connect(self.add_atom_and_force_connection)
         self.graph.add_node(TreeNode(atom_item))
         atom_item_node = self.graph.get_node(TreeNode(atom_item))
-        atom_item_node.attr['shape'] = 'box3d'
+        atom_item_node.attr['shape'] = 'rect'
         atom_item_node.attr['width'] = atom_item.boundingRect().width()
         atom_item_node.attr['height'] = atom_item.boundingRect().height()
         self.graph.add_edge(TreeNode(self.universe_item),
@@ -121,7 +123,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.addItem(radial_force_item)
         self.graph.add_node(TreeNode(radial_force_item))
         atom_item_node = self.graph.get_node(TreeNode(radial_force_item))
-        atom_item_node.attr['shape'] = 'box3d'
+        atom_item_node.attr['shape'] = 'rect'
         atom_item_node.attr['width'] = radial_force_item.boundingRect().width()
         atom_item_node.attr['height'] = radial_force_item.boundingRect().height()
         self.graph.add_edge(TreeNode(self.universe_item),
@@ -137,7 +139,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.addItem(natural_law_item)
         self.graph.add_node(TreeNode(natural_law_item))
         natural_law_item_node = self.graph.get_node(TreeNode(natural_law_item))
-        natural_law_item_node.attr['shape'] = 'box3d'
+        natural_law_item_node.attr['shape'] = 'rect'
         natural_law_item_node.attr['width'] = natural_law_item.boundingRect().width()
         natural_law_item_node.attr['height'] = natural_law_item.boundingRect().height()
         self.graph.add_edge(TreeNode(self.universe_item),
@@ -176,6 +178,9 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.properties_bindings_update_required.emit()
 
     def add_atom_and_natural_law_connection(self, atom_item, natural_law_item):
+        print "def add_atom_and_natural_law_connection(self, atom_item, natural_law_item):"
+        print atom_item
+        print natural_law_item
         self.graph.add_edge(TreeNode(atom_item),
                             TreeNode(natural_law_item),
                             minlen=10)
@@ -265,13 +270,19 @@ class UniverseScene(QtGui.QGraphicsScene):
                 #y = float(y_str)/DOT_DEFAULT_DPI
                 #path.lineTo(x, y)
 
-                item = QGraphicsPathItem(path)
+                item = GraphicsPathItemWithArrowHeads(path)
                 if edge in self.matter_to_atom_edges:
                     item.setPen(QPen(Qt.darkGreen, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
                 elif edge in self.atom_to_force_edges:
                     item.setPen(QPen(Qt.darkGray, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
                 elif edge in self.force_to_atom_edges:
                     item.setPen(QPen(Qt.darkRed, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                elif edge in self.natural_law_to_atom_edges:
+                    item.setPen(QPen(Qt.green, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                elif edge in self.atom_to_natural_law_edges:
+                    item.setPen(QPen(Qt.darkCyan, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                elif edge in self.force_to_natural_law_edges:
+                    item.setPen(QPen(Qt.darkYellow, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
                 else:
                     item.setPen(QPen(Qt.darkBlue, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
 

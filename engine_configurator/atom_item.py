@@ -1,5 +1,5 @@
 from pyface.qt.QtCore import (Qt, QMimeData, QLineF, QPoint, Signal)
-from pyface.qt.QtGui import (QDrag, QApplication, QPixmap, QPainter, QGraphicsPixmapItem, QStyleOptionGraphicsItem, QGraphicsItem)
+from pyface.qt.QtGui import (QDrag, QApplication, QPixmap, QPainter, QStyleOptionGraphicsItem, QGraphicsItem)
 
 from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
 from engine_configurator.icon_graphics_widget import IconGraphicsWidget
@@ -93,8 +93,8 @@ class AtomItem(ClickableGraphicsWidget, IconGraphicsWidget):
 
             if event.mimeData().natural_law.atom_out is None:
                 event.mimeData().natural_law.atom_out = self.atom
-                event.mimeData().natural_law_item.atom_and_natural_law_connected.emit(self,
-                                                                                      event.mimeData().natural_law_item)
+                event.mimeData().natural_law_item.natural_law_and_atom_connected.emit(event.mimeData().natural_law_item,
+                                                                                      self)
             else:
                 print "No atom_out connection was created, since it already exists."
 
