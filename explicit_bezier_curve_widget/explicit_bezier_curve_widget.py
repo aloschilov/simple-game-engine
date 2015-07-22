@@ -3,7 +3,7 @@ from pyface.qt.QtGui import QHBoxLayout, QWidget, QGraphicsView, QResizeEvent, Q
     QVBoxLayout, QLabel, QSpinBox, QDoubleSpinBox
 from numpy import linspace
 from explicit_bezier_curve_scene import ExplicitBezierCurveScene
-from polynom_label_widget import PolynomLabelWidget
+from latex_label_widget import LatexLabelWidget
 from settings import SCENE_SIZE, SCENE_SIZE_2, MIN_POLYNOMIAL_DEGREE, MAX_POLYNOMIAL_DEGREE, POLYNOMIAL_DEGREE_DEFAULT, \
     DEFAULT_MAX_Y_VALUE, DEFAULT_MIN_Y_VALUE, MAX_Y_VALUE, MIN_Y_RANGE, MIN_Y_VALUE, MAX_LINE_Y, MIN_LINE_Y, \
     DEFAULT_MIN_X_VALUE, MIN_X_RANGE, MAX_X_VALUE, DEFAULT_MAX_X_VALUE, MIN_X_VALUE, MAX_LINE_X, MIN_LINE_X
@@ -99,7 +99,7 @@ class ExplicitBezierCurveWidget(QWidget):
 
         properties_group_box_layout.addStretch()
 
-        self.polynom_widget = PolynomLabelWidget()
+        self.polynom_widget = LatexLabelWidget()
 
         main_layout = QVBoxLayout()
 

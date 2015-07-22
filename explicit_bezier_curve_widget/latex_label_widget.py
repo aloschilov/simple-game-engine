@@ -6,7 +6,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 
-class PolynomLabelWidget(FigureCanvas):
+class LatexLabelWidget(FigureCanvas):
     """
 
     """
@@ -40,6 +40,6 @@ class PolynomLabelWidget(FigureCanvas):
 if __name__ == '__main__':
     qApp = QtGui.QApplication(sys.argv)
 
-    polynom_label_widget = PolynomLabelWidget()
+    polynom_label_widget = LatexLabelWidget()
     polynom_label_widget.show()
     sys.exit(qApp.exec_())
