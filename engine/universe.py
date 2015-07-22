@@ -1,11 +1,11 @@
 from traits.api import HasTraits, Instance, List, on_trait_change
-from sympy import Matrix, symbols, diag, Piecewise, ones, pprint
-from sympy.physics.vector import ReferenceFrame, gradient
 from numpy import array, zeros, uint8
 from mayavi.core.ui.api import MlabSceneModel
 from tvtk.api import tvtk
 from pykka.actor import ActorRef
 
+from sympy import Matrix, symbols, diag, Piecewise, ones
+from sympy.physics.vector import ReferenceFrame, gradient
 from . import Atom
 from . import RadialForce
 from . import Force
@@ -253,6 +253,7 @@ class Universe(HasTraits):
         self.image_import.whole_extent = (0, w-1, 0, h-1, 0, 0)
 
         self.image_import.update()
+        self.image_actor.visibility = True
 
     def initialize_image_import_with_empty_image(self):
         data_matrix = zeros([75, 75, 1], dtype=uint8)
@@ -264,3 +265,4 @@ class Universe(HasTraits):
         self.image_import.whole_extent = (0, 74, 0, 74, 0, 0)
 
         self.image_import.update()
+        self.image_actor.visibility = False

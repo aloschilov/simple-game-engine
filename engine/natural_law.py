@@ -1,6 +1,6 @@
 from sympy import Piecewise, And, Max, Matrix, zeros, Min, symbols, diag, ones
 
-from traits.api import HasTraits, Instance, Float
+from traits.api import HasTraits, Instance, Float, String
 from force import Force
 from atom import Atom
 
@@ -9,6 +9,8 @@ class NaturalLaw(HasTraits):
     """
     Natural laws define interaction, how atoms get transformed.
     """
+
+    name = String()
 
     atom_in = Instance(Atom)
     atom_out = Instance(Atom)
@@ -51,6 +53,7 @@ def get_conversion_ratio_matrix(pending_conversion,
     return Matrix(rows, cols, list(map(k, pending_conversion, atoms_in_specific_matter)))
 
 
+# noinspection PyPep8Naming
 def get_matrix_of_converting_atoms(Nu, positions, pending_conversion):
     """
     :param Nu: A matrix with a shape=(<number of Matters in Universe>, <number of Atoms in Universe>) where
@@ -78,6 +81,7 @@ def get_matrix_of_converting_atoms(Nu, positions, pending_conversion):
     return M
 
 
+# noinspection PyPep8Naming
 def get_matrix_of_converted_atoms(Nu, positions, pending_conversion, natural_influence, Omicron, D):
     """
     :param Nu: A matrix with a shape=(<number of Matters in Universe>, <number of Atoms in Universe>) where

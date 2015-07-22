@@ -16,10 +16,10 @@ def get_icon_filled_with_color(color):
     return QIcon(pixmap)
 
 
-class AtomsTableModel(QAbstractTableModel):
+class AtomsInMatterTableModel(QAbstractTableModel):
 
     def __init__(self):
-        super(AtomsTableModel, self).__init__()
+        super(AtomsInMatterTableModel, self).__init__()
         self.matter = None
 
     def set_matter(self, matter):
@@ -126,7 +126,7 @@ class MatterPropertiesWidget(QWidget):
         self.vector_field_groupbox.setLayout(self.vector_field_groupbox_layout)
         self.vector_field_groupbox_layout.addWidget(self.vector_field_is_visible_checkbox)
 
-        self.connected_atoms_table_model = AtomsTableModel()
+        self.connected_atoms_table_model = AtomsInMatterTableModel()
         self.connected_atoms_table_view = QTableView()
         self.connected_atoms_table_view.setItemDelegate(QStyledItemDelegate())
         self.connected_atoms_table_view.setModel(self.connected_atoms_table_model)
