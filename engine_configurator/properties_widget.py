@@ -34,13 +34,13 @@ class PropertiesWidget(QWidget):
     selected.
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, universe, parent=None):
         super(PropertiesWidget, self).__init__(parent)
 
         self.matter_properties_widget = MatterPropertiesWidget()
         self.atom_properties_widget = AtomPropertiesWidget()
         self.radial_force_properties_widget = RadialForcePropertiesWidget()
-        self.natural_law_properties_widget = NaturalLawPropertiesWidget()
+        self.natural_law_properties_widget = NaturalLawPropertiesWidget(universe)
         self.no_object_selected_widget = NoObjectSelectedWidget()
 
         self.main_layout = QStackedLayout()

@@ -50,8 +50,8 @@ E = Matrix([[0, 1, 0, 1],
             [0, 1, 1, 0],
             [1, 0, 0, 1]])
 
-Nu = Matrix([[10, 20, 0, 30],
-             [2, 4, 5, 0],
+Nu = Matrix([[10, 0.0, 0, 30],
+             [0.5, 4, 5, 0],
              [0, 4, 0, 0]])
 
 Omicron = Matrix([[1, 0, 0, 0],
@@ -67,11 +67,11 @@ D = Matrix([[0, 1, 0, 0],
             [0, 0, 0, 1]])
 
 # Multiplicative component of natural law
-multiplicative_components = [1, 2, 3, 4, 5]
+multiplicative_components = [0, 0, 0, 0, 0]
 Upsilon = diag(*multiplicative_components)
 
 # Additive component of natural law
-additive_components = [0.1, 0.2, 0.3, 0.4, 0.5]
+additive_components = [0, 1, 0, 0, 0]
 S = diag(*additive_components)
 
 # Accelerator
@@ -116,12 +116,15 @@ W = [gradient(M[i], R).to_matrix(R).subs({R[0]: x, R[1]: y})[:2] for i in xrange
 
 natural_field = diag(*(ones(1, len(p)) * ((Nu*G).multiply_elementwise(F))))
 
-force_is_present = diag(*(ones(1, len(p))*(Nu*G).multiply_elementwise(F)).applyfunc(
-    lambda exp: Piecewise((1.0, exp > 0.0), (0.0, exp <= 0.0))))
+force_is_present = natural_field.applyfunc(
+            lambda exp: Piecewise((1.0, exp > 0.0),
+                                  (0.0, exp <= 0.0))
+        )
 
 natural_influence = (Upsilon * Alpha * natural_field + S * Alpha)*force_is_present*ones(len(fs), 1)
 pending_transformation_vector = Omicron.transpose()*natural_influence
 
+pprint(Nu)
 pprint(get_matrix_of_converting_atoms(Nu, p, pending_transformation_vector))
 pprint(get_matrix_of_converted_atoms(Nu, p, pending_transformation_vector, natural_influence, Omicron, D))
 pprint(Nu - get_matrix_of_converting_atoms(Nu, p, pending_transformation_vector) + get_matrix_of_converted_atoms(Nu, p, pending_transformation_vector, natural_influence, Omicron, D))

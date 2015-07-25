@@ -1,7 +1,7 @@
 # coding=utf-8
 from pyface.qt.QtGui import (QWidget, QGridLayout, QComboBox, QLabel, QLineEdit,
-                             QGroupBox, QHBoxLayout, QVBoxLayout, QCheckBox,
-                             QDoubleValidator, QFont)
+                             QGroupBox, QHBoxLayout, QVBoxLayout, QCheckBox, QFont,
+                             QDoubleSpinBox)
 
 from pyface.qt.QtCore import (QAbstractListModel, QModelIndex, Qt)
 
@@ -10,9 +10,13 @@ from explicit_bezier_curve_widget.latex_label_widget import LatexLabelWidget
 
 class AtomsInUniverseListModel(QAbstractListModel):
 
-    def __init__(self):
+    def __init__(self, universe):
         super(AtomsInUniverseListModel, self).__init__()
-        self.universe = None
+        self.universe = universe
+        self.universe.on_trait_change(self.process_atoms_name_changed, 'atoms.name')
+
+    def process_atoms_name_changed(self):
+        self.reset()
 
     def set_universe(self, universe):
         self.universe = universe
@@ -35,15 +39,47 @@ class AtomsInUniverseListModel(QAbstractListModel):
             return None
 
 
+class ForcesInUniverseListModel(QAbstractListModel):
+
+    def __init__(self, universe):
+        super(ForcesInUniverseListModel, self).__init__()
+        self.universe = universe
+        self.universe.on_trait_change(self.process_atoms_name_changed, 'forces.name')
+
+    def process_atoms_name_changed(self):
+        self.reset()
+
+    def set_universe(self, universe):
+        self.universe = universe
+        self.reset()
+
+    def rowCount(self, parent=QModelIndex()):
+        if parent.isValid() or self.universe is None:
+            return 0
+        else:
+            return len(self.universe.forces)
+
+    def data(self, index, role):
+        if role == Qt.DisplayRole:
+            force = self.universe.forces[index.row()]
+            return force.name
+        elif role == Qt.ItemDataRole:
+            force = self.universe.forces[index.row()]
+            return id(force)
+        else:
+            return None
+
+
 # noinspection PyUnresolvedReferences
 class NaturalLawPropertiesWidget(QWidget):
     """
     This widget modifies properties of a natural law
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, universe, parent=None):
         super(NaturalLawPropertiesWidget, self).__init__(parent)
         self.natural_law = None
+        self.universe = universe
 
         self.name_editor = QLineEdit()
         self.name_editor_groupbox = QGroupBox("Name")
@@ -53,8 +89,11 @@ class NaturalLawPropertiesWidget(QWidget):
         self.name_editor_groupbox_layout.addStretch()
 
         self.force_combo_box = QComboBox()
+        self.force_combo_box.setModel(ForcesInUniverseListModel(universe))
         self.atom_in_combo_box = QComboBox()
+        self.atom_in_combo_box.setModel(AtomsInUniverseListModel(universe))
         self.atom_out_combo_box = QComboBox()
+        self.atom_out_combo_box.setModel(AtomsInUniverseListModel(universe))
         self.transformation_label = QLabel()
 
         self.conversion_scheme_groupbox = QGroupBox("Conversion scheme")
@@ -70,13 +109,11 @@ class NaturalLawPropertiesWidget(QWidget):
 
         self.multiplicative_component_label = QLabel(u"υ = ")
         self.multiplicative_component_label.setFont(QFont("Times New Roman", 15, italic=True))
-        self.multiplicative_component_line_edit = QLineEdit()
-        self.multiplicative_component_line_edit.setValidator(QDoubleValidator())
+        self.multiplicative_component_double_spinbox = QDoubleSpinBox()
 
         self.additive_component_label = QLabel(u"s = ")
         self.additive_component_label.setFont(QFont("Times New Roman", 15, italic=True))
-        self.additive_component_line_edit = QLineEdit()
-        self.additive_component_line_edit.setValidator(QDoubleValidator())
+        self.additive_component_double_spinbox = QDoubleSpinBox()
 
         self.conversion_rate_groupbox = QGroupBox("Conversion rate")
         self.conversion_rate_groupbox_layout = QGridLayout()
@@ -84,9 +121,9 @@ class NaturalLawPropertiesWidget(QWidget):
         self.conversion_rate_groupbox_layout.addWidget(self.take_force_value_into_consideration, 0, 0, 1, 2)
         self.conversion_rate_groupbox_layout.addWidget(self.conversion_rate_formula_label, 1, 0, 1, 2)
         self.conversion_rate_groupbox_layout.addWidget(self.multiplicative_component_label, 2, 0)
-        self.conversion_rate_groupbox_layout.addWidget(self.multiplicative_component_line_edit, 2, 1)
+        self.conversion_rate_groupbox_layout.addWidget(self.multiplicative_component_double_spinbox, 2, 1)
         self.conversion_rate_groupbox_layout.addWidget(self.additive_component_label, 3, 0)
-        self.conversion_rate_groupbox_layout.addWidget(self.additive_component_line_edit, 3, 1)
+        self.conversion_rate_groupbox_layout.addWidget(self.additive_component_double_spinbox, 3, 1)
 
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.name_editor_groupbox)
@@ -97,6 +134,8 @@ class NaturalLawPropertiesWidget(QWidget):
         self.setLayout(main_layout)
 
         self.name_editor.textChanged.connect(self.name_editor_text_changed)
+        self.multiplicative_component_double_spinbox.valueChanged.connect(self.multiplicative_component_value_changed)
+        self.additive_component_double_spinbox.valueChanged.connect(self.additive_component_value_changed)
 
         self.setDisabled(True)
 
@@ -113,6 +152,16 @@ class NaturalLawPropertiesWidget(QWidget):
         self.natural_law = natural_law
         self.name_editor.setText(self.natural_law.name)
 
+        if self.natural_law.atom_in is not None:
+            self.atom_in_combo_box.setCurrentIndex(self.universe.atoms.index(self.natural_law.atom_in))
+        if self.natural_law.atom_out is not None:
+            self.atom_out_combo_box.setCurrentIndex(self.universe.atoms.index(self.natural_law.atom_out))
+        if self.natural_law.accelerator is not None:
+            self.force_combo_box.setCurrentIndex(self.universe.forces.index(self.natural_law.accelerator))
+
+        self.multiplicative_component_double_spinbox.setValue(self.natural_law.multiplicative_component)
+        self.additive_component_double_spinbox.setValue(self.natural_law.additive_component)
+
         self.setEnabled(True)
 
     def invalidate(self):
@@ -120,3 +169,9 @@ class NaturalLawPropertiesWidget(QWidget):
 
     def name_editor_text_changed(self, value):
         self.natural_law.name = value
+
+    def multiplicative_component_value_changed(self, value):
+        self.natural_law.multiplicative_component = value
+
+    def additive_component_value_changed(self, value):
+        self.natural_law.additive_component = value

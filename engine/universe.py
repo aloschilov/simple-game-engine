@@ -4,7 +4,7 @@ from mayavi.core.ui.api import MlabSceneModel
 from tvtk.api import tvtk
 from pykka.actor import ActorRef
 
-from sympy import Matrix, symbols, diag, Piecewise, ones
+from sympy import Matrix, symbols, diag, Piecewise, ones, pprint
 from sympy.physics.vector import ReferenceFrame, gradient
 from . import Atom
 from . import RadialForce
@@ -195,18 +195,56 @@ class Universe(HasTraits):
 
         natural_field = diag(*(ones(1, len(self.matters)) * ((Nu*G).multiply_elementwise(F))))
 
-        force_is_present = diag(*(ones(1, len(self.matters))*(Nu*G).multiply_elementwise(F)).applyfunc(
-            lambda exp: Piecewise((1.0, exp > 0.0), (0.0, exp <= 0.0))))
+        #force_is_present = diag(*(ones(1, len(self.matters))*(Nu*G).multiply_elementwise(F)).applyfunc(
+#            lambda exp: Piecewise((1.0, exp > 0.0), (0.0, exp <= 0.0))))
+        force_is_present = natural_field.applyfunc(
+            lambda exp: Piecewise((1.0, exp > 0.0),
+                                  (0.0, exp <= 0.0))
+        )
+
+        #print "force_is_present"
+        #pprint(force_is_present)
 
         natural_influence = (Upsilon * Alpha * natural_field + S * Alpha)*force_is_present*ones(len(fs), 1)
         pending_transformation_vector = Omicron.transpose()*natural_influence
 
-        #pprint(pending_transformation_vector)
+        # print "natural_field"
+        # pprint(natural_field)
+        # print "natural_influence"
+        # pprint(natural_influence)
+        # print "pending_transformation_vector"
+        # pprint(pending_transformation_vector)
 
-        get_matrix_of_converting_atoms(Nu, ps, pending_transformation_vector)
-        get_matrix_of_converted_atoms(Nu, ps, pending_transformation_vector, natural_influence, Omicron, D)
+        print "get_matrix_of_converting_atoms(Nu, ps, pending_transformation_vector):"
+        pprint(get_matrix_of_converting_atoms(Nu, ps, pending_transformation_vector))
 
-        # The only thing left here is application of natural law to current atoms quantities.
+        print "get_matrix_of_converted_atoms(Nu, ps, pending_transformation_vector, natural_influence, Omicron, D)"
+        print "Nu"
+        print(Nu)
+        print "ps"
+        print(ps)
+        print "pending_transformation_vector"
+        print(pending_transformation_vector)
+        print "natural_influence"
+        print(natural_influence)
+        print "Omicron"
+        print(Omicron)
+        print "D"
+        print(D)
+        print "return value"
+        print(get_matrix_of_converted_atoms(Nu, ps, pending_transformation_vector, natural_influence, Omicron, D))
+
+        Nu = (Nu -
+              get_matrix_of_converting_atoms(Nu, ps, pending_transformation_vector) +
+              get_matrix_of_converted_atoms(Nu, ps, pending_transformation_vector, natural_influence, Omicron, D)).evalf()
+
+        print "Nu after update"
+        pprint(Nu)
+
+        for i in xrange(len(self.matters)):
+            for j in xrange(len(self.atoms)):
+                if self.atoms[j] in self.matters[i].atoms:
+                    self.matters[i].atoms[self.atoms[j]] = float(Nu[i, j])
 
     @on_trait_change('scene')
     def bind_to_scene(self, scene):

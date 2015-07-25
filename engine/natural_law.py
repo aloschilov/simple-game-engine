@@ -1,4 +1,4 @@
-from sympy import Piecewise, And, Max, Matrix, zeros, Min, symbols, diag, ones
+from sympy import Piecewise, And, Max, Matrix, zeros, Min, symbols, diag, ones, pprint, Or
 
 from traits.api import HasTraits, Instance, Float, String
 from force import Force
@@ -48,7 +48,7 @@ def get_conversion_ratio_matrix(pending_conversion,
     """
 
     rows, cols = pending_conversion.shape
-    k = lambda a, s: Piecewise((1.0, And(a == 0.0, s == 0.0)),
+    k = lambda a, s: Piecewise((0.0, Or(a <= 0.0, s <= 0.0)),
                                (s/Max(a, s), True))
     return Matrix(rows, cols, list(map(k, pending_conversion, atoms_in_specific_matter)))
 
@@ -102,10 +102,11 @@ def get_matrix_of_converted_atoms(Nu, positions, pending_conversion, natural_inf
         raise Exception("Parameters shapes mismatch.")
 
     for (i, position) in enumerate(positions):
-        (a, b) = position
+        (a, b) = tuple(position)
         K = get_conversion_ratio_matrix(pending_conversion, Nu[i, :])
+        pprint(K)
         M = M.col_join(((diag(*(ones(1, number_of_atoms)*diag(*K)*Omicron.transpose()))*D).transpose() *
                         natural_influence).transpose().subs({x: a, y: b}))
 
-    return M
+    return M.evalf()
 

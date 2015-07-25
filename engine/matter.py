@@ -1,4 +1,4 @@
-from traits.api import (Array, Dict, Int, String, RGBColor, Bool)
+from traits.api import (Array, Dict, Float, String, RGBColor, Bool)
 from tvtk.api import tvtk
 from traits.api import HasTraits, Instance, on_trait_change
 from numpy import array, zeros, uint8
@@ -15,7 +15,7 @@ class Matter(HasTraits):
 
     position = Array('d', (2,), labels=['x', 'y'], cols=2,
                      desc='Position of an object in 2D-space')
-    atoms = Dict(key_trait=Instance(Atom), value_trait=Int)
+    atoms = Dict(key_trait=Instance(Atom), value_trait=Float)
 
     actor = Instance(tvtk.Actor)
 

@@ -56,7 +56,7 @@ class UniverseWidget(QWidget):
         self.tool_box.addItem(self.forces_stencils_view, "Forces")
         self.tool_box.addItem(self.natural_laws_stencils_view, "Natural laws")
 
-        self.properties_widget = PropertiesWidget()
+        self.properties_widget = PropertiesWidget(self.game_scene_widget.visualization.universe)
 
         main_layout = QHBoxLayout()
         main_layout.addWidget(self.tool_box, 1)
