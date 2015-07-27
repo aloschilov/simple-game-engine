@@ -104,7 +104,6 @@ class NaturalLawPropertiesWidget(QWidget):
         self.conversion_scheme_groupbox_layout.addWidget(self.atom_out_combo_box, 1, 2)
         self.conversion_scheme_groupbox_layout.addWidget(self.transformation_label, 1, 1)
 
-        self.take_force_value_into_consideration = QCheckBox("Take force value into consideration")
         self.conversion_rate_formula_label = LatexLabelWidget()
 
         self.multiplicative_component_label = QLabel(u"υ = ")
@@ -118,12 +117,11 @@ class NaturalLawPropertiesWidget(QWidget):
         self.conversion_rate_groupbox = QGroupBox("Conversion rate")
         self.conversion_rate_groupbox_layout = QGridLayout()
         self.conversion_rate_groupbox.setLayout(self.conversion_rate_groupbox_layout)
-        self.conversion_rate_groupbox_layout.addWidget(self.take_force_value_into_consideration, 0, 0, 1, 2)
-        self.conversion_rate_groupbox_layout.addWidget(self.conversion_rate_formula_label, 1, 0, 1, 2)
-        self.conversion_rate_groupbox_layout.addWidget(self.multiplicative_component_label, 2, 0)
-        self.conversion_rate_groupbox_layout.addWidget(self.multiplicative_component_double_spinbox, 2, 1)
-        self.conversion_rate_groupbox_layout.addWidget(self.additive_component_label, 3, 0)
-        self.conversion_rate_groupbox_layout.addWidget(self.additive_component_double_spinbox, 3, 1)
+        self.conversion_rate_groupbox_layout.addWidget(self.conversion_rate_formula_label, 0, 0, 1, 2)
+        self.conversion_rate_groupbox_layout.addWidget(self.multiplicative_component_label, 1, 0)
+        self.conversion_rate_groupbox_layout.addWidget(self.multiplicative_component_double_spinbox, 1, 1)
+        self.conversion_rate_groupbox_layout.addWidget(self.additive_component_label, 2, 0)
+        self.conversion_rate_groupbox_layout.addWidget(self.additive_component_double_spinbox, 2, 1)
 
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.name_editor_groupbox)
