@@ -195,51 +195,17 @@ class Universe(HasTraits):
 
         natural_field = diag(*(ones(1, len(self.matters)) * ((Nu*G).multiply_elementwise(F))))
 
-        #force_is_present = diag(*(ones(1, len(self.matters))*(Nu*G).multiply_elementwise(F)).applyfunc(
-#            lambda exp: Piecewise((1.0, exp > 0.0), (0.0, exp <= 0.0))))
         force_is_present = natural_field.applyfunc(
             lambda exp: Piecewise((1.0, exp > 0.0),
                                   (0.0, exp <= 0.0))
         )
 
-        #print "force_is_present"
-        #pprint(force_is_present)
-
         natural_influence = (Upsilon * Alpha * natural_field + S * Alpha)*force_is_present*ones(len(fs), 1)
         pending_transformation_vector = Omicron.transpose()*natural_influence
-
-        # print "natural_field"
-        # pprint(natural_field)
-        # print "natural_influence"
-        # pprint(natural_influence)
-        # print "pending_transformation_vector"
-        # pprint(pending_transformation_vector)
-
-        print "get_matrix_of_converting_atoms(Nu, ps, pending_transformation_vector):"
-        pprint(get_matrix_of_converting_atoms(Nu, ps, pending_transformation_vector))
-
-        print "get_matrix_of_converted_atoms(Nu, ps, pending_transformation_vector, natural_influence, Omicron, D)"
-        print "Nu"
-        print(Nu)
-        print "ps"
-        print(ps)
-        print "pending_transformation_vector"
-        print(pending_transformation_vector)
-        print "natural_influence"
-        print(natural_influence)
-        print "Omicron"
-        print(Omicron)
-        print "D"
-        print(D)
-        print "return value"
-        print(get_matrix_of_converted_atoms(Nu, ps, pending_transformation_vector, natural_influence, Omicron, D))
 
         Nu = (Nu -
               get_matrix_of_converting_atoms(Nu, ps, pending_transformation_vector) +
               get_matrix_of_converted_atoms(Nu, ps, pending_transformation_vector, natural_influence, Omicron, D)).evalf()
-
-        print "Nu after update"
-        pprint(Nu)
 
         for i in xrange(len(self.matters)):
             for j in xrange(len(self.atoms)):
