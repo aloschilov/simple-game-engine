@@ -172,6 +172,17 @@ class NaturalLawPropertiesWidget(QWidget):
 
     def multiplicative_component_value_changed(self, value):
         self.natural_law.multiplicative_component = value
+        self.update_conversion_rate_formula_label()
 
     def additive_component_value_changed(self, value):
         self.natural_law.additive_component = value
+        self.update_conversion_rate_formula_label()
+
+    def update_conversion_rate_formula_label(self):
+        self.conversion_rate_formula_label.text.set_text(
+            "$ f * \upsilon + s = f * {upsilon} + {s} $".format(
+                upsilon=self.natural_law.multiplicative_component,
+                s=self.natural_law.additive_component)
+        )
+        self.conversion_rate_formula_label.draw()
+
