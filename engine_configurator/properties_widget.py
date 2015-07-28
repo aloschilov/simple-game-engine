@@ -66,7 +66,7 @@ class PropertiesWidget(QWidget):
             self.atom_properties_widget.switch_to_atom(item.atom)
         elif isinstance(item, RadialForceItem):
             self.main_layout.setCurrentWidget(self.radial_force_properties_widget)
-            self.radial_force_properties_widget.switch_to_radial_force(item.radial_force)
+            self.radial_force_properties_widget.switch_to_radial_force(item.force)
         elif isinstance(item, NaturalLawItem):
             self.main_layout.setCurrentWidget(self.natural_law_properties_widget)
             self.natural_law_properties_widget.switch_to_natural_law(item.natural_law)

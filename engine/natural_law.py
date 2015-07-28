@@ -17,8 +17,8 @@ class NaturalLaw(HasTraits):
 
     accelerator = Instance(Force)
 
-    additive_component = Float(0)
-    multiplicative_component = Float(0)
+    additive_component = Float(0.0)
+    multiplicative_component = Float(0.0)
 
 
 # noinspection PyPep8Naming

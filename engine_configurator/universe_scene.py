@@ -2,13 +2,15 @@ from pyface.qt.QtCore import Signal
 
 from pyface.qt import QtGui
 import pygraphviz as pgv
-from pyface.qt.QtGui import (QGraphicsItem, QPainterPath,
-                             QGraphicsPathItem, QPen)
+from pyface.qt.QtGui import (QGraphicsItem, QPainterPath, QPen, QKeySequence)
 from pyface.qt.QtCore import Qt
 from engine_configurator.graphics_path_item_with_arrow_heads import GraphicsPathItemWithArrowHeads
+from engine_configurator.matter_item import MatterItem
+from engine_configurator.natural_law_item import NaturalLawItem
+from engine_configurator.radial_force_item import RadialForceItem
 
 from engine_configurator.universe_item import UniverseItem
-from engine_configurator.icon_graphics_widget import IconGraphicsWidget
+from engine_configurator.atom_item import AtomItem
 
 from engine import Universe
 
@@ -39,6 +41,7 @@ class UniverseScene(QtGui.QGraphicsScene):
     """
 
     properties_bindings_update_required = Signal(name="propertiesBindingsUpdateRequired")
+    properties_bindings_disconnect_required = Signal(QGraphicsItem, name="propertiesBindingsDisconnectRequired")
 
     @staticmethod
     def get_position(node):
@@ -103,6 +106,20 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.properties_bindings_update_required.emit()
         self.update()
 
+    def remove_matter(self, matter_item):
+
+        assert isinstance(matter_item, MatterItem)
+
+        self.graphics_items.remove(matter_item)
+        self.removeItem(matter_item)
+        matter_item.matter_and_atom_connected.disconnect(self.add_matter_and_atom_connection)
+        self.graph.remove_node(TreeNode(matter_item))
+
+        self.properties_bindings_disconnect_required.emit(matter_item)
+        self.universe_item.universe.remove_matter(matter_item.matter)
+
+        self.update()
+
     def add_atom(self, atom_item):
         self.graphics_items.append(atom_item)
         self.addItem(atom_item)
@@ -115,6 +132,20 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.graph.add_edge(TreeNode(self.universe_item),
                             TreeNode(atom_item), minlen=10)
         self.properties_bindings_update_required.emit()
+        self.update()
+
+    def remove_atom(self, atom_item):
+
+        assert isinstance(atom_item, AtomItem)
+
+        self.graphics_items.remove(atom_item)
+        self.removeItem(atom_item)
+        atom_item.atom_and_force_connected.disconnect(self.add_atom_and_force_connection)
+        self.graph.remove_node(TreeNode(atom_item))
+
+        self.properties_bindings_disconnect_required.emit(atom_item)
+        self.universe_item.universe.remove_atom(atom_item.atom)
+
         self.update()
 
     def add_radial_force(self, radial_force_item):
@@ -131,6 +162,18 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.properties_bindings_update_required.emit()
         self.update()
 
+    def remove_force(self, force_item):
+
+        self.graphics_items.remove(force_item)
+        self.removeItem(force_item)
+        force_item.force_and_atom_connected.disconnect(self.add_force_and_atom_connection)
+        self.graph.remove_node(TreeNode(force_item))
+
+        self.properties_bindings_disconnect_required.emit(force_item)
+        self.universe_item.universe.remove_force(force_item.force)
+
+        self.update()
+
     def add_natural_law(self, natural_law_item):
         self.graphics_items.append(natural_law_item)
         natural_law_item.atom_and_natural_law_connected.connect(self.add_atom_and_natural_law_connection)
@@ -145,6 +188,19 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.graph.add_edge(TreeNode(self.universe_item),
                             TreeNode(natural_law_item), minlen=10)
         self.properties_bindings_update_required.emit()
+        self.update()
+
+    def remove_natural_law(self, natural_law_item):
+        self.graphics_items.remove(natural_law_item)
+        self.removeItem(natural_law_item)
+        self.graph.remove_node(TreeNode(natural_law_item))
+        natural_law_item.atom_and_natural_law_connected.disconnect(self.add_atom_and_natural_law_connection)
+        natural_law_item.natural_law_and_atom_connected.disconnect(self.add_natural_law_and_atom_connection)
+        natural_law_item.force_and_natural_law_connected.disconnect(self.add_force_and_natural_law_connection)
+
+        self.properties_bindings_disconnect_required.emit(natural_law_item)
+        self.universe_item.universe.remove_natural_law(natural_law_item.natural_law)
+
         self.update()
 
     def add_matter_and_atom_connection(self, matter_item, atom_item):
@@ -210,6 +266,23 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.update()
         self.properties_bindings_update_required.emit()
 
+    def remove_item(self, graphics_item):
+        """
+        This method abstracts different approach used for deletion
+        of various items.
+        :param graphics_item:
+        :return:
+        """
+
+        if isinstance(graphics_item, AtomItem):
+            self.remove_atom(graphics_item)
+        elif isinstance(graphics_item, MatterItem):
+            self.remove_matter(graphics_item)
+        elif isinstance(graphics_item, RadialForceItem):
+            self.remove_force(graphics_item)
+        elif isinstance(graphics_item, NaturalLawItem):
+            self.remove_natural_law(graphics_item)
+
     def update(self):
         self.graph.layout(prog='dot')
 
@@ -273,21 +346,38 @@ class UniverseScene(QtGui.QGraphicsScene):
                 item = GraphicsPathItemWithArrowHeads(path)
                 if edge in self.matter_to_atom_edges:
                     item.setPen(QPen(Qt.darkGreen, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                    item.setFlag(QGraphicsItem.ItemIsSelectable, True)
                 elif edge in self.atom_to_force_edges:
                     item.setPen(QPen(Qt.darkGray, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                    item.setFlag(QGraphicsItem.ItemIsSelectable, True)
                 elif edge in self.force_to_atom_edges:
                     item.setPen(QPen(Qt.darkRed, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                    item.setFlag(QGraphicsItem.ItemIsSelectable, True)
                 elif edge in self.natural_law_to_atom_edges:
                     item.setPen(QPen(Qt.green, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                    item.setFlag(QGraphicsItem.ItemIsSelectable, True)
                 elif edge in self.atom_to_natural_law_edges:
                     item.setPen(QPen(Qt.darkCyan, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                    item.setFlag(QGraphicsItem.ItemIsSelectable, True)
                 elif edge in self.force_to_natural_law_edges:
                     item.setPen(QPen(Qt.darkYellow, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                    item.setFlag(QGraphicsItem.ItemIsSelectable, True)
                 else:
                     item.setPen(QPen(Qt.darkBlue, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
 
                 item.setZValue(100)
                 yield item
 
+    def keyPressEvent(self,  key_event):
+        """
+        This event handler, for event keyEvent, can be reimplemented in a subclass to
+        receive keypress events. The default implementation forwards the event to current
+        focus item.
+        :param key_event:
+        :type key_event: QKeyEvent
+        :return:
+        """
 
-# The first operation to consider is creating a new Matter within a scene
+        if key_event.matches(QKeySequence.Delete):
+            for item in self.selectedItems():
+                self.remove_item(item)

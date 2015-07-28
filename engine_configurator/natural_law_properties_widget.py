@@ -1,6 +1,6 @@
 # coding=utf-8
 from pyface.qt.QtGui import (QWidget, QGridLayout, QComboBox, QLabel, QLineEdit,
-                             QGroupBox, QHBoxLayout, QVBoxLayout, QCheckBox, QFont,
+                             QGroupBox, QHBoxLayout, QVBoxLayout, QFont,
                              QDoubleSpinBox)
 
 from pyface.qt.QtCore import (QAbstractListModel, QModelIndex, Qt)
@@ -135,6 +135,8 @@ class NaturalLawPropertiesWidget(QWidget):
         self.multiplicative_component_double_spinbox.valueChanged.connect(self.multiplicative_component_value_changed)
         self.additive_component_double_spinbox.valueChanged.connect(self.additive_component_value_changed)
 
+        self.atom_in_combo_box.currentIndexChanged.connect(self.atom_in_combo_box_current_index_changed)
+
         self.setDisabled(True)
 
     def switch_to_natural_law(self, natural_law):
@@ -160,6 +162,8 @@ class NaturalLawPropertiesWidget(QWidget):
         self.multiplicative_component_double_spinbox.setValue(self.natural_law.multiplicative_component)
         self.additive_component_double_spinbox.setValue(self.natural_law.additive_component)
 
+        self.update_conversion_rate_formula_label()
+
         self.setEnabled(True)
 
     def invalidate(self):
@@ -184,3 +188,6 @@ class NaturalLawPropertiesWidget(QWidget):
         )
         self.conversion_rate_formula_label.draw()
 
+    def atom_in_combo_box_current_index_changed(self, index):
+        print index
+        print type(index)

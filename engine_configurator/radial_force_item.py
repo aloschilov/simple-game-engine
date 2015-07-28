@@ -15,8 +15,8 @@ class RadialForceItem(ClickableGraphicsWidget, IconGraphicsWidget):
     def __init__(self, force=None):
         ClickableGraphicsWidget.__init__(self)
         self.initialize(":/images/radial_force.png")
-        self.radial_force = force
-        self.radial_force.on_trait_change(self.setText, 'name')
+        self.force = force
+        self.force.on_trait_change(self.setText, 'name')
         self.setCursor(Qt.OpenHandCursor)
         self.setAcceptDrops(True)
 
@@ -34,7 +34,7 @@ class RadialForceItem(ClickableGraphicsWidget, IconGraphicsWidget):
         mime = QMimeData()
         # A weak solution that could not be implemented in
         # C++
-        mime.force = self.radial_force
+        mime.force = self.force
         mime.force_item = self
         drag.setMimeData(mime)
 
@@ -81,8 +81,8 @@ class RadialForceItem(ClickableGraphicsWidget, IconGraphicsWidget):
 
     def dropEvent(self, event):
         if event.mimeData().hasText() and event.mimeData().text() == "Atom":
-            if event.mimeData().atom not in self.radial_force.atoms_to_produce_effect_on:
-                self.radial_force.atoms_to_produce_effect_on.append(event.mimeData().atom)
+            if event.mimeData().atom not in self.force.atoms_to_produce_effect_on:
+                self.force.atoms_to_produce_effect_on.append(event.mimeData().atom)
                 self.force_and_atom_connected.emit(self, event.mimeData().atom_item)
             else:
                 print "No connection created since it's already exists"

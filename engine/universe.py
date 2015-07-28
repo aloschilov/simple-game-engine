@@ -270,3 +270,76 @@ class Universe(HasTraits):
 
         self.image_import.update()
         self.image_actor.visibility = False
+
+    def remove_atom(self, atom):
+        """
+        This method completely removes atom from Universe
+        as if it never existed.
+        :param atom: An atom to remove from Universe
+        :type atom: Atom
+        :return: Nothing
+        """
+        if atom in self.atoms:
+            self.atoms.remove(atom)
+
+        for matter in self.matters:
+            matter.atoms.pop(atom, 0)
+
+        for force in self.forces:
+            if atom in force.atoms_to_produce_effect_on:
+                force.atoms_to_produce_effect_on.remove(atom)
+
+        for natural_law in self.natural_laws:
+            if natural_law.atom_in is atom:
+                natural_law.atom_in = None
+            if natural_law.atom_out is atom:
+                natural_law.atom_out = None
+
+    def remove_matter(self, matter):
+        """
+        This method completely removes matter from Universe
+        as if it never existed.
+        :param matter: A matter to remove from Universe
+        :type matter: Matter
+        :return: Nothing
+        """
+
+        assert isinstance(matter, Matter)
+
+        if matter in self.matters:
+            self.matters.remove(matter)
+
+        self.scene.remove_actor(matter.actor)
+        self.scene.remove_actor(matter.legend_actor)
+
+    def remove_force(self, force):
+        """
+        This method completely removes force from Universe
+        as if it never existed.
+        :param matter: A force to remove from Universe
+        :type matter: Force
+        :return: Nothing
+        """
+
+        assert isinstance(force, Force)
+
+        for atom in self.atoms:
+            if force in atom.produced_forces:
+                atom.produced_forces.remove(force)
+
+        if force in self.forces:
+            self.forces.remove(force)
+
+    def remove_natural_law(self, natural_law):
+        """
+        This method completely removes Natural Law from Universe
+        as if it never existed.
+        :param matter: A Natural Law to remove from Universe
+        :type matter: NaturalLaw
+        :return: Nothing
+        """
+
+        assert isinstance(natural_law, NaturalLaw)
+
+        if natural_law in self.natural_laws:
+            self.natural_laws.remove(natural_law)
