@@ -343,3 +343,16 @@ class Universe(HasTraits):
 
         if natural_law in self.natural_laws:
             self.natural_laws.remove(natural_law)
+
+    def remove_matter_and_atom_connection(self, matter, atom):
+        """
+        An accessory method that removes Matter to Atom relation.
+        :param matter: A Matter to remove Atom from.
+        :type matter: Matter
+        :param atom: An atom to remove from Matter.
+        :type atom: Atom
+        :return: Nothing
+        """
+
+        if matter in self.matters:
+            matter.atoms.pop(atom, 0)

@@ -213,6 +213,17 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.update()
         self.properties_bindings_update_required.emit()
 
+    def remove_matter_and_atom_connection(self, matter_item, atom_item):
+        self.matter_to_atom_edges.remove(self.graph.get_edge(TreeNode(matter_item),
+                                                             TreeNode(atom_item)))
+        self.graph.remove_edge(TreeNode(matter_item),
+                               TreeNode(atom_item))
+
+        self.universe_item.universe.remove_matter_and_atom_connection(matter_item.matter,
+                                                                      atom_item.atom)
+
+        self.update()
+
     def add_atom_and_force_connection(self, atom_item, force_item):
         self.graph.add_edge(TreeNode(atom_item),
                             TreeNode(force_item),
@@ -282,6 +293,13 @@ class UniverseScene(QtGui.QGraphicsScene):
             self.remove_force(graphics_item)
         elif isinstance(graphics_item, NaturalLawItem):
             self.remove_natural_law(graphics_item)
+        elif isinstance(graphics_item, GraphicsPathItemWithArrowHeads):
+            origin, destination = graphics_item.edge
+            origin_graphics_item = self.get_graphics_item_by_repr(origin)
+            destination_graphics_item =  self.get_graphics_item_by_repr(destination)
+
+            if isinstance(origin_graphics_item, MatterItem) and isinstance(destination_graphics_item, AtomItem):
+                self.remove_matter_and_atom_connection(origin_graphics_item, destination_graphics_item)
 
     def update(self):
         self.graph.layout(prog='dot')
@@ -344,6 +362,7 @@ class UniverseScene(QtGui.QGraphicsScene):
                 #path.lineTo(x, y)
 
                 item = GraphicsPathItemWithArrowHeads(path)
+                item.edge = edge
                 if edge in self.matter_to_atom_edges:
                     item.setPen(QPen(Qt.darkGreen, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
                     item.setFlag(QGraphicsItem.ItemIsSelectable, True)
