@@ -30,9 +30,9 @@ class UniverseWidget(QWidget):
         self.game_scene_widget = GameSceneWidget()
         self.game_scene_widget.visualization.universe = self.universe_graphics_scene.universe_item.universe
 
-        self.middle_containter_widget = QTabWidget()
-        self.middle_containter_widget.addTab(self.universe_graphics_view, "Elements relations")
-        self.middle_containter_widget.addTab(self.game_scene_widget, "Game scene")
+        self.middle_container_widget = QTabWidget()
+        self.middle_container_widget.addTab(self.universe_graphics_view, "Elements relations")
+        self.middle_container_widget.addTab(self.game_scene_widget, "Game scene")
 
         self.matters_stencils_scene = QGraphicsScene()
         self.matters_stencils_view = QGraphicsView(self.matters_stencils_scene)
@@ -60,11 +60,12 @@ class UniverseWidget(QWidget):
 
         main_layout = QHBoxLayout()
         main_layout.addWidget(self.tool_box, 1)
-        main_layout.addWidget(self.middle_containter_widget, 3)
+        main_layout.addWidget(self.middle_container_widget, 3)
         main_layout.addWidget(self.properties_widget, 1)
         self.setLayout(main_layout)
 
         self.universe_graphics_scene.properties_bindings_update_required.connect(self.update_properties_bindings)
+        self.universe_graphics_scene.properties_bindings_disconnect_required.connect(self.disconnect_graphics_item_from_properties_widget)
 
     def update_properties_bindings(self):
         for graphics_item in self.universe_graphics_scene.graphics_items:
@@ -74,6 +75,7 @@ class UniverseWidget(QWidget):
 
     def disconnect_graphics_item_from_properties_widget(self, graphics_item):
         graphics_item.clicked.disconnect(self.properties_widget.process_item_clicked)
+        self.properties_widget.process_item_clicked(None)
 
 
 if __name__ == "__main__":
