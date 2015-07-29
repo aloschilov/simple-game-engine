@@ -234,6 +234,16 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.update()
         self.properties_bindings_update_required.emit()
 
+    def remove_atom_and_force_connection(self, atom_item, force_item):
+        self.atom_to_force_edges.remove(self.graph.get_edge(TreeNode(atom_item),
+                                                            TreeNode(force_item)))
+        self.graph.remove_edge(TreeNode(atom_item),
+                               TreeNode(force_item))
+
+        self.universe_item.universe.remove_atom_and_force_connection(atom_item.atom,
+                                                                     force_item.force)
+        self.update()
+
     def add_force_and_atom_connection(self, force_item, atom_item):
         self.graph.add_edge(TreeNode(force_item),
                             TreeNode(atom_item),
@@ -244,10 +254,17 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.update()
         self.properties_bindings_update_required.emit()
 
+    def remove_force_and_atom_connection(self, force_item, atom_item):
+        self.force_to_atom_edges.remove(self.graph.get_edge(TreeNode(force_item),
+                                                            TreeNode(atom_item)))
+        self.graph.remove_edge(TreeNode(force_item),
+                               TreeNode(atom_item))
+
+        self.universe_item.universe.remove_force_and_atom_connection(force_item.force,
+                                                                     atom_item.atom)
+        self.update()
+
     def add_atom_and_natural_law_connection(self, atom_item, natural_law_item):
-        print "def add_atom_and_natural_law_connection(self, atom_item, natural_law_item):"
-        print atom_item
-        print natural_law_item
         self.graph.add_edge(TreeNode(atom_item),
                             TreeNode(natural_law_item),
                             minlen=10)
@@ -256,6 +273,17 @@ class UniverseScene(QtGui.QGraphicsScene):
                                                                   TreeNode(natural_law_item)))
         self.update()
         self.properties_bindings_update_required.emit()
+
+    def remove_atom_and_natural_law_connection(self, atom_item, natural_law_item):
+        self.atom_to_natural_law_edges.remove(self.graph.get_edge(TreeNode(atom_item),
+                                                                  TreeNode(natural_law_item)))
+        self.graph.remove_edge(TreeNode(atom_item),
+                               TreeNode(natural_law_item))
+
+        self.universe_item.universe.remove_atom_and_natural_law_connection(atom_item.atom,
+                                                                           natural_law_item.natural_law)
+
+        self.update()
 
     def add_natural_law_and_atom_connection(self, natural_law_item, atom_item):
         self.graph.add_edge(TreeNode(natural_law_item),
@@ -267,6 +295,16 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.update()
         self.properties_bindings_update_required.emit()
 
+    def remove_natural_law_and_atom_connection(self, natural_law_item, atom_item):
+        self.natural_law_to_atom_edges.remove(self.graph.get_edge(TreeNode(natural_law_item),
+                                                                  TreeNode(atom_item)))
+
+        self.graph.remove_edge(TreeNode(natural_law_item),
+                               TreeNode(atom_item))
+        self.universe_item.universe.remove_natural_law_and_atom_connection(natural_law_item.natural_law,
+                                                                           atom_item.atom)
+        self.update()
+
     def add_force_and_natural_law_connection(self, force_item, natural_law_item):
         self.graph.add_edge(TreeNode(force_item),
                             TreeNode(natural_law_item),
@@ -276,6 +314,15 @@ class UniverseScene(QtGui.QGraphicsScene):
                                                                    TreeNode(natural_law_item)))
         self.update()
         self.properties_bindings_update_required.emit()
+
+    def remove_force_and_natural_law_connection(self, force_item, natural_law_item):
+        self.force_to_natural_law_edges.remove(self.graph.get_edge(TreeNode(force_item),
+                                                                   TreeNode(natural_law_item)))
+        self.graph.remove_edge(TreeNode(force_item),
+                               TreeNode(natural_law_item))
+        self.universe_item.universe.remove_force_and_natural_law_connection(force_item.force,
+                                                                            natural_law_item.natural_law)
+        self.update()
 
     def remove_item(self, graphics_item):
         """
@@ -300,6 +347,17 @@ class UniverseScene(QtGui.QGraphicsScene):
 
             if isinstance(origin_graphics_item, MatterItem) and isinstance(destination_graphics_item, AtomItem):
                 self.remove_matter_and_atom_connection(origin_graphics_item, destination_graphics_item)
+            elif isinstance(origin_graphics_item, AtomItem) and isinstance(destination_graphics_item, RadialForceItem):
+                self.remove_atom_and_force_connection(origin_graphics_item, destination_graphics_item)
+            elif isinstance(origin_graphics_item, RadialForceItem) and isinstance(destination_graphics_item, AtomItem):
+                self.remove_force_and_atom_connection(origin_graphics_item, destination_graphics_item)
+            elif isinstance(origin_graphics_item, AtomItem) and isinstance(destination_graphics_item, NaturalLawItem):
+                self.remove_atom_and_natural_law_connection(origin_graphics_item, destination_graphics_item)
+            elif isinstance(origin_graphics_item, NaturalLawItem) and isinstance(destination_graphics_item, AtomItem):
+                self.remove_natural_law_and_atom_connection(origin_graphics_item, destination_graphics_item)
+            elif isinstance(origin_graphics_item, RadialForceItem) and isinstance(destination_graphics_item,
+                                                                                  NaturalLawItem):
+                self.remove_force_and_natural_law_connection(origin_graphics_item, destination_graphics_item)
 
     def update(self):
         self.graph.layout(prog='dot')
