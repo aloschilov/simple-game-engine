@@ -26,15 +26,24 @@ class AtomsInUniverseListModel(QAbstractListModel):
         if parent.isValid() or self.universe is None:
             return 0
         else:
-            return len(self.universe.atoms)
+            return len(self.universe.atoms) + 1
 
     def data(self, index, role):
+        print "def data(self, index, role):"
+        print index
+        print role
         if role == Qt.DisplayRole:
-            atom = self.universe.atoms[index.row()]
-            return atom.name
+            if index.row() == 0:
+                return "No connection"
+            else:
+                atom = self.universe.atoms[index.row() - 1]
+                return atom.name
         elif role == Qt.ItemDataRole:
-            atom = self.universe.atoms[index.row()]
-            return id(atom)
+            if index.row() == 0:
+                return 0
+            else:
+                atom = self.universe.atoms[index.row() - 1]
+                return id(atom)
         else:
             return None
 
@@ -97,6 +106,7 @@ class NaturalLawPropertiesWidget(QWidget):
         self.transformation_label = QLabel()
 
         self.conversion_scheme_groupbox = QGroupBox("Conversion scheme")
+        self.conversion_scheme_groupbox.setVisible(False)
         self.conversion_scheme_groupbox_layout = QGridLayout()
         self.conversion_scheme_groupbox.setLayout(self.conversion_scheme_groupbox_layout)
         self.conversion_scheme_groupbox_layout.addWidget(self.atom_in_combo_box, 1, 0)
@@ -189,5 +199,5 @@ class NaturalLawPropertiesWidget(QWidget):
         self.conversion_rate_formula_label.draw()
 
     def atom_in_combo_box_current_index_changed(self, index):
-        print index
-        print type(index)
+        # here we should remove the previous connection.
+        pass
