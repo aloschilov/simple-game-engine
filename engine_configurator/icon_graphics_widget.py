@@ -1,4 +1,4 @@
-from pyface.qt.QtCore import QRectF, Qt
+from pyface.qt.QtCore import QRectF, Qt, QSizeF
 from pyface.qt.QtGui import QGraphicsWidget, QPainterPath
 from pyface.qt.QtGui import (QPixmap, QGraphicsPixmapItem, QPainter)
 
@@ -49,6 +49,9 @@ class IconGraphicsWidget(QGraphicsWidget):
 
     def boundingRect(self):
         return self.bounding_rectangle
+
+    def sizeHint(self, which, constraint=QSizeF()):
+        return QSizeF(self.bounding_rectangle.width(), self.bounding_rectangle.height())
 
     def shape(self):
         path = QPainterPath()

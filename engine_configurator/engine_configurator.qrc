@@ -3,7 +3,7 @@
 		<file>images/universe.png</file>
 		<file>images/matter.png</file>
         <file>images/atom.png</file>
-        <file>images/radial_force.png</file>
+        <file>images/force.png</file>
 		<file>images/natural_law.png</file>
 	</qresource>
 </RCC>

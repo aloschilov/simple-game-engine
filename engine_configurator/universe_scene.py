@@ -78,6 +78,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.universe_item.matter_added.connect(self.add_matter)
         self.universe_item.atom_added.connect(self.add_atom)
         self.universe_item.radial_force_added.connect(self.add_radial_force)
+        self.universe_item.expression_based_force_added.connect(self.add_expression_based_force)
         self.universe_item.natural_law_added.connect(self.add_natural_law)
 
         self.graphics_items = list()
@@ -172,6 +173,20 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.properties_bindings_disconnect_required.emit(force_item)
         self.universe_item.universe.remove_force(force_item.force)
 
+        self.update()
+
+    def add_expression_based_force(self, expression_based_force_item):
+        self.graphics_items.append(expression_based_force_item)
+        expression_based_force_item.force_and_atom_connected.connect(self.add_force_and_atom_connection)
+        self.addItem(expression_based_force_item)
+        self.graph.add_node(TreeNode(expression_based_force_item))
+        atom_item_node = self.graph.get_node(TreeNode(expression_based_force_item))
+        atom_item_node.attr['shape'] = 'rect'
+        atom_item_node.attr['width'] = expression_based_force_item.boundingRect().width()
+        atom_item_node.attr['height'] = expression_based_force_item.boundingRect().height()
+        self.graph.add_edge(TreeNode(self.universe_item),
+                            TreeNode(expression_based_force_item), minlen=10)
+        self.properties_bindings_update_required.emit()
         self.update()
 
     def add_natural_law(self, natural_law_item):

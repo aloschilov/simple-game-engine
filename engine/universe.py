@@ -8,11 +8,21 @@ from sympy import Matrix, symbols, diag, Piecewise, ones, pprint
 from sympy.physics.vector import ReferenceFrame, gradient
 from . import Atom
 from . import RadialForce
+from . import ExpressionBasedForce
 from . import Force
 from . import Matter
 from . import NaturalLaw
 from vector_field_rendering_actor import VectorFieldRenderingActor
 from natural_law import get_matrix_of_converting_atoms, get_matrix_of_converted_atoms
+
+
+def try_except(fn):
+    def wrapped(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except Exception, e:
+            print e
+    return wrapped
 
 
 class Universe(HasTraits):
@@ -82,6 +92,12 @@ class Universe(HasTraits):
         self.forces.append(force)
         return force
 
+    def create_expression_based_force(self, expression):
+        force = ExpressionBasedForce()
+        force.__expression = expression
+        self.forces.append(force)
+        return force
+
     def create_natural_law(self):
         natural_law = NaturalLaw()
         self.natural_laws.append(natural_law)
@@ -96,6 +112,7 @@ class Universe(HasTraits):
         #print arg3
 
     # noinspection PyShadowingNames,PyTypeChecker,PyPep8Naming
+    @try_except
     def next_step(self):
         """
         This method evaluates entire universe along the time
@@ -410,7 +427,6 @@ class Universe(HasTraits):
         if natural_law in self.natural_laws:
             if natural_law.atom_out is atom:
                 natural_law.atom_out = None
-
 
     def remove_force_and_natural_law_connection(self, force, natural_law):
         """

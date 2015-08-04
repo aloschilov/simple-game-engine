@@ -1,16 +1,17 @@
 from pyface.qt.QtGui import (QDrag, QApplication, QPixmap, QPainter, QStyleOptionGraphicsItem)
 from pyface.qt.QtCore import (Qt, QMimeData, QLineF, QPoint)
+
 from engine_configurator.icon_graphics_widget import IconGraphicsWidget
 
 
-class RadialForceToolboxItem(IconGraphicsWidget):
+class ExpressionBasedForceToolboxItem(IconGraphicsWidget):
     """
-    This item represents matter object in toolbox
+    This item represents force object in toolbox
     """
 
     def __init__(self):
-        super(RadialForceToolboxItem, self).__init__(":/images/force.png")
-        self.setText("Radial force")
+        super(ExpressionBasedForceToolboxItem, self).__init__(":/images/force.png")
+        self.setText("Force as expression")
         self.setCursor(Qt.OpenHandCursor)
 
     def mousePressEvent(self, event):
@@ -26,7 +27,7 @@ class RadialForceToolboxItem(IconGraphicsWidget):
         mime = QMimeData()
         drag.setMimeData(mime)
 
-        mime.setText("RadialForce")
+        mime.setText("ExpressionBasedForce")
 
         pixmap = QPixmap(int(self.boundingRect().width()),
                          int(self.boundingRect().height()))

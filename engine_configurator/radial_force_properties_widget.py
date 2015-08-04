@@ -1,5 +1,7 @@
-from pyface.qt.QtGui import QLineEdit, QGroupBox, QHBoxLayout, QVBoxLayout, QScrollArea
+from pyface.qt.QtGui import QLineEdit, QGroupBox, QHBoxLayout, QVBoxLayout
+
 from pyface.qt.QtGui import QWidget
+
 from explicit_bezier_curve_widget.explicit_bezier_curve_widget import ExplicitBezierCurveWidget
 
 
@@ -8,6 +10,7 @@ class RadialForcePropertiesWidget(QWidget):
     This widget modifies properties of a radial force
     """
 
+    # noinspection PyUnresolvedReferences
     def __init__(self, parent=None):
         super(RadialForcePropertiesWidget, self).__init__(parent)
         self.radial_force = None

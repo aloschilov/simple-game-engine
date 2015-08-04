@@ -2,6 +2,8 @@ from pyface.qt.QtGui import QLabel, QVBoxLayout
 from pyface.qt.QtGui import QWidget, QStackedLayout
 from engine_configurator.atom_item import AtomItem
 from engine_configurator.atom_properties_widget import AtomPropertiesWidget
+from engine_configurator.expression_based_force_item import ExpressionBasedForceItem
+from engine_configurator.expression_based_force_properties_widget import ExpressionBasedForcePropertiesWidget
 from engine_configurator.matter_item import MatterItem
 from engine_configurator.matter_properties_widget import MatterPropertiesWidget
 from engine_configurator.natural_law_item import NaturalLawItem
@@ -40,6 +42,7 @@ class PropertiesWidget(QWidget):
         self.matter_properties_widget = MatterPropertiesWidget()
         self.atom_properties_widget = AtomPropertiesWidget()
         self.radial_force_properties_widget = RadialForcePropertiesWidget()
+        self.expression_based_force_properties_widget = ExpressionBasedForcePropertiesWidget()
         self.natural_law_properties_widget = NaturalLawPropertiesWidget(universe)
         self.no_object_selected_widget = NoObjectSelectedWidget()
 
@@ -48,6 +51,7 @@ class PropertiesWidget(QWidget):
         self.main_layout.addWidget(self.matter_properties_widget)
         self.main_layout.addWidget(self.atom_properties_widget)
         self.main_layout.addWidget(self.radial_force_properties_widget)
+        self.main_layout.addWidget(self.expression_based_force_properties_widget)
         self.main_layout.addWidget(self.natural_law_properties_widget)
         self.setLayout(self.main_layout)
 
@@ -67,6 +71,9 @@ class PropertiesWidget(QWidget):
         elif isinstance(item, RadialForceItem):
             self.main_layout.setCurrentWidget(self.radial_force_properties_widget)
             self.radial_force_properties_widget.switch_to_radial_force(item.force)
+        elif isinstance(item, ExpressionBasedForceItem):
+            self.main_layout.setCurrentWidget(self.expression_based_force_properties_widget)
+            self.expression_based_force_properties_widget.switch_to_expression_based_force(item.force)
         elif isinstance(item, NaturalLawItem):
             self.main_layout.setCurrentWidget(self.natural_law_properties_widget)
             self.natural_law_properties_widget.switch_to_natural_law(item.natural_law)

@@ -1,16 +1,18 @@
-from pyface.qt.QtGui import (QDrag, QApplication, QPixmap, QPainter, QGraphicsPixmapItem, QStyleOptionGraphicsItem)
+from pyface.qt.QtGui import (QDrag, QApplication, QPixmap, QPainter, QStyleOptionGraphicsItem)
 from pyface.qt.QtCore import (Qt, QMimeData, QLineF, QPoint)
 
+from engine_configurator.icon_graphics_widget import IconGraphicsWidget
 
-class AtomToolboxItem(QGraphicsPixmapItem):
+
+class AtomToolboxItem(IconGraphicsWidget):
     """
     This item represents matter object in toolbox
     """
 
     def __init__(self):
-        super(AtomToolboxItem, self).__init__()
+        super(AtomToolboxItem, self).__init__(":/images/atom.png")
+        self.setText("Atom")
         self.setCursor(Qt.OpenHandCursor)
-        self.setPixmap(QPixmap(":/images/atom.png"))
 
     def mousePressEvent(self, event):
         self.setCursor(Qt.ClosedHandCursor)

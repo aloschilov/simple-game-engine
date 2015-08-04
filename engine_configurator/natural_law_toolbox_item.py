@@ -1,16 +1,18 @@
 from pyface.qt.QtGui import (QDrag, QApplication, QPixmap, QPainter, QGraphicsPixmapItem, QStyleOptionGraphicsItem)
 from pyface.qt.QtCore import (Qt, QMimeData, QLineF, QPoint)
 
+from engine_configurator.icon_graphics_widget import IconGraphicsWidget
 
-class NaturalLawToolboxItem(QGraphicsPixmapItem):
+
+class NaturalLawToolboxItem(IconGraphicsWidget):
     """
     This item represents natural law object in toolbox
     """
 
     def __init__(self):
-        super(NaturalLawToolboxItem, self).__init__()
+        super(NaturalLawToolboxItem, self).__init__(":/images/natural_law.png")
+        self.setText("Natural law")
         self.setCursor(Qt.OpenHandCursor)
-        self.setPixmap(QPixmap(":/images/natural_law.png"))
 
     def mousePressEvent(self, event):
         self.setCursor(Qt.ClosedHandCursor)

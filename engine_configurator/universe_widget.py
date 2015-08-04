@@ -1,5 +1,6 @@
 import sys
 from engine_configurator.atom_toolbox_item import AtomToolboxItem
+from engine_configurator.expression_based_force_toolbox_item import ExpressionBasedForceToolboxItem
 from engine_configurator.game_scene_widget import GameSceneWidget
 
 from engine_configurator.matter_toolbox_item import MatterToolboxItem
@@ -10,7 +11,8 @@ from engine_configurator.universe_scene import UniverseScene
 
 
 from pyface.qt.QtGui import (QWidget, QPainter,
-                             QApplication, QGraphicsView, QHBoxLayout, QToolBox, QGraphicsScene, QTabWidget)
+                             QApplication, QGraphicsView, QHBoxLayout, QToolBox, QGraphicsScene, QTabWidget, QGraphicsWidget, QGraphicsLinearLayout)
+from pyface.qt.QtCore import Qt
 
 # noinspection PyUnresolvedReferences
 import engine_configurator_rc
@@ -44,7 +46,21 @@ class UniverseWidget(QWidget):
 
         self.forces_stencils_scene = QGraphicsScene()
         self.forces_stencils_view = QGraphicsView(self.forces_stencils_scene)
-        self.forces_stencils_scene.addItem(RadialForceToolboxItem())
+
+        radial_force_toolbox_item = RadialForceToolboxItem()
+        expression_based_force_toolbox_item = ExpressionBasedForceToolboxItem()
+
+        self.forces_stencils_scene.addItem(radial_force_toolbox_item)
+        self.forces_stencils_scene.addItem(expression_based_force_toolbox_item)
+
+        force_stencils_container_graphics_layout = QGraphicsLinearLayout(Qt.Vertical)
+        force_stencils_container_graphics_layout.addItem(radial_force_toolbox_item)
+        force_stencils_container_graphics_layout.addItem(expression_based_force_toolbox_item)
+
+        force_stencils_container_graphics_widget = QGraphicsWidget()
+        force_stencils_container_graphics_widget.setLayout(force_stencils_container_graphics_layout)
+
+        self.forces_stencils_scene.addItem(force_stencils_container_graphics_widget)
 
         self.natural_laws_stencils_scene = QGraphicsScene()
         self.natural_laws_stencils_view = QGraphicsView(self.natural_laws_stencils_scene)
