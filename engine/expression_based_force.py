@@ -1,5 +1,5 @@
 from force import Force
-from traits.api import String
+import yaml
 
 from sympy.parsing.sympy_parser import parse_expr
 
@@ -35,3 +35,20 @@ class ExpressionBasedForce(Force):
         return parse_expr(self.__expression)
 
     expression = property(get_expression, set_expression)
+
+
+def expression_based_force_representer(dumper, expression_based_force):
+    return dumper.represent_mapping(u'!ExpressionBasedForce', {"expression": expression_based_force.expression,
+                                                   })
+
+
+def expression_based_force_constructor(loader, node):
+    expression_based_force = ExpressionBasedForce()
+    yield expression_based_force
+    mapping = loader.construct_mapping(node, deep=True)
+    expression_based_force.expression = mapping["expression"]
+
+
+yaml.add_representer(ExpressionBasedForce, expression_based_force_representer)
+yaml.add_constructor(u'!ExpressionBasedForce', expression_based_force_constructor)
+

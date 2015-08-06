@@ -1,5 +1,6 @@
 from sympy import symbols, sqrt
 from scipy.special import binom
+import yaml
 
 from force import Force
 
@@ -86,4 +87,29 @@ class RadialForce(Force):
         expr = expr.subs(rho, sqrt(x * x + y * y))
         return expr
 
+
+def radial_force_representer(dumper, radial_force):
+    return dumper.represent_mapping(u'!RadialForce', {"min_x": radial_force.min_rho,
+                                                      "max_x": radial_force.max_rho,
+                                                      "min_y": radial_force.min_z,
+                                                      "max_y": radial_force.max_z,
+                                                      "degree": radial_force.degree,
+                                                      "ys": radial_force.zs,
+                                                      })
+
+
+def radial_force_constructor(loader, node):
+    radial_force = RadialForce()
+    yield radial_force
+    mapping = loader.construct_mapping(node, deep=True)
+    radial_force.min_rho = mapping["min_x"]
+    radial_force.max_rho = mapping["max_x"]
+    radial_force.min_z = mapping["min_y"]
+    radial_force.max_z = mapping["max_y"]
+    radial_force.degree = mapping["degree"]
+    radial_force.zs = mapping["ys"]
+
+
+yaml.add_representer(RadialForce, radial_force_representer)
+yaml.add_constructor(u'!RadialForce', radial_force_constructor)
 

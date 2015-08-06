@@ -1,7 +1,8 @@
 from traits.api import (Array, Dict, Float, String, RGBColor, Bool)
 from tvtk.api import tvtk
 from traits.api import HasTraits, Instance, on_trait_change
-from numpy import array, zeros, uint8
+from numpy import array, zeros, uint8, float64
+import yaml
 
 from atom import Atom
 
@@ -30,6 +31,10 @@ class Matter(HasTraits):
         """
         Make visualization position consistent with model
         """
+
+        if self.actor is None:
+            return
+
         if affected_object is self.position:
             (x, y) = (self.position[0], self.position[1])
             self.actor.position = (x, y, 0)
@@ -75,6 +80,9 @@ class Matter(HasTraits):
     @on_trait_change('atoms+')
     def update_legend_image(self):
 
+        if not hasattr(self, 'legend_image_import'):
+            return
+
         image = atoms_quantities_to_image(
             zip([atom.name for atom in self.atoms.keys()], self.atoms.values()), self.name)
 
@@ -99,3 +107,25 @@ class Matter(HasTraits):
         transform.translate((-5.0/2.0, -5.0/2.0, 0.0))
         transform.scale((5.0/x, 5.0/y, 1.0))
         self.legend_actor.user_transform = transform
+
+
+def matter_representer(dumper, matter):
+    (x, y) = matter.position
+    return dumper.represent_mapping(u'!Matter', {"name": matter.name,
+                                                 "position": [float(x), float(y)],
+                                                 "atoms": dict(matter.atoms),
+                                                 "color": list(matter.color)
+                                                 })
+
+
+def matter_constructor(loader, node):
+    matter = Matter()
+    yield matter
+    mapping = loader.construct_mapping(node, deep=True)
+    matter.name = mapping["name"]
+    matter.position = tuple(array(mapping["position"]))
+    matter.atoms = mapping["atoms"]
+    matter.color = tuple(mapping["color"])
+
+yaml.add_representer(Matter, matter_representer)
+yaml.add_constructor(u'!Matter', matter_constructor)

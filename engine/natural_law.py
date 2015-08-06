@@ -1,4 +1,5 @@
-from sympy import Piecewise, And, Max, Matrix, zeros, Min, symbols, diag, ones, pprint, Or
+from sympy import Piecewise, And, Max, Matrix, zeros, Min, symbols, diag, ones, Or
+import yaml
 
 from traits.api import HasTraits, Instance, Float, String
 from force import Force
@@ -104,9 +105,33 @@ def get_matrix_of_converted_atoms(Nu, positions, pending_conversion, natural_inf
     for (i, position) in enumerate(positions):
         (a, b) = tuple(position)
         K = get_conversion_ratio_matrix(pending_conversion, Nu[i, :])
-        pprint(K)
         M = M.col_join(((diag(*(ones(1, number_of_atoms)*diag(*K)*Omicron.transpose()))*D).transpose() *
                         natural_influence).transpose().subs({x: a, y: b}))
 
     return M.evalf()
 
+
+def natural_law_representer(dumper, natural_law):
+    return dumper.represent_mapping(u'!NaturalLaw', {"name": natural_law.name,
+                                                     "atom_in": natural_law.atom_in,
+                                                     "atom_out": natural_law.atom_out,
+                                                     "accelerator": natural_law.accelerator,
+                                                     "additive_component": natural_law.additive_component,
+                                                     "multiplicative_component": natural_law.multiplicative_component
+                                                     })
+
+
+def natural_law_constructor(loader, node):
+    natural_law = NaturalLaw()
+    yield natural_law
+    mapping = loader.construct_mapping(node, deep=True)
+    natural_law.name = mapping["name"]
+    natural_law.atom_in = mapping["atom_in"]
+    natural_law.atom_out = mapping["atom_out"]
+    natural_law.accelerator = mapping["accelerator"]
+    natural_law.additive_component = mapping["additive_component"]
+    natural_law.multiplicative_component = mapping["multiplicative_component"]
+
+
+yaml.add_representer(NaturalLaw, natural_law_representer)
+yaml.add_constructor(u'!NaturalLaw', natural_law_constructor)

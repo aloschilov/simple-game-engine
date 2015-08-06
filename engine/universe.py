@@ -15,6 +15,8 @@ from . import NaturalLaw
 from vector_field_rendering_actor import VectorFieldRenderingActor
 from natural_law import get_matrix_of_converting_atoms, get_matrix_of_converted_atoms
 
+import yaml
+
 
 def try_except(fn):
     def wrapped(*args, **kwargs):
@@ -94,7 +96,7 @@ class Universe(HasTraits):
 
     def create_expression_based_force(self, expression):
         force = ExpressionBasedForce()
-        force.__expression = expression
+        force.expression = expression
         self.forces.append(force)
         return force
 
@@ -441,3 +443,25 @@ class Universe(HasTraits):
         if natural_law in self.natural_laws:
             if natural_law.accelerator is force:
                 natural_law.accelerator = None
+
+
+def universe_representer(dumper, universe):
+    return dumper.represent_mapping(u'!Universe', {"forces": list(universe.forces),
+                                                   "atoms": list(universe.atoms),
+                                                   "matters": list(universe.matters),
+                                                   "natural_laws": list(universe.natural_laws)
+                                                   })
+
+
+def universe_constructor(loader, node):
+    universe = Universe()
+    yield universe
+    mapping = loader.construct_mapping(node, deep=True)
+    universe.atoms = mapping["atoms"]
+    universe.forces = mapping["forces"]
+    universe.matters = mapping["matters"]
+    universe.natural_laws = mapping["natural_laws"]
+
+
+yaml.add_representer(Universe, universe_representer)
+yaml.add_constructor(u'!Universe', universe_constructor)
