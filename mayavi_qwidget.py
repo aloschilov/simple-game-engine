@@ -5,6 +5,7 @@
 #
 
 import sys
+import yaml
 
 # First, and before importing any Enthought packages, set the ETS_TOOLKIT
 # environment variable to qt4, to tell Traits that we will use Qt.
@@ -43,45 +44,9 @@ class Visualization(HasTraits):
         VTK features require a GLContext.
         """
 
-        matter1 = self.universe.create_matter()
-        matter1.name = "1-st matter"
-
-        atom1 = self.universe.create_atom()
-        force1 = self.universe.create_radial_force({
-                                                       "min_x" :   0,
-                                                       "max_x" :  10,
-                                                       "min_y" : -10,
-                                                       "max_y" :  10,
-                                                       "degree": 3,
-                                                       "ys"    : [3, 3, 3, 2]
-                                                       }
-        )
-        atom1.produced_forces.append(force1)
-        matter1.atoms[atom1] = 10
-        matter1.position = (0.1, 0.1)
-
-        matter2 = self.universe.create_matter()
-        matter2.name = "2-nd matter"
-
-        matter2.position = (2, 2)
-        atom2 = self.universe.create_atom()
-#        force2 = self.universe.create_force()
-#        atom2.produced_forces.append(force2)
-        matter2.atoms[atom2] = 20
-
-        matter3 = self.universe.create_matter()
-        matter3.name = "3-rd matter"
-        matter3.position = (4, -2)
-        atom3 = self.universe.create_atom()
-        force3 = self.universe.create_force()
-        atom3.produced_forces.append(force3)
-        matter3.atoms[atom3] = 15
-
-        force1.atoms_to_produce_effect_on.append(atom3)
-
-        # TODO: reconsider representation.
-        # There could be more obvious way to represent
-        # quantity to atom relation per matter
+        stream = file('universe.yaml', 'r')
+        universe = yaml.load(stream)
+        self.universe = universe
 
         self.universe.bind_to_scene(self.scene)
 

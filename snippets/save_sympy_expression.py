@@ -1,5 +1,3 @@
-import os
-
 from sympy import symbols
 import pickle
 

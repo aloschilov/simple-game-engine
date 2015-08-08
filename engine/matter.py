@@ -43,8 +43,9 @@ class Matter(HasTraits):
     @on_trait_change('color')
     def update_color(self, color):
         if color is self.color:
-            p = tvtk.Property(color=color)
-            self.actor.property = p
+            if self.actor is not None:
+                p = tvtk.Property(color=color)
+                self.actor.property = p
 
     def generate_actor(self):
         """

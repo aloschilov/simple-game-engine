@@ -30,12 +30,5 @@ natural_law.accelerator = force_a
 natural_law.multiplicative_component = 0.1
 natural_law.additive_component = 3.2
 
-print universe.__dict__
-serialized_object = yaml.dump(universe)
-
-print serialized_object
-
-object = yaml.load(serialized_object)
-print(object.__dict__)
-
-object.next_step()
+stream = file('universe.yaml', 'w')
+serialized_object = yaml.dump(universe, stream)
