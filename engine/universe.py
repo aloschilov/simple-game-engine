@@ -196,7 +196,7 @@ class Universe(HasTraits):
             else:
                 self.vector_field_rendering_countdown -= 1
 
-        delta_t = 1
+        delta_t = 0.1
 
         for mi, matter in enumerate(self.matters):
             (x_v, y_v) = matter.position
