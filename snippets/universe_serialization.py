@@ -3,32 +3,69 @@ from engine import Universe
 import yaml
 
 universe = Universe()
-matter_a = universe.create_matter()
-matter_a.name = "Matter A"
-matter_b = universe.create_matter()
-matter_b.name = "Matter B"
 
-atom_a = universe.create_atom()
-atom_a.name = "Atom A"
-atom_b = universe.create_atom()
-atom_b.name = "Atom B"
+ball_matter = universe.create_matter()
+ball_matter.name = "Ball matter"
+right_wall_matter = universe.create_matter()
+right_wall_matter.name = "Right wall matter"
 
-matter_a.atoms[atom_a] = 10
-matter_a.atoms[atom_b] = 20
+move_x = universe.create_atom()
+move_x.name = "Move X"
+negative_move_x = universe.create_atom()
+negative_move_x.name = "Negative move x"
 
-matter_b.atoms[atom_a] = 30
-matter_b.atoms[atom_b] = 40
+move_y = universe.create_atom()
+move_y.name = "Move Y"
+negative_move_y = universe.create_atom()
+negative_move_y.name = "Negative move y"
 
-force_a = universe.create_force()
-force_b = universe.create_expression_based_force("x**2.0 + y**2.0")
-atom_a.produced_forces.append(force_a)
+ball_matter.atoms[move_x] = 1
+ball_matter.atoms[negative_move_x] = 0.0
+ball_matter.atoms[move_y] = 2
+ball_matter.atoms[negative_move_y] = 0.0
+ball_matter.color = (0.0, 0.0, 1.0)
+ball_matter.vector_field_is_visible = True
 
-natural_law = universe.create_natural_law()
-natural_law.atom_in = atom_a
-natural_law.atom_out = atom_b
-natural_law.accelerator = force_a
-natural_law.multiplicative_component = 0.1
-natural_law.additive_component = 3.2
+right_wall_force = universe.create_expression_based_force("Piecewise((0.0, x<-0.5), (10.0, x>=-0.5))")
+right_wall_atom = universe.create_atom()
+right_wall_matter.atoms[right_wall_atom] = 1.0
+right_wall_matter.position = (5.0, 0.0)
+right_wall_atom.produced_forces.append(right_wall_force)
+
+move_x_to_negative_move_x_natural_law = universe.create_natural_law()
+move_x_to_negative_move_x_natural_law.atom_in = move_x
+move_x_to_negative_move_x_natural_law.atom_out = negative_move_x
+move_x_to_negative_move_x_natural_law.accelerator = right_wall_force
+move_x_to_negative_move_x_natural_law.multiplicative_component = 0.1
+
+# Movement field generator
+
+movement_container_matter = universe.create_matter()
+
+negative_move_x_generator_atom = universe.create_atom()
+negative_move_x_generator_force = universe.create_expression_based_force("-x")
+negative_move_x_generator_atom.produced_forces.append(negative_move_x_generator_force)
+negative_move_x_generator_force.atoms_to_produce_effect_on.append(negative_move_x)
+
+move_x_generator_atom = universe.create_atom()
+move_x_generator_force = universe.create_expression_based_force("x")
+move_x_generator_atom.produced_forces.append(move_x_generator_force)
+move_x_generator_force.atoms_to_produce_effect_on.append(move_x)
+
+negative_move_y_generator_atom = universe.create_atom()
+negative_move_y_generator_force = universe.create_expression_based_force("-y")
+negative_move_y_generator_atom.produced_forces.append(negative_move_y_generator_force)
+negative_move_y_generator_force.atoms_to_produce_effect_on.append(negative_move_y)
+
+move_y_generator_atom = universe.create_atom()
+move_y_generator_force = universe.create_expression_based_force("y")
+move_y_generator_atom.produced_forces.append(move_y_generator_force)
+move_y_generator_force.atoms_to_produce_effect_on.append(move_y)
+
+movement_container_matter.atoms[negative_move_x_generator_atom] = 1.0
+movement_container_matter.atoms[move_x_generator_atom] = 1.0
+movement_container_matter.atoms[negative_move_y_generator_atom] = 1.0
+movement_container_matter.atoms[move_y_generator_atom] = 1.0
 
 stream = file('universe.yaml', 'w')
 serialized_object = yaml.dump(universe, stream)

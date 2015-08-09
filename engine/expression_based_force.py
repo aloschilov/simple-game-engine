@@ -38,8 +38,10 @@ class ExpressionBasedForce(Force):
 
 
 def expression_based_force_representer(dumper, expression_based_force):
-    return dumper.represent_mapping(u'!ExpressionBasedForce', {"expression": expression_based_force.expression,
-                                                   })
+    return dumper.represent_mapping(u'!ExpressionBasedForce', {"name": expression_based_force.expression,
+                                                               "expression": expression_based_force.expression,
+                                                               "atoms_to_produce_effect_on": list(expression_based_force.atoms_to_produce_effect_on),
+                                                               })
 
 
 def expression_based_force_constructor(loader, node):
@@ -47,7 +49,8 @@ def expression_based_force_constructor(loader, node):
     yield expression_based_force
     mapping = loader.construct_mapping(node, deep=True)
     expression_based_force.expression = mapping["expression"]
-
+    expression_based_force.name = mapping["name"]
+    expression_based_force.atoms_to_produce_effect_on = mapping["atoms_to_produce_effect_on"]
 
 yaml.add_representer(ExpressionBasedForce, expression_based_force_representer)
 yaml.add_constructor(u'!ExpressionBasedForce', expression_based_force_constructor)

@@ -115,7 +115,8 @@ def matter_representer(dumper, matter):
     return dumper.represent_mapping(u'!Matter', {"name": matter.name,
                                                  "position": [float(x), float(y)],
                                                  "atoms": dict(matter.atoms),
-                                                 "color": list(matter.color)
+                                                 "color": list(matter.color),
+                                                 "vector_field_is_visible": matter.vector_field_is_visible,
                                                  })
 
 
@@ -127,6 +128,7 @@ def matter_constructor(loader, node):
     matter.position = tuple(array(mapping["position"]))
     matter.atoms = mapping["atoms"]
     matter.color = tuple(mapping["color"])
+    matter.vector_field_is_visible = mapping["vector_field_is_visible"]
 
 yaml.add_representer(Matter, matter_representer)
 yaml.add_constructor(u'!Matter', matter_constructor)

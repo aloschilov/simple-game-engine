@@ -54,16 +54,15 @@ class Visualization(HasTraits):
         # self.scene.mlab.test_points3d()
 
         mlab.view(45, 45)
-        mlab.view(240, 120)
-        mlab.view(distance=20)
-        mlab.view(focalpoint=(0, 0, 0))
+        #mlab.view(240, 120)
+        #mlab.view(distance=50)
+        mlab.view(azimuth=0, elevation=0, distance=30, focalpoint=(0, 0, 0))
 
         @mlab.animate(delay=500, ui=False)
         def animate():
             f = mlab.gcf()
             while 1:
                 self.universe.next_step()
-#                f.scene.camera.azimuth(0.1)
                 f.scene.render()
                 yield
 

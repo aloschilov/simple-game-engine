@@ -89,12 +89,14 @@ class RadialForce(Force):
 
 
 def radial_force_representer(dumper, radial_force):
-    return dumper.represent_mapping(u'!RadialForce', {"min_x": radial_force.min_rho,
+    return dumper.represent_mapping(u'!RadialForce', {"name": radial_force.name,
+                                                      "min_x": radial_force.min_rho,
                                                       "max_x": radial_force.max_rho,
                                                       "min_y": radial_force.min_z,
                                                       "max_y": radial_force.max_z,
                                                       "degree": radial_force.degree,
                                                       "ys": radial_force.zs,
+                                                      "atoms_to_produce_effect_on": list(radial_force.atoms_to_produce_effect_on),
                                                       })
 
 
@@ -102,12 +104,14 @@ def radial_force_constructor(loader, node):
     radial_force = RadialForce()
     yield radial_force
     mapping = loader.construct_mapping(node, deep=True)
+    radial_force.name = mapping["name"]
     radial_force.min_rho = mapping["min_x"]
     radial_force.max_rho = mapping["max_x"]
     radial_force.min_z = mapping["min_y"]
     radial_force.max_z = mapping["max_y"]
     radial_force.degree = mapping["degree"]
     radial_force.zs = mapping["ys"]
+    radial_force.atoms_to_produce_effect_on = mapping["atoms_to_produce_effect_on"]
 
 
 yaml.add_representer(RadialForce, radial_force_representer)
