@@ -305,4 +305,6 @@ def splint2(x, y, z, u, v, zl=None, zr=None, zu=None, zd=None, zxy=None,
 
             piecewise_pairs.append((sp, And(u >= x[i], u <= x[i + 1], v >= y[j], v <= y[j + 1])))
 
+    piecewise_pairs.append((0.0, True))
+
     return Piecewise(*piecewise_pairs)

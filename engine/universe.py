@@ -240,6 +240,7 @@ class Universe(HasTraits):
 
         for matter in self.matters:
             scene.add_actor(matter.generate_actor())
+            scene.add_actor(matter.generate_legend_actor())
 
         if self.vector_field_rendering_actor is None:
             print "Launching VectorFieldRenderingActor"
