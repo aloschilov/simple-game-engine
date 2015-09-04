@@ -9,9 +9,12 @@ from sympy.physics.vector import ReferenceFrame, gradient
 from . import Atom
 from . import RadialForce
 from . import ExpressionBasedForce
+from . import BitmapForce
 from . import Force
 from . import Matter
 from . import NaturalLaw
+
+from engine.bitmap_force import BitmapForce
 from vector_field_rendering_actor import VectorFieldRenderingActor
 from natural_law import get_matrix_of_converting_atoms, get_matrix_of_converted_atoms
 
@@ -97,6 +100,11 @@ class Universe(HasTraits):
     def create_expression_based_force(self, expression):
         force = ExpressionBasedForce()
         force.expression = expression
+        self.forces.append(force)
+        return force
+
+    def create_bitmap_force(self, image_path=None, rect=None):
+        force = BitmapForce(image_path=image_path, rect=rect)
         self.forces.append(force)
         return force
 
