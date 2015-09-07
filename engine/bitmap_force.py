@@ -1,4 +1,7 @@
+from sympy import S
+
 from force import Force
+from bitmap_force_preparation_actor import BitmapForcePreparationActor
 
 
 class BitmapForce(Force):
@@ -10,6 +13,8 @@ class BitmapForce(Force):
         self.__image_path = image_path
         self.__rect = rect
         self.__expression = None
+        self.bitmap_force_preparation_actor = None
+        self.expression_future = None
 
         self.prepare_expression()
 
@@ -41,35 +46,30 @@ class BitmapForce(Force):
         """
 
         if self.__rect is None or self.__image_path is None:
-            from sympy import S
+
             self.__expression = S(0.0)
         else:
-            import numpy as np
-            from scipy import misc
-            from sympy.abc import x, y
 
-            from engine.interpolate import splint2
+            if self.bitmap_force_preparation_actor is None:
+                self.bitmap_force_preparation_actor = BitmapForcePreparationActor.start()
 
-            image = misc.imread(self.__image_path)
-            image = image.astype(dtype=np.float)
-
-            grey = np.add.reduce(image, 2)/3.0
-            grey = np.fliplr(np.swapaxes(grey, 1, 0))
-
-            (m, n) = grey.shape
-
-            (base_x, base_y, extent_x, extent_y) = self.__rect
-
-            xs = np.linspace(base_x, base_x + extent_x, num=m)
-            ys = np.linspace(base_y, base_y + extent_y, num=n)
-            zs = grey
-
-            self.__expression = splint2(xs, ys, zs, x, y)
+            self.expression_future = self.bitmap_force_preparation_actor.ask(
+                {
+                    'image_path': self.__image_path,
+                    'rect': self.__rect
+                }, block=False)
 
     def function(self):
         """
         :return: a callable that takes two parameters and represents
         an explicit function z = f(x, y)
         """
+
+        if self.expression_future is not None:
+            try:
+                self.__expression = self.expression_future.get(timeout=0.1)
+                self.bitmap_force_preparation_actor.stop()
+            except:
+                self.__expression = S(0.0)
 
         return self.__expression

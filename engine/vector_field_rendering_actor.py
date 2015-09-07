@@ -13,6 +13,7 @@ class VectorFieldRenderingActor(pykka.ThreadingActor):
         super(VectorFieldRenderingActor, self).__init__()
         self.pool = Pool(4)
 
+    # noinspection PyPep8Naming
     def on_receive(self, message):
         """
         :param message:
@@ -25,7 +26,7 @@ class VectorFieldRenderingActor(pykka.ThreadingActor):
             colors = message["colors"]
             vector_field_is_visible = message["vector_field_is_visible"]
 
-            W_colors =  [(W[i], colors[i]) for i in xrange(len(vector_field_is_visible)) if vector_field_is_visible[i]]
+            W_colors = [(W[i], colors[i]) for i in xrange(len(vector_field_is_visible)) if vector_field_is_visible[i]]
 
             if not W_colors:
                 return None
