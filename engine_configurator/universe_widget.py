@@ -1,17 +1,17 @@
 import sys
 from engine_configurator.atom_toolbox_item import AtomToolboxItem
-from engine_configurator.expression_based_force_toolbox_item import ExpressionBasedForceToolboxItem
 from engine_configurator.game_scene_widget import GameSceneWidget
-
 from engine_configurator.matter_toolbox_item import MatterToolboxItem
 from engine_configurator.properties_widget import PropertiesWidget
 from engine_configurator.radial_force_toolbox_item import RadialForceToolboxItem
+from engine_configurator.expression_based_force_toolbox_item import ExpressionBasedForceToolboxItem
+from engine_configurator.bitmap_force_toolbox_item import BitmapForceToolboxItem
 from engine_configurator.natural_law_toolbox_item import NaturalLawToolboxItem
 from engine_configurator.universe_scene import UniverseScene
 
 
-from pyface.qt.QtGui import (QWidget, QPainter,
-                             QApplication, QGraphicsView, QHBoxLayout, QToolBox, QGraphicsScene, QTabWidget, QGraphicsWidget, QGraphicsLinearLayout)
+from pyface.qt.QtGui import (QWidget, QPainter, QApplication, QGraphicsView, QHBoxLayout,
+                             QToolBox, QGraphicsScene, QTabWidget, QGraphicsWidget, QGraphicsLinearLayout)
 from pyface.qt.QtCore import Qt
 
 # noinspection PyUnresolvedReferences
@@ -49,13 +49,16 @@ class UniverseWidget(QWidget):
 
         radial_force_toolbox_item = RadialForceToolboxItem()
         expression_based_force_toolbox_item = ExpressionBasedForceToolboxItem()
+        bitmap_force_toolbox_item = BitmapForceToolboxItem()
 
         self.forces_stencils_scene.addItem(radial_force_toolbox_item)
         self.forces_stencils_scene.addItem(expression_based_force_toolbox_item)
+        self.forces_stencils_scene.addItem(bitmap_force_toolbox_item)
 
         force_stencils_container_graphics_layout = QGraphicsLinearLayout(Qt.Vertical)
         force_stencils_container_graphics_layout.addItem(radial_force_toolbox_item)
         force_stencils_container_graphics_layout.addItem(expression_based_force_toolbox_item)
+        force_stencils_container_graphics_layout.addItem(bitmap_force_toolbox_item)
 
         force_stencils_container_graphics_widget = QGraphicsWidget()
         force_stencils_container_graphics_widget.setLayout(force_stencils_container_graphics_layout)
@@ -80,8 +83,10 @@ class UniverseWidget(QWidget):
         main_layout.addWidget(self.properties_widget, 1)
         self.setLayout(main_layout)
 
-        self.universe_graphics_scene.properties_bindings_update_required.connect(self.update_properties_bindings)
-        self.universe_graphics_scene.properties_bindings_disconnect_required.connect(self.disconnect_graphics_item_from_properties_widget)
+        self.universe_graphics_scene.properties_bindings_update_required.connect(
+            self.update_properties_bindings)
+        self.universe_graphics_scene.properties_bindings_disconnect_required.connect(
+            self.disconnect_graphics_item_from_properties_widget)
 
     def update_properties_bindings(self):
         for graphics_item in self.universe_graphics_scene.graphics_items:

@@ -79,6 +79,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.universe_item.atom_added.connect(self.add_atom)
         self.universe_item.radial_force_added.connect(self.add_radial_force)
         self.universe_item.expression_based_force_added.connect(self.add_expression_based_force)
+        self.universe_item.bitmap_force_added.connect(self.add_bitmap_force)
         self.universe_item.natural_law_added.connect(self.add_natural_law)
 
         self.graphics_items = list()
@@ -186,6 +187,20 @@ class UniverseScene(QtGui.QGraphicsScene):
         atom_item_node.attr['height'] = expression_based_force_item.boundingRect().height()
         self.graph.add_edge(TreeNode(self.universe_item),
                             TreeNode(expression_based_force_item), minlen=10)
+        self.properties_bindings_update_required.emit()
+        self.update()
+
+    def add_bitmap_force(self, bitmap_force_item):
+        self.graphics_items.append(bitmap_force_item)
+        bitmap_force_item.force_and_atom_connected.connect(self.add_force_and_atom_connection)
+        self.addItem(bitmap_force_item)
+        self.graph.add_node(TreeNode(bitmap_force_item))
+        atom_item_node = self.graph.get_node(TreeNode(bitmap_force_item))
+        atom_item_node.attr['shape'] = 'rect'
+        atom_item_node.attr['width'] = bitmap_force_item.boundingRect().width()
+        atom_item_node.attr['height'] = bitmap_force_item.boundingRect().height()
+        self.graph.add_edge(TreeNode(self.universe_item),
+                            TreeNode(bitmap_force_item), minlen=10)
         self.properties_bindings_update_required.emit()
         self.update()
 
