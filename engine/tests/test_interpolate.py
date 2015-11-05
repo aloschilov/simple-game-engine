@@ -88,22 +88,20 @@ def test_splint2():
     from sympy import lambdify
     from sympy.abc import x, y
     import numpy as np
-    from engine.interpolate import splint2, BoundaryConditions
+    from engine.interpolate import splint2
     from math import fabs
 
     m = 5
     n = 4
     xs = np.array([2.0, 3.0, 6.0, 8.0, 9.0], dtype=np.float)
     ys = np.array([1.0, 2.0, 4.0, 8.0], dtype=np.float)
-    zs = np.ones((5,4), dtype=np.float) #random.rand(5, 4)*10.0
+    zs = np.random.rand(5, 4)
 
     tolerance = 1e-6
 
     spline_expression = splint2(xs, ys, zs, x, y)
-    f = lambdify((x, y), spline_expression)
+    f = lambdify((x, y), spline_expression, "math")
 
     for i in xrange(m):
         for j in xrange(n):
-            print f(xs[i], ys[j])
-            print zs[i, j]
             assert fabs(f(xs[i], ys[j]) - zs[i, j]) < tolerance, "Incorrect value in control point"

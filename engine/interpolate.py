@@ -209,20 +209,11 @@ def splint2(x, y, z, u, v, zl=None, zr=None, zu=None, zd=None, zxy=None,
     :param z: an array of dependent values
     :param u: SymPy Symbol that stands for the first independent variable
     :param v: SymPy Symbol that stands for the second independent variable
-    :param zl: an array with zl.shape=(n, ), where (m, n) = z.shape;
-    element zl(j), where j in [0,n), contains values of the first partial
-    derivative along x in grid point [0, j]
-    :param zr: an array with zr.shape=(n, ), where (m, n) = z.shape;
-    element zr(j), where j in [0,n), contains values of the first partial
-    derivative along x in grid point [m-1, j]
-    :param zu: an array with zu.shape=(m, ), where (m, n) = z.shape;
-    element zu(j), where j in [0,m), contains values of the first partial
-    derivative along y in grid point [j, n-1]
-    :param zd: an array with zd.shape=(m, ), where (m, n) = z.shape;
-    element zd(j), where j in [0,m), contains values of the first partial
-    derivative along y in grid point [j, 0]
-    :param zxy: an array with zxy.shape=(4,), which contains values of mixed derivative
-    in corner grid points in the case of boundary conditions of the 1-st and 2-nd kind
+    :param zl: an array with zl.shape=(n, ), where (m, n) = z.shape; element zl(j), where j in [0,n), contains values of the first partial derivative along x in grid point [0, j]
+    :param zr: an array with zr.shape=(n, ), where (m, n) = z.shape; element zr(j), where j in [0,n), contains values of the first partial derivative along x in grid point [m-1, j]
+    :param zu: an array with zu.shape=(m, ), where (m, n) = z.shape; element zu(j), where j in [0,m), contains values of the first partial derivative along y in grid point [j, n-1]
+    :param zd: an array with zd.shape=(m, ), where (m, n) = z.shape; element zd(j), where j in [0,m), contains values of the first partial derivative along y in grid point [j, 0]
+    :param zxy: an array with zxy.shape=(4,), which contains values of mixed derivative in corner grid points in the case of boundary conditions of the 1-st and 2-nd kind
     :return:
     """
 
