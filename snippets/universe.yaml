@@ -1,0 +1,161 @@
+!Universe
+atoms:
+- &id002 !Atom
+  name: Move X
+  produced_forces: []
+- &id001 !Atom
+  name: Negative move x
+  produced_forces: []
+- &id004 !Atom
+  name: Move Y
+  produced_forces: []
+- &id003 !Atom
+  name: Negative move y
+  produced_forces: []
+- &id013 !Atom
+  name: ''
+  produced_forces:
+  - &id005 !ExpressionBasedForce
+    atoms_to_produce_effect_on: []
+    expression: Piecewise((0.0, x<-0.5), (10.0, x>=-0.5))
+    name: Piecewise((0.0, x<-0.5), (10.0, x>=-0.5))
+- &id014 !Atom
+  name: ''
+  produced_forces:
+  - &id006 !ExpressionBasedForce
+    atoms_to_produce_effect_on: []
+    expression: Piecewise((0.0, x>0.5), (10.0, x<=0.5))
+    name: Piecewise((0.0, x>0.5), (10.0, x<=0.5))
+- &id015 !Atom
+  name: ''
+  produced_forces:
+  - &id007 !ExpressionBasedForce
+    atoms_to_produce_effect_on: []
+    expression: Piecewise((0.0, y<-0.5), (10.0, y>=-0.5))
+    name: Piecewise((0.0, y<-0.5), (10.0, y>=-0.5))
+- &id016 !Atom
+  name: ''
+  produced_forces:
+  - &id008 !ExpressionBasedForce
+    atoms_to_produce_effect_on: []
+    expression: Piecewise((0.0, y>0.5), (10.0, y<=0.5))
+    name: Piecewise((0.0, y>0.5), (10.0, y<=0.5))
+- &id018 !Atom
+  name: ''
+  produced_forces:
+  - &id009 !ExpressionBasedForce
+    atoms_to_produce_effect_on:
+    - *id001
+    expression: -x
+    name: -x
+- &id020 !Atom
+  name: ''
+  produced_forces:
+  - &id010 !ExpressionBasedForce
+    atoms_to_produce_effect_on:
+    - *id002
+    expression: x
+    name: x
+- &id019 !Atom
+  name: ''
+  produced_forces:
+  - &id011 !ExpressionBasedForce
+    atoms_to_produce_effect_on:
+    - *id003
+    expression: -y
+    name: -y
+- &id017 !Atom
+  name: ''
+  produced_forces:
+  - &id012 !ExpressionBasedForce
+    atoms_to_produce_effect_on:
+    - *id004
+    expression: y
+    name: y
+forces:
+- *id005
+- *id006
+- *id007
+- *id008
+- *id009
+- *id010
+- *id011
+- *id012
+matters:
+- !Matter
+  atoms:
+    *id001: 0.0
+    *id004: 2.0
+    *id003: 0.0
+    *id002: 1.0
+  color: [0.0, 0.0, 1.0]
+  name: Ball matter
+  position: [0.0, 0.0]
+  vector_field_is_visible: true
+- !Matter
+  atoms:
+    *id013: 1.0
+  color: [0.0, 0.0, 0.0]
+  name: Right wall matter
+  position: [5.0, 0.0]
+  vector_field_is_visible: false
+- !Matter
+  atoms:
+    *id014: 1.0
+  color: [0.0, 0.0, 0.0]
+  name: Left wall matter
+  position: [-5.0, 0.0]
+  vector_field_is_visible: false
+- !Matter
+  atoms:
+    *id015: 1.0
+  color: [0.0, 0.0, 0.0]
+  name: Up wall matter
+  position: [0.0, 5.0]
+  vector_field_is_visible: false
+- !Matter
+  atoms:
+    *id016: 1.0
+  color: [0.0, 0.0, 0.0]
+  name: Down wall matter
+  position: [0.0, -5.0]
+  vector_field_is_visible: false
+- !Matter
+  atoms:
+    *id017: 1.0
+    *id018: 1.0
+    *id019: 1.0
+    *id020: 1.0
+  color: [0.0, 0.0, 0.0]
+  name: ''
+  position: [0.0, 0.0]
+  vector_field_is_visible: false
+natural_laws:
+- !NaturalLaw
+  accelerator: *id005
+  additive_component: 0.0
+  atom_in: *id002
+  atom_out: *id001
+  multiplicative_component: 0.1
+  name: ''
+- !NaturalLaw
+  accelerator: *id006
+  additive_component: 0.0
+  atom_in: *id001
+  atom_out: *id002
+  multiplicative_component: 0.1
+  name: ''
+- !NaturalLaw
+  accelerator: *id007
+  additive_component: 0.0
+  atom_in: *id004
+  atom_out: *id003
+  multiplicative_component: 0.1
+  name: ''
+- !NaturalLaw
+  accelerator: *id008
+  additive_component: 0.0
+  atom_in: *id003
+  atom_out: *id004
+  multiplicative_component: 0.1
+  name: ''

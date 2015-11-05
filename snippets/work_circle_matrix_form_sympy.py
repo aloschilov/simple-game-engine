@@ -1,4 +1,4 @@
-from sympy import Matrix, init_printing, symbols, diag, pprint, ones, Piecewise, And, Max, Min, zeros, Or, latex
+from sympy import Matrix, init_printing, symbols, diag, pprint, ones, Piecewise, And, Max, Min, zeros, Or, latex, Function
 from sympy.physics.vector import ReferenceFrame, gradient
 from mayavi import mlab
 
@@ -81,19 +81,19 @@ Alpha = Matrix([[1, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 1],
                 [0, 0, 0, 1, 0, 0]])
 
-p = [[0, 5], [5, 0], [0, -5]]
+p = [[1, 4], [6, -1], [1, -6]]
 
 
 
 # The first expression
 x, y = symbols('x y')
 
-fs = [1+0*x,
-      2+0*x,
-      3+0*x,
-      4+0*x,
-      5+0*x,
-      6+0*x]
+fs = [Function('f_1')(x, y),
+      Function('f_2')(x, y),
+      Function('f_3')(x, y),
+      Function('f_4')(x, y),
+      Function('f_5')(x, y),
+      Function('f_6')(x, y)]
 
 
 F = Matrix(len(p), len(fs), lambda i, j: fs[j].subs({x: x-p[i][0], y: y-p[i][1]}))
@@ -101,6 +101,7 @@ F = Matrix(len(p), len(fs), lambda i, j: fs[j].subs({x: x-p[i][0], y: y-p[i][1]}
 #pprint((Nu*G).multiply_elementwise(F), num_columns=200)
 P = [Matrix(1, len(p), lambda i, j: 0 if j == k else 1)*((Nu*G).multiply_elementwise(F)) for k in xrange(0, len(p))]
 
+pprint(P)
 # Every P[i] is a vector of potentials that affect i-th matter,
 # not including the effect that produces i-th matter itself
 
@@ -108,7 +109,8 @@ P = [Matrix(1, len(p), lambda i, j: 0 if j == k else 1)*((Nu*G).multiply_element
 # force affect on atoms and number of atoms in specific matter
 
 R = ReferenceFrame('R')
-M = [(P[i]*E*Nu[i, :].T)[0].subs(x, R[0]).subs(y, R[1]) for i in xrange(0, len(p))]
+M = [(P[i]*E*Nu[i, :].T)[0].subs({x: R[0], y: R[1]}) for i in xrange(0, len(p))]
+pprint(M)
 W = [gradient(M[i], R).to_matrix(R).subs({R[0]: x, R[1]: y})[:2] for i in xrange(len(p))]
 
 
@@ -124,10 +126,11 @@ force_is_present = natural_field.applyfunc(
 natural_influence = (Upsilon * Alpha * natural_field + S * Alpha)*force_is_present*ones(len(fs), 1)
 pending_transformation_vector = Omicron.transpose()*natural_influence
 
-pprint(Nu)
-pprint(get_matrix_of_converting_atoms(Nu, p, pending_transformation_vector))
-pprint(get_matrix_of_converted_atoms(Nu, p, pending_transformation_vector, natural_influence, Omicron, D))
-pprint(Nu - get_matrix_of_converting_atoms(Nu, p, pending_transformation_vector) + get_matrix_of_converted_atoms(Nu, p, pending_transformation_vector, natural_influence, Omicron, D))
+pprint(W, num_columns=1000)
+#pprint(Nu)
+#pprint(get_matrix_of_converting_atoms(Nu, p, pending_transformation_vector))
+#pprint(get_matrix_of_converted_atoms(Nu, p, pending_transformation_vector, natural_influence, Omicron, D))
+#pprint(Nu - get_matrix_of_converting_atoms(Nu, p, pending_transformation_vector) + get_matrix_of_converted_atoms(Nu, p, pending_transformation_vector, natural_influence, Omicron, D))
 
 #import parmap
 

@@ -108,10 +108,26 @@ move_y_generator_force = universe.create_expression_based_force("y")
 move_y_generator_atom.produced_forces.append(move_y_generator_force)
 move_y_generator_force.atoms_to_produce_effect_on.append(move_y)
 
+#
+image_path = '/Users/aloschil/workspace/game_engine/snippets/bitmap_force_input.jpg'
+bitmap_atom = universe.create_atom()
+bitmap_force = universe.create_bitmap_force(image_path, (-10, -10, 20, 20))
+bitmap_atom.produced_forces.append(bitmap_force)
+bitmap_force.atoms_to_produce_effect_on.append(move_x)
+#
+
 movement_container_matter.atoms[negative_move_x_generator_atom] = 1.0
 movement_container_matter.atoms[move_x_generator_atom] = 1.0
 movement_container_matter.atoms[negative_move_y_generator_atom] = 1.0
 movement_container_matter.atoms[move_y_generator_atom] = 1.0
+movement_container_matter.atoms[bitmap_atom] = 1.0
 
-stream = file('universe.yaml', 'w')
-serialized_object = yaml.dump(universe, stream)
+
+#stream = file('universe.yaml', 'w')
+#serialized_object = yaml.dump(universe, stream)
+
+
+universe.compile()
+
+for i in xrange(100):
+    universe.next_step()
