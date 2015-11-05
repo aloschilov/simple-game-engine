@@ -3,9 +3,15 @@ from numpy import array, zeros, uint8
 from mayavi.core.ui.api import MlabSceneModel
 from tvtk.api import tvtk
 from pykka.actor import ActorRef
+import theano
+from theano.scalar.basic_sympy import SymPyCCode
 
-from sympy import Matrix, symbols, diag, Piecewise, ones, pprint
+import itertools
+
+from sympy import Matrix, symbols, diag, Piecewise, ones, pprint, Symbol
+from sympy.core import sympify
 from sympy.physics.vector import ReferenceFrame, gradient
+from sympy.abc import x, y
 from . import Atom
 from . import RadialForce
 from . import ExpressionBasedForce
@@ -22,11 +28,12 @@ import yaml
 
 
 def try_except(fn):
+    import traceback
     def wrapped(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
         except Exception, e:
-            print e
+            print traceback.print_exc()
     return wrapped
 
 
@@ -46,12 +53,62 @@ class Universe(HasTraits):
     scene = Instance(MlabSceneModel, ())
     vector_field_rendering_actor = Instance(ActorRef, None)
 
+    @property
+    def atoms_quantities(self):
+        """
+        distribution of atoms in matters
+        :return:
+        """
+
+        return list(Matrix(len(self.matters),
+                           len(self.atoms),
+                           lambda i, j: self.matters[i].atoms.get(self.atoms[j], 0)))
+
+    @atoms_quantities.setter
+    def atoms_quantities(self, Nu):
+
+        number_of_matters = len(self.matters)
+        number_of_atoms = len(self.atoms)
+
+        for i in xrange(number_of_matters):
+            for j in xrange(number_of_atoms):
+                if self.atoms[j] in self.matters[i].atoms:
+                    print "Nu[i, j]"
+                    print Nu[i, j][0]
+                    self.matters[i].atoms[self.atoms[j]] = float(Nu[i, j][0])
+
+    @property
+    def matters_positions(self):
+
+        positions = list()
+
+        for matter in self.matters:
+            positions.append(matter.position[0])
+            positions.append(matter.position[1])
+
+        return positions
+
+    @matters_positions.setter
+    def matters_positions(self, ps):
+
+        print "@matters_positions.setter"
+        print type(ps)
+        print ps
+
+        number_of_matters = len(self.matters)
+
+        for i in xrange(number_of_matters):
+            self.matters[i].position = ps[i]
+
     def __init__(self):
         super(Universe, self).__init__()
         self.vector_field_rendering_countdown = 0
         self.future = None
         self.image_actor = tvtk.ImageActor()
         self.image_import = tvtk.ImageImport()
+
+        self.new_position_generators = list()
+        self.new_quantities_generators = list()
 
     def create_matter(self):
         """
@@ -128,15 +185,78 @@ class Universe(HasTraits):
         This method evaluates entire universe along the time
         """
 
-        x, y = symbols('x y')
+        import time
+        print(time.time(), time.clock())
 
-        ps = [matter.position for matter in self.matters]
+        delta_t = 0.0001
+
+        Nu = self.atoms_quantities
+        ps = self.matters_positions
+
+        print "self.get_new_positions_of_matters(delta_t, ps, Nu)"
+        print self.get_new_positions_of_matters(delta_t, ps, Nu)
+
+        self.matters_positions = list(self.get_new_positions_of_matters(delta_t, ps, Nu))
+        self.atoms_quantities = self.get_new_atoms_quantities(delta_t, ps, Nu)
+
+        #if self.vector_field_rendering_actor is not None:
+            #if self.vector_field_rendering_countdown == 0:
+                #if self.future is not None:
+                    #image = self.future.get()
+                    #if image is not None:
+                        #print "Render"
+                        #self.render_force_image(image)
+
+                #self.vector_field_rendering_countdown = 100
+                #self.future = self.vector_field_rendering_actor.ask(
+                    #{
+                        #"W": W,
+                        #"colors": [matter.color for matter in self.matters],
+                        #"bounding_rect": (-10, 10, 10, -10),
+                        #"vector_field_is_visible": [matter.vector_field_is_visible for matter in self.matters]
+                    #}, block=False)
+            #else:
+                #self.vector_field_rendering_countdown -= 1
+
+        #delta_t = 0.1
+
+        #for mi, matter in enumerate(self.matters):
+
+            #(x_v, y_v) = matter.position
+            #(x_v, y_v) = (sympify(x_v), sympify(y_v))
+
+            #print "float(W[mi][0].evalf(subs={x: x_v, y: y_v}))"
+            #print float(W[mi][0].evalf(subs={x: x_v, y: y_v}))
+            #print "float(W[mi][1].evalf(subs={x: x_v, y: y_v}))"
+            #print float(W[mi][1].evalf(subs={x: x_v, y: y_v}))
+
+            #(x_, y_) = tuple(array((
+                #float(W[mi][0].evalf(subs={x: x_v, y: y_v}))*delta_t,
+                #float(W[mi][1].evalf(subs={x: x_v, y: y_v}))*delta_t
+            #)) + array((x_v, y_v)))
+            #x_ = x_ if x_ > -10 else -10
+            #x_ = x_ if x_ < 10 else 10
+            #y_ = y_ if y_ > -10 else -10
+            #y_ = y_ if y_ < 10 else 10
+            #matter.position = (x_, y_)
+
+
+    def compile(self):
+        """
+        This method generates callable objects, that
+        :return:
+        """
+
+        number_of_matters = len(self.matters)
+        number_of_atoms = len(self.atoms)
+        number_of_forces = len(self.forces)
+
+        ps = [[Symbol('p_x_{i}'.format(i=i)), Symbol('p_y_{i}'.format(i=i))] for i in xrange(number_of_matters)]
         fs = [force.function() for force in self.forces]
 
-        # Nu stands for the greek letter, that is used to described measure of something
-        Nu = Matrix(len(self.matters),
-                    len(self.atoms),
-                    lambda i, j: self.matters[i].atoms.get(self.atoms[j], 0))
+        F = Matrix(number_of_matters,
+                   number_of_forces,
+                   lambda i, j: fs[j].subs({x: x-ps[i][0], y: y-ps[i][1]}))
 
         # G stands for "generated functions"
         G = Matrix(len(self.atoms),
@@ -147,10 +267,6 @@ class Universe(HasTraits):
         E = Matrix(len(self.forces),
                    len(self.atoms),
                    lambda i, j: 1 if self.atoms[j] in self.forces[i].atoms_to_produce_effect_on else 0)
-
-        F = Matrix(len(ps),
-                   len(fs),
-                   lambda i, j: fs[j].subs(x, x-ps[i][0]).subs(y, y-ps[i][1]))
 
         # Accelerator force
         Alpha = Matrix(len(self.natural_laws),
@@ -173,71 +289,119 @@ class Universe(HasTraits):
                    len(self.atoms),
                    lambda i, j: 1 if self.atoms[j] is self.natural_laws[i].atom_out else 0)
 
-        # P stands for potential
-        P = [Matrix(1, len(ps), lambda i, j: 0 if j == k else 1)*((Nu*G).multiply_elementwise(F)) for k in xrange(0, len(ps))]
+        Nu = Matrix(number_of_matters,
+                    number_of_atoms,
+                    lambda i, j: Symbol("nu_{i}_{j}".format(i=i, j=j)))
 
-        # Every P[i] is a vector of potentials that affect i-th matter
+        ps = [[Symbol('p_x_{i}'.format(i=i)), Symbol('p_y_{i}'.format(i=i))] for i in xrange(number_of_matters)]
 
-        # Let us reduce this potential against weighted against
-        # force affect on atoms and number of atoms in specific matter
+        P = [Matrix(1, number_of_matters, lambda i, j: 0 if j == k else 1)*((Nu*G).multiply_elementwise(F)) for k in xrange(number_of_matters)]
 
         R = ReferenceFrame('R')
-        M = [(P[i]*E*Nu[i, :].T)[0].subs(x, R[0]).subs(y, R[1]) for i in xrange(0, len(ps))]
-        W = [gradient(M[i], R).to_matrix(R).subs({R[0]: x, R[1]: y})[:2] for i in xrange(len(ps))]
+        M = [(P[i]*E*Nu[i, :].T)[0].subs({x: R[0], y: R[1]}) for i in xrange(0, number_of_matters)]
+        W = [gradient(M[i], R).to_matrix(R).subs({R[0]: x, R[1]: y})[:2] for i in xrange(number_of_matters)]
 
-        if self.vector_field_rendering_actor is not None:
-            if self.vector_field_rendering_countdown == 0:
-                if self.future is not None:
-                    image = self.future.get()
-                    if image is not None:
-                        print "Render"
-                        self.render_force_image(image)
+        # Natural laws part
 
-                self.vector_field_rendering_countdown = 100
-                self.future = self.vector_field_rendering_actor.ask(
-                    {
-                        "W": W,
-                        "colors": [matter.color for matter in self.matters],
-                        "bounding_rect": (-10, 10, 10, -10),
-                        "vector_field_is_visible": [matter.vector_field_is_visible for matter in self.matters]
-                    }, block=False)
-            else:
-                self.vector_field_rendering_countdown -= 1
-
-        delta_t = 0.1
-
-        for mi, matter in enumerate(self.matters):
-            (x_v, y_v) = matter.position
-            (x_, y_) = tuple(array((
-                float(W[mi][0].subs({x: x_v, y: y_v}))*delta_t,
-                float(W[mi][1].subs({x: x_v, y: y_v}))*delta_t
-            )) + array((x_v, y_v)))
-            x_ = x_ if x_ > -10 else -10
-            x_ = x_ if x_ < 10 else 10
-            y_ = y_ if y_ > -10 else -10
-            y_ = y_ if y_ < 10 else 10
-            matter.position = (x_, y_)
-
-        # Natural laws transformation calculation
-
-        natural_field = diag(*(ones(1, len(self.matters)) * ((Nu*G).multiply_elementwise(F))))
+        natural_field = diag(*(ones(1, number_of_matters) * ((Nu*G).multiply_elementwise(F))))
 
         force_is_present = natural_field.applyfunc(
             lambda exp: Piecewise((1.0, exp > 0.0),
-                                  (0.0, exp <= 0.0))
+                                  (0.0, True))
         )
 
         natural_influence = (Upsilon * Alpha * natural_field + S * Alpha)*force_is_present*ones(len(fs), 1)
         pending_transformation_vector = Omicron.transpose()*natural_influence
 
-        Nu = (Nu -
-              get_matrix_of_converting_atoms(Nu, ps, pending_transformation_vector) +
-              get_matrix_of_converted_atoms(Nu, ps, pending_transformation_vector, natural_influence, Omicron, D)).evalf()
+        Nu_new = (Nu -
+                  get_matrix_of_converting_atoms(Nu, ps, pending_transformation_vector) +
+                  get_matrix_of_converted_atoms(Nu, ps, pending_transformation_vector, natural_influence, Omicron, D))
 
-        for i in xrange(len(self.matters)):
-            for j in xrange(len(self.atoms)):
-                if self.atoms[j] in self.matters[i].atoms:
-                    self.matters[i].atoms[self.atoms[j]] = float(Nu[i, j])
+        delta_t = Symbol('Delta_t')
+
+        inputs = map(lambda s: Symbol(s), list(itertools.chain(["Delta_t"],
+                                      map(lambda s: str(s), itertools.chain(*ps)),
+                                      ["nu_{i}_{j}".format(i=i, j=j) for i in xrange(number_of_matters) for j in xrange(number_of_atoms)]
+                                  )))
+
+        self.new_position_generators = list()
+
+        for i in xrange(number_of_matters):
+            (x_v, y_v) = tuple(ps[i])
+            (dx, dy) = (x_v + W[i][0].subs({x: x_v, y: y_v})*delta_t, y_v + W[i][1].subs({x: x_v, y: y_v})*delta_t)
+            dx_op = SymPyCCode(inputs, dx)
+            dy_op = SymPyCCode(inputs, dy)
+            input_scalars = [theano.tensor.dscalar(str(inp)) for inp in inputs]
+            dx_dy_t = theano.function(input_scalars, [dx_op(*input_scalars), dy_op(*input_scalars)])
+            self.new_position_generators.append(dx_dy_t)
+
+        # Natural law theano optimization
+
+        self.new_quantities_generators = list()
+
+        for i in xrange(number_of_matters):
+            for j in xrange(number_of_atoms):
+                nu_op = SymPyCCode(inputs, Nu_new[i, j])
+                input_scalars = [theano.tensor.dscalar(str(inp)) for inp in inputs]
+                nu_t = theano.function(input_scalars, [nu_op(*input_scalars), ])
+                self.new_quantities_generators.append(nu_t)
+
+
+    def get_new_positions_of_matters(self,
+                                     delta_t,
+                                     positions_of_matters,
+                                     atoms_quantities):
+        """
+        Evaluates matters position from moment t to
+        moment t + delta_t
+        :param delta_t:
+        :type delta_t: float
+        :param positions_of_matters:
+        :type positions_of_matters:
+        :param atoms_quantities:
+        :type atoms_quantities: Matrix
+        :return:
+        :rtype: [(Num a, Num a)]
+        """
+        # What representation of atoms_quantities would suit better
+        # for this method?
+        # It could be either SymPy matrix or numpy array
+        # Let it be SymPy matrix at this stage
+        # We are free to make decision about representation later on.
+        # We should test the concept first.
+
+        print "get_new_positions_of_matters.delta_t: {delta_t}".format(delta_t=delta_t)
+        print "get_new_positions_of_matters.positions_of_matters: {positions_of_matters}".format(positions_of_matters=positions_of_matters)
+        print "get_new_positions_of_matters.atoms_quantities: {atoms_quantities}".format(atoms_quantities=atoms_quantities)
+
+        all_numeric = [delta_t, ] + positions_of_matters + atoms_quantities
+
+        ps = list()
+
+        print len(self.new_position_generators)
+
+        for new_position_generator in self.new_position_generators:
+            ps.append(new_position_generator(*all_numeric))
+
+        return ps
+
+    def get_new_atoms_quantities(self,
+                                 delta_t,
+                                 positions_of_matters,
+                                 atoms_quantities):
+
+        all_numeric = [delta_t, ] + positions_of_matters + atoms_quantities
+
+        number_of_matters = len(self.matters)
+        number_of_atoms = len(self.atoms)
+
+        list_of_atoms = list()
+        for i in xrange(number_of_matters):
+            for j in xrange(number_of_atoms):
+                list_of_atoms.append(self.new_quantities_generators[i*number_of_atoms + j](*all_numeric))
+
+        return Matrix(number_of_matters, number_of_atoms, list_of_atoms)
+
 
     @on_trait_change('scene')
     def bind_to_scene(self, scene):
@@ -248,7 +412,7 @@ class Universe(HasTraits):
 
         for matter in self.matters:
             scene.add_actor(matter.generate_actor())
-            scene.add_actor(matter.generate_legend_actor())
+            #scene.add_actor(matter.generate_legend_actor())
 
         if self.vector_field_rendering_actor is None:
             print "Launching VectorFieldRenderingActor"

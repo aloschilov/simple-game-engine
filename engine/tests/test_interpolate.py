@@ -85,12 +85,11 @@ def test_spline_the_third_derivative_smooth_end_points():
 
 
 def test_splint2():
-    from sympy import symbols, lambdify
+    from sympy import lambdify
+    from sympy.abc import x, y
     import numpy as np
     from engine.interpolate import splint2, BoundaryConditions
     from math import fabs
-
-    x, y = symbols('x y')
 
     m = 5
     n = 4

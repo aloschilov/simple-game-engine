@@ -50,13 +50,15 @@ class Visualization(HasTraits):
 
         self.universe.bind_to_scene(self.scene)
 
+        self.universe.compile()
+
         # We can do normal mlab calls on the embedded scene.
         # self.scene.mlab.test_points3d()
 
         mlab.view(45, 45)
         mlab.view(azimuth=0, elevation=0, distance=30, focalpoint=(0, 0, 0))
 
-        @mlab.animate(delay=10, ui=False)
+        @mlab.animate(delay=50, ui=False)
         def animate():
             f = mlab.gcf()
             while 1:

@@ -1,4 +1,4 @@
-from sympy import Piecewise, And, Max, Matrix, zeros, Min, symbols, diag, ones, Or
+from sympy import Piecewise, And, Matrix, zeros, symbols, diag, ones, Or, S
 import yaml
 
 from traits.api import HasTraits, Instance, Float, String
@@ -25,7 +25,7 @@ class NaturalLaw(HasTraits):
 # noinspection PyPep8Naming
 def min_elementwise(X, Y):
     rows, cols = X.shape
-    return Matrix(rows, cols, list(map(Min, X, Y)))
+    return Matrix(rows, cols, list(map(lambda a, b : Piecewise((a, a < b), (b, True)), X, Y)))
 
 
 def get_conversion_ratio_matrix(pending_conversion,
@@ -49,8 +49,10 @@ def get_conversion_ratio_matrix(pending_conversion,
     """
 
     rows, cols = pending_conversion.shape
+    #Max = lambda a, b : Piecewise((a, a > b), (b, True))
     k = lambda a, s: Piecewise((0.0, Or(a <= 0.0, s <= 0.0)),
-                               (s/Max(a, s), True))
+                               (s/(a - 1.4e-45), a > s),
+                               (1.0, True))
     return Matrix(rows, cols, list(map(k, pending_conversion, atoms_in_specific_matter)))
 
 
