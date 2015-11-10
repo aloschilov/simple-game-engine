@@ -5,5 +5,8 @@
         <file>images/atom.png</file>
         <file>images/force.png</file>
 		<file>images/natural_law.png</file>
+		<file>images/compile.png</file>
+        <file>images/run.png</file>
+        <file>images/abort.png</file>
 	</qresource>
 </RCC>

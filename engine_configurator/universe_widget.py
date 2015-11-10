@@ -10,15 +10,16 @@ from engine_configurator.natural_law_toolbox_item import NaturalLawToolboxItem
 from engine_configurator.universe_scene import UniverseScene
 
 
-from pyface.qt.QtGui import (QWidget, QPainter, QApplication, QGraphicsView, QHBoxLayout,
-                             QToolBox, QGraphicsScene, QTabWidget, QGraphicsWidget, QGraphicsLinearLayout)
+from pyface.qt.QtGui import (QMainWindow, QPainter, QApplication, QGraphicsView, QHBoxLayout,
+                             QToolBox, QGraphicsScene, QTabWidget, QGraphicsWidget, QGraphicsLinearLayout,
+                             QAction, QToolBar, QIcon, QWidget)
 from pyface.qt.QtCore import Qt
 
 # noinspection PyUnresolvedReferences
 import engine_configurator_rc
 
 
-class UniverseWidget(QWidget):
+class UniverseWidget(QMainWindow):
     """
     This widget is used to configure Universe
     """
@@ -81,12 +82,16 @@ class UniverseWidget(QWidget):
         main_layout.addWidget(self.tool_box, 1)
         main_layout.addWidget(self.middle_container_widget, 3)
         main_layout.addWidget(self.properties_widget, 1)
-        self.setLayout(main_layout)
+        self.setCentralWidget(QWidget())
+        self.centralWidget().setLayout(main_layout)
 
         self.universe_graphics_scene.properties_bindings_update_required.connect(
             self.update_properties_bindings)
         self.universe_graphics_scene.properties_bindings_disconnect_required.connect(
             self.disconnect_graphics_item_from_properties_widget)
+
+        self.create_actions()
+        self.setup_toolbar()
 
     def update_properties_bindings(self):
         for graphics_item in self.universe_graphics_scene.graphics_items:
@@ -97,6 +102,42 @@ class UniverseWidget(QWidget):
     def disconnect_graphics_item_from_properties_widget(self, graphics_item):
         graphics_item.clicked.disconnect(self.properties_widget.process_item_clicked)
         self.properties_widget.process_item_clicked(None)
+
+    def create_actions(self):
+        self.compile_action = QAction(QIcon(":/images/compile.png"), "Compile", self)
+        self.run_action = QAction(QIcon(":/images/run.png"), "Run", self)
+        self.abort_action = QAction(QIcon(":/images/abort.png"), "Abort", self)
+
+        self.compile_action.triggered.connect(self.compile)
+        self.run_action.triggered.connect(self.run)
+        self.abort_action.triggered.connect(self.abort)
+
+    def setup_toolbar(self):
+        toolbar = QToolBar(self)
+        toolbar.addAction(self.compile_action)
+        toolbar.addAction(self.run_action)
+        toolbar.addAction(self.abort_action)
+        self.addToolBar(toolbar)
+
+    def compile(self):
+        """
+        This method compiles Universe. It is not possible
+        to evaluate Universe along the time without compilation.
+        """
+        print "compile"
+
+    def run(self):
+        """
+        This methods start procedure of evaluation of universe along the time.
+        """
+        print "run"
+
+    def abort(self):
+        """
+        This method resets positions of matters and number of atoms to initial state,
+        which is saved right before evaluation started.
+        """
+        print "abort"
 
 
 if __name__ == "__main__":
