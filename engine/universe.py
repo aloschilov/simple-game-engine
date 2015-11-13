@@ -25,6 +25,7 @@ from vector_field_rendering_actor import VectorFieldRenderingActor
 from natural_law import get_matrix_of_converting_atoms, get_matrix_of_converted_atoms
 
 import yaml
+import time
 
 
 def try_except(fn):
@@ -73,8 +74,6 @@ class Universe(HasTraits):
         for i in xrange(number_of_matters):
             for j in xrange(number_of_atoms):
                 if self.atoms[j] in self.matters[i].atoms:
-                    print "Nu[i, j]"
-                    print Nu[i, j][0]
                     self.matters[i].atoms[self.atoms[j]] = float(Nu[i, j][0])
 
     @property
@@ -91,10 +90,6 @@ class Universe(HasTraits):
     @matters_positions.setter
     def matters_positions(self, ps):
 
-        print "@matters_positions.setter"
-        print type(ps)
-        print ps
-
         number_of_matters = len(self.matters)
 
         for i in xrange(number_of_matters):
@@ -102,6 +97,7 @@ class Universe(HasTraits):
 
     def __init__(self):
         super(Universe, self).__init__()
+        self.previous_clock_value = 0.0
         self.vector_field_rendering_countdown = 0
         self.future = None
         self.image_actor = tvtk.ImageActor()
@@ -173,10 +169,6 @@ class Universe(HasTraits):
     @on_trait_change('matters.position')
     def positions_changed(self, arg1, arg2, arg3):
         self.scene.render()
-        #print "The time to update callable"
-        #print arg1
-        #print arg2
-        #print arg3
 
     # noinspection PyShadowingNames,PyTypeChecker,PyPep8Naming
     @try_except
@@ -185,16 +177,16 @@ class Universe(HasTraits):
         This method evaluates entire universe along the time
         """
 
-        import time
-        print(time.time(), time.clock())
+        clock_value = time.clock()
+        clock_delta = clock_value - self.previous_clock_value
+        self.previous_clock_value = clock_value
+
+        print clock_delta
 
         delta_t = 0.0001
 
         Nu = self.atoms_quantities
         ps = self.matters_positions
-
-        print "self.get_new_positions_of_matters(delta_t, ps, Nu)"
-        print self.get_new_positions_of_matters(delta_t, ps, Nu)
 
         self.matters_positions = list(self.get_new_positions_of_matters(delta_t, ps, Nu))
         self.atoms_quantities = self.get_new_atoms_quantities(delta_t, ps, Nu)
@@ -370,15 +362,9 @@ class Universe(HasTraits):
         # We are free to make decision about representation later on.
         # We should test the concept first.
 
-        print "get_new_positions_of_matters.delta_t: {delta_t}".format(delta_t=delta_t)
-        print "get_new_positions_of_matters.positions_of_matters: {positions_of_matters}".format(positions_of_matters=positions_of_matters)
-        print "get_new_positions_of_matters.atoms_quantities: {atoms_quantities}".format(atoms_quantities=atoms_quantities)
-
         all_numeric = [delta_t, ] + positions_of_matters + atoms_quantities
 
         ps = list()
-
-        print len(self.new_position_generators)
 
         for new_position_generator in self.new_position_generators:
             ps.append(new_position_generator(*all_numeric))
@@ -415,7 +401,6 @@ class Universe(HasTraits):
             #scene.add_actor(matter.generate_legend_actor())
 
         if self.vector_field_rendering_actor is None:
-            print "Launching VectorFieldRenderingActor"
             self.initialize_image_import_with_empty_image()
             self.scene.add_actor(self.image_actor)
             self.image_actor.input = self.image_import.output
