@@ -1,5 +1,5 @@
 from traits.api import HasTraits, Instance, List, on_trait_change
-from numpy import array, zeros, uint8
+from numpy import array, zeros, uint8, fromiter, float
 from mayavi.core.ui.api import MlabSceneModel
 from tvtk.api import tvtk
 from pykka.actor import ActorRef
@@ -61,9 +61,17 @@ class Universe(HasTraits):
         :return:
         """
 
-        return list(Matrix(len(self.matters),
-                           len(self.atoms),
-                           lambda i, j: self.matters[i].atoms.get(self.atoms[j], 0)))
+        list_to_return = list()
+
+        for i in xrange(len(self.matters)):
+            for j in xrange(len(self.atoms)):
+                list_to_return.append(self.matters[i].atoms.get(self.atoms[j], 0))
+
+        return list_to_return
+
+#        return list(Matrix(len(self.matters),
+#                           len(self.atoms),
+#                           lambda i, j: self.matters[i].atoms.get(self.atoms[j], 0)))
 
     @atoms_quantities.setter
     def atoms_quantities(self, Nu):
@@ -74,7 +82,7 @@ class Universe(HasTraits):
         for i in xrange(number_of_matters):
             for j in xrange(number_of_atoms):
                 if self.atoms[j] in self.matters[i].atoms:
-                    self.matters[i].atoms[self.atoms[j]] = float(Nu[i, j][0])
+                    self.matters[i].atoms[self.atoms[j]] = Nu[i, j]
 
     @property
     def matters_positions(self):
@@ -183,7 +191,7 @@ class Universe(HasTraits):
 
         print clock_delta
 
-        delta_t = 0.0001
+        delta_t = 0.1
 
         Nu = self.atoms_quantities
         ps = self.matters_positions
@@ -338,7 +346,6 @@ class Universe(HasTraits):
                 nu_t = theano.function(input_scalars, [nu_op(*input_scalars), ])
                 self.new_quantities_generators.append(nu_t)
 
-
     def get_new_positions_of_matters(self,
                                      delta_t,
                                      positions_of_matters,
@@ -381,12 +388,18 @@ class Universe(HasTraits):
         number_of_matters = len(self.matters)
         number_of_atoms = len(self.atoms)
 
-        list_of_atoms = list()
-        for i in xrange(number_of_matters):
-            for j in xrange(number_of_atoms):
-                list_of_atoms.append(self.new_quantities_generators[i*number_of_atoms + j](*all_numeric))
+        array_to_return = fromiter(itertools.imap(lambda idx: self.new_quantities_generators[idx](*all_numeric)[0],
+                                                  xrange(number_of_matters*number_of_atoms)),
+                                   dtype=float)
 
-        return Matrix(number_of_matters, number_of_atoms, list_of_atoms)
+#        array_to_return.reshape((number_of_matters, number_of_atoms))
+
+        # list_of_atoms = list()
+        # for i in xrange(number_of_matters):
+        #     for j in xrange(number_of_atoms):
+        #         list_of_atoms.append(self.new_quantities_generators[i*number_of_atoms + j](*all_numeric))
+
+        return array_to_return.reshape((number_of_matters, number_of_atoms))# Matrix(number_of_matters, number_of_atoms, list_of_atoms)
 
 
     @on_trait_change('scene')
@@ -400,11 +413,11 @@ class Universe(HasTraits):
             scene.add_actor(matter.generate_actor())
             #scene.add_actor(matter.generate_legend_actor())
 
-        if self.vector_field_rendering_actor is None:
-            self.initialize_image_import_with_empty_image()
-            self.scene.add_actor(self.image_actor)
-            self.image_actor.input = self.image_import.output
-            self.vector_field_rendering_actor = VectorFieldRenderingActor.start()
+        # if self.vector_field_rendering_actor is None:
+        #     self.initialize_image_import_with_empty_image()
+        #     self.scene.add_actor(self.image_actor)
+        #     self.image_actor.input = self.image_import.output
+        #     self.vector_field_rendering_actor = VectorFieldRenderingActor.start()
 
     def render_force_image(self, image):
         self.update_image(image)
