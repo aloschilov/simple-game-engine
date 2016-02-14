@@ -10,10 +10,10 @@ class Matter(object):
     """
 
     def __init__(self):
-        self.position = None
+        self.position = (0.0, 0.0)
         self.atoms = dict()
         self.name = ''
-        self.color = None
+        self.color = (0.0, 0.0, 0.0)
         self.vector_field_is_visible = False
 
 
