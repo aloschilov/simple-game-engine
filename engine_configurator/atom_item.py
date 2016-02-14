@@ -16,7 +16,6 @@ class AtomItem(ClickableGraphicsWidget, IconGraphicsWidget):
         ClickableGraphicsWidget.__init__(self)
         self.initialize(":/images/atom.png")
         self.atom = atom
-        self.atom.on_trait_change(self.setText, 'name')
         self.setCursor(Qt.OpenHandCursor)
         self.setAcceptDrops(True)
 
