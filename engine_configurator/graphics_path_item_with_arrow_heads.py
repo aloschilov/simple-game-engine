@@ -1,4 +1,4 @@
-from pyface.qt.QtGui import QGraphicsPathItem
+from pyface.qt.QtGui import QGraphicsPathItem, QPolygonF
 from pyface.qt.QtCore import QPointF
 from math import atan2, pi, tan
 
@@ -24,4 +24,4 @@ class GraphicsPathItemWithArrowHeads(QGraphicsPathItem):
                   QPointF(0.0, 0.0),
                   QPointF(-arrow_length, -tan(10.0 * pi / 180.0) * arrow_length)]
 
-        painter.drawPolygon(points)
+        painter.drawPolygon(QPolygonF(points))
