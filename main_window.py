@@ -18,25 +18,6 @@ from pyface.qt.QtGui import (QMainWindow, QApplication, QGridLayout, QWidget)
 
 from engine_configurator.universe_widget import UniverseWidget
 
-#
-# Classes
-#
-
-
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super(MainWindow, self).__init__()
-
-        self.mayavi_widget = MayaviQWidget()
-
-        # Layouting
-
-        main_layout = QGridLayout()
-        main_layout.addWidget(self.mayavi_widget, 1, 1)
-
-        self.setCentralWidget(QWidget())
-        self.centralWidget().setLayout(main_layout)
-
 
 if __name__ == "__main__":
     # Don't create a new QApplication, it would unhook the Events

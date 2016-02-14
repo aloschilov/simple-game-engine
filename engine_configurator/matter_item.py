@@ -16,7 +16,6 @@ class MatterItem(ClickableGraphicsWidget, IconGraphicsWidget):
         ClickableGraphicsWidget.__init__(self)
         self.initialize(":/images/matter.png")
         self.matter = matter
-        self.matter.on_trait_change(self.setText, 'name')
         self.setAcceptDrops(True)
 
     def dragEnterEvent(self, event):
