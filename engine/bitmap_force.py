@@ -6,18 +6,8 @@ from settings import (BITMAP_BOUNDING_RECT_BASE_X_DEFAULT,
                       BITMAP_BOUNDING_RECT_EXTENT_Y_DEFAULT)
 
 from force import Force
-from bitmap_force_preparation_actor import BitmapForcePreparationActor
-
-import parallelization_decorator
-
-try:
-    from functools import lru_cache
-except ImportError:
-    from backports.functools_lru_cache import lru_cache
 
 
-
-@parallelization_decorator.run_in_separate_process(default_value=S(0.0))
 def build_expression(image_path, rect):
     """
 

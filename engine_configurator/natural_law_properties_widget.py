@@ -13,7 +13,6 @@ class AtomsInUniverseListModel(QAbstractListModel):
     def __init__(self, universe):
         super(AtomsInUniverseListModel, self).__init__()
         self.universe = universe
-        self.universe.on_trait_change(self.process_atoms_name_changed, 'atoms.name')
 
     def process_atoms_name_changed(self):
         self.reset()
@@ -53,7 +52,6 @@ class ForcesInUniverseListModel(QAbstractListModel):
     def __init__(self, universe):
         super(ForcesInUniverseListModel, self).__init__()
         self.universe = universe
-        self.universe.on_trait_change(self.process_atoms_name_changed, 'forces.name')
 
     def process_atoms_name_changed(self):
         self.reset()

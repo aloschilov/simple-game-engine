@@ -1,17 +1,14 @@
-from traits.api import (HasTraits, Instance, Str, List)
 import yaml
 
-from force import Force
 
-
-class Atom(HasTraits):
+class Atom(object):
     """
     Everything in Universe consists of Atoms.
     """
 
-    name = Str
-    produced_forces = List(trait=Instance(Force))
-
+    def __init__(self):
+        self.name = ''
+        self.produced_forces = list()
 
 def atom_representer(dumper, atom):
     return dumper.represent_mapping(u'!Atom', {"name": atom.name,

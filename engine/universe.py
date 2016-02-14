@@ -1,44 +1,67 @@
-from traits.api import HasTraits, Instance, List, on_trait_change
-from numpy import array, zeros, uint8, fromiter, float
-from mayavi.core.ui.api import MlabSceneModel
-from tvtk.api import tvtk
-from pykka.actor import ActorRef
+import itertools
+import os
+import shutil
+import time
+import re
+
 import theano
+import yaml
+from numpy import fromiter, float
+from sympy import Matrix, diag, Piecewise, ones, Symbol
+from sympy.abc import x, y
+from sympy.physics.vector import ReferenceFrame, gradient
 from theano.scalar.basic_sympy import SymPyCCode
 
-import itertools
+from sympy.printing import ccode
 
-from sympy import Matrix, symbols, diag, Piecewise, ones, pprint, Symbol
-from sympy.core import sympify
-from sympy.physics.vector import ReferenceFrame, gradient
-from sympy.abc import x, y
+from natural_law import get_matrix_of_converting_atoms, get_matrix_of_converted_atoms
 from . import Atom
-from . import RadialForce
-from . import ExpressionBasedForce
 from . import BitmapForce
+from . import ExpressionBasedForce
 from . import Force
 from . import Matter
 from . import NaturalLaw
+from . import RadialForce
+from . import Agent
 
-from engine.bitmap_force import BitmapForce
-from vector_field_rendering_actor import VectorFieldRenderingActor
-from natural_law import get_matrix_of_converting_atoms, get_matrix_of_converted_atoms
 
-import yaml
-import time
+position_device_function_template = """
+__device__ float p_{component}_func_{idx}(float delta_t, float *d_p_x, float *d_p_y, float *d_nu)
+{{
+    return {expression};
+}}
+"""
+
+position_transition_functions_template = """
+__device__ op_func p_{component}_func[NUMBER_OF_MATTERS] = {{ {functions_list} }};
+"""
+
+atom_quantities_device_function_template = """
+__device__ float nu_func_{idx}(float delta_t, float *d_p_x, float *d_p_y, float *d_nu)
+{{
+    return {expression};
+}}
+"""
+
+atoms_quantities_functions_template = """
+__device__ op_func nu_func[NUMBER_OF_MATTERS * NUMBER_OF_ATOMS] = {{ {functions_list} }};
+"""
 
 
 def try_except(fn):
     import traceback
+
     def wrapped(*args, **kwargs):
+        # noinspection PyBroadException
         try:
             return fn(*args, **kwargs)
-        except Exception, e:
+        except Exception:
             print traceback.print_exc()
+
     return wrapped
 
 
-class Universe(HasTraits):
+class Universe(object):
     """
     A hypothetical universe, where in its 2d Space, Forces
     control what happen. There is Matter build out of different
@@ -47,12 +70,10 @@ class Universe(HasTraits):
     if certain Forces are present.
     """
 
-    atoms = List(trait=Instance(Atom))
-    forces = List(trait=Instance(Force))
-    matters = List(trait=Instance(Matter))
-    natural_laws = List(trait=Instance(NaturalLaw))
-    scene = Instance(MlabSceneModel, ())
-    vector_field_rendering_actor = Instance(ActorRef, None)
+    atoms = list()
+    forces = list()
+    matters = list()
+    natural_laws = list()
 
     @property
     def atoms_quantities(self):
@@ -69,12 +90,8 @@ class Universe(HasTraits):
 
         return list_to_return
 
-#        return list(Matrix(len(self.matters),
-#                           len(self.atoms),
-#                           lambda i, j: self.matters[i].atoms.get(self.atoms[j], 0)))
-
     @atoms_quantities.setter
-    def atoms_quantities(self, Nu):
+    def atoms_quantities(self, number_of_atoms_in_matter):
 
         number_of_matters = len(self.matters)
         number_of_atoms = len(self.atoms)
@@ -82,7 +99,7 @@ class Universe(HasTraits):
         for i in xrange(number_of_matters):
             for j in xrange(number_of_atoms):
                 if self.atoms[j] in self.matters[i].atoms:
-                    self.matters[i].atoms[self.atoms[j]] = Nu[i, j]
+                    self.matters[i].atoms[self.atoms[j]] = number_of_atoms_in_matter[i, j]
 
     @property
     def matters_positions(self):
@@ -108,8 +125,6 @@ class Universe(HasTraits):
         self.previous_clock_value = 0.0
         self.vector_field_rendering_countdown = 0
         self.future = None
-        self.image_actor = tvtk.ImageActor()
-        self.image_import = tvtk.ImageImport()
 
         self.new_position_generators = list()
         self.new_quantities_generators = list()
@@ -121,8 +136,6 @@ class Universe(HasTraits):
 
         matter = Matter()
         self.matters.append(matter)
-        self.scene.add_actor(matter.generate_actor())
-        self.scene.add_actor(matter.generate_legend_actor())
         return matter
 
     def create_atom(self):
@@ -174,9 +187,17 @@ class Universe(HasTraits):
         self.natural_laws.append(natural_law)
         return natural_law
 
-    @on_trait_change('matters.position')
-    def positions_changed(self, arg1, arg2, arg3):
-        self.scene.render()
+    def create_agent(self):
+        """
+        Creates a default Agent.
+
+        :return: an Agent
+        :rtype: Agent
+        """
+
+        agent = Agent()
+        self.agents.append(agent)
+        return agent
 
     # noinspection PyShadowingNames,PyTypeChecker,PyPep8Naming
     @try_except
@@ -199,47 +220,21 @@ class Universe(HasTraits):
         self.matters_positions = list(self.get_new_positions_of_matters(delta_t, ps, Nu))
         self.atoms_quantities = self.get_new_atoms_quantities(delta_t, ps, Nu)
 
-        #if self.vector_field_rendering_actor is not None:
-            #if self.vector_field_rendering_countdown == 0:
-                #if self.future is not None:
-                    #image = self.future.get()
-                    #if image is not None:
-                        #print "Render"
-                        #self.render_force_image(image)
+    @staticmethod
+    def convert_position_code_to_cuda(position_code):
+        position_code = re.sub("Delta_t", "delta_t", position_code)
+        position_code = re.sub(r"nu_(\d+)_(\d+)", r"d_nu[\1 * NUMBER_OF_ATOMS + \2]", position_code)
+        position_code = re.sub(r"p_x_(\d+)", r"d_p_x[\1]", position_code)
+        position_code = re.sub(r"p_y_(\d+)", r"d_p_y[\1]", position_code)
+        return position_code
 
-                #self.vector_field_rendering_countdown = 100
-                #self.future = self.vector_field_rendering_actor.ask(
-                    #{
-                        #"W": W,
-                        #"colors": [matter.color for matter in self.matters],
-                        #"bounding_rect": (-10, 10, 10, -10),
-                        #"vector_field_is_visible": [matter.vector_field_is_visible for matter in self.matters]
-                    #}, block=False)
-            #else:
-                #self.vector_field_rendering_countdown -= 1
-
-        #delta_t = 0.1
-
-        #for mi, matter in enumerate(self.matters):
-
-            #(x_v, y_v) = matter.position
-            #(x_v, y_v) = (sympify(x_v), sympify(y_v))
-
-            #print "float(W[mi][0].evalf(subs={x: x_v, y: y_v}))"
-            #print float(W[mi][0].evalf(subs={x: x_v, y: y_v}))
-            #print "float(W[mi][1].evalf(subs={x: x_v, y: y_v}))"
-            #print float(W[mi][1].evalf(subs={x: x_v, y: y_v}))
-
-            #(x_, y_) = tuple(array((
-                #float(W[mi][0].evalf(subs={x: x_v, y: y_v}))*delta_t,
-                #float(W[mi][1].evalf(subs={x: x_v, y: y_v}))*delta_t
-            #)) + array((x_v, y_v)))
-            #x_ = x_ if x_ > -10 else -10
-            #x_ = x_ if x_ < 10 else 10
-            #y_ = y_ if y_ > -10 else -10
-            #y_ = y_ if y_ < 10 else 10
-            #matter.position = (x_, y_)
-
+    @staticmethod
+    def convert_atoms_quantities_code_to_cuda(atoms_quantities_code):
+        atoms_quantities_code = re.sub("Delta_t", "delta_t", atoms_quantities_code)
+        atoms_quantities_code = re.sub(r"nu_(\d+)_(\d+)", r"d_nu[\1 * NUMBER_OF_ATOMS + \2]", atoms_quantities_code)
+        atoms_quantities_code = re.sub(r"p_x_(\d+)", r"d_p_x[\1]", atoms_quantities_code)
+        atoms_quantities_code = re.sub(r"p_y_(\d+)", r"d_p_y[\1]", atoms_quantities_code)
+        return atoms_quantities_code
 
     def compile(self):
         """
@@ -319,32 +314,83 @@ class Universe(HasTraits):
 
         delta_t = Symbol('Delta_t')
 
-        inputs = map(lambda s: Symbol(s), list(itertools.chain(["Delta_t"],
-                                      map(lambda s: str(s), itertools.chain(*ps)),
-                                      ["nu_{i}_{j}".format(i=i, j=j) for i in xrange(number_of_matters) for j in xrange(number_of_atoms)]
+        inputs = map(lambda s: Symbol(s),
+                     list(itertools.chain(["Delta_t"],
+                                          map(lambda s: str(s), itertools.chain(*ps)),
+                                          ["nu_{i}_{j}".format(i=i, j=j)
+                                           for i in xrange(number_of_matters) for j in xrange(number_of_atoms)]
                                   )))
 
         self.new_position_generators = list()
 
+        position_functions = list()
+
         for i in xrange(number_of_matters):
             (x_v, y_v) = tuple(ps[i])
             (dx, dy) = (x_v + W[i][0].subs({x: x_v, y: y_v})*delta_t, y_v + W[i][1].subs({x: x_v, y: y_v})*delta_t)
+
+            cuda_code_dx = position_device_function_template.format(component="x", idx=i, expression=self.convert_position_code_to_cuda(ccode(dx)))
+            cuda_code_dy = position_device_function_template.format(component="y", idx=i, expression=self.convert_position_code_to_cuda(ccode(dy)))
+
+            position_functions.append(cuda_code_dx)
+            position_functions.append(cuda_code_dy)
+
             dx_op = SymPyCCode(inputs, dx)
             dy_op = SymPyCCode(inputs, dy)
             input_scalars = [theano.tensor.dscalar(str(inp)) for inp in inputs]
             dx_dy_t = theano.function(input_scalars, [dx_op(*input_scalars), dy_op(*input_scalars)])
             self.new_position_generators.append(dx_dy_t)
 
+        function_list_x = ", ".join(["""p_{component}_func_{idx}""".format(component="x", idx=i) for i in xrange(number_of_matters)])
+        function_list_x_cuda_code = position_transition_functions_template.format(component="x", functions_list=function_list_x)
+        function_list_y = ", ".join(["""p_{component}_func_{idx}""".format(component="y", idx=i) for i in xrange(number_of_matters)])
+        function_list_y_cuda_code = position_transition_functions_template.format(component="y", functions_list=function_list_y)
+
         # Natural law theano optimization
 
         self.new_quantities_generators = list()
 
+        atoms_quantities_functions = list()
+
         for i in xrange(number_of_matters):
             for j in xrange(number_of_atoms):
+
+                cuda_code_nu = atom_quantities_device_function_template.format(
+                        idx=i*number_of_atoms+j,
+                        expression=self.convert_atoms_quantities_code_to_cuda(ccode(Nu_new[i, j])))
+
+                atoms_quantities_functions.append(cuda_code_nu)
+
                 nu_op = SymPyCCode(inputs, Nu_new[i, j])
                 input_scalars = [theano.tensor.dscalar(str(inp)) for inp in inputs]
                 nu_t = theano.function(input_scalars, [nu_op(*input_scalars), ])
                 self.new_quantities_generators.append(nu_t)
+
+        atoms_quantities_functions_list = ", ".join(["""nu_func_{idx}""".format(idx=i) for i in xrange(number_of_matters*number_of_atoms)])
+        atoms_quantities_functions_list_cuda_code = atoms_quantities_functions_template.format(functions_list=atoms_quantities_functions_list)
+
+        positions_initialization_cuda_code = list()
+
+        for p_x_i, p_x in enumerate(self.matters_positions[0::2]):
+            positions_initialization_cuda_code.append("p_x[{idx}] = {value};".format(idx=p_x_i, value=p_x))
+
+        for p_y_i, p_y in enumerate(self.matters_positions[1::2]):
+            positions_initialization_cuda_code.append("p_y[{idx}] = {value};".format(idx=p_y_i, value=p_y))
+
+        atoms_quantities_initialization_cuda_code = list()
+
+        for i in xrange(len(self.matters)):
+            for j in xrange(len(self.atoms)):
+                atoms_quantities_initialization_cuda_code.append("nu[{matter_idx}*NUMBER_OF_ATOMS + {atom_idx}] = {value};".format(matter_idx=i,
+                                                                                                                                   atom_idx=j,
+                                                                                                                                   value=self.atoms_quantities[(len(self.atoms)*i + j)]))
+
+        return {"positions_functions": "\n".join(position_functions),
+                "positions_functions_list": "\n".join([function_list_x_cuda_code, function_list_y_cuda_code]),
+                "atoms_quantities_functions": "\n".join(atoms_quantities_functions),
+                "atoms_quantities_functions_list": atoms_quantities_functions_list_cuda_code,
+                "positions_initialization": "\n".join(positions_initialization_cuda_code),
+                "atoms_quantities_initialization": "\n".join(atoms_quantities_initialization_cuda_code)}
 
     def get_new_positions_of_matters(self,
                                      delta_t,
@@ -362,7 +408,6 @@ class Universe(HasTraits):
         :return:
         :rtype: [(Num a, Num a)]
         """
-        # What representation of atoms_quantities would suit better
         # for this method?
         # It could be either SymPy matrix or numpy array
         # Let it be SymPy matrix at this stage
@@ -392,74 +437,7 @@ class Universe(HasTraits):
                                                   xrange(number_of_matters*number_of_atoms)),
                                    dtype=float)
 
-#        array_to_return.reshape((number_of_matters, number_of_atoms))
-
-        # list_of_atoms = list()
-        # for i in xrange(number_of_matters):
-        #     for j in xrange(number_of_atoms):
-        #         list_of_atoms.append(self.new_quantities_generators[i*number_of_atoms + j](*all_numeric))
-
-        return array_to_return.reshape((number_of_matters, number_of_atoms))# Matrix(number_of_matters, number_of_atoms, list_of_atoms)
-
-
-    @on_trait_change('scene')
-    def bind_to_scene(self, scene):
-        """
-        This method binds TVTK actors associated
-        with visual objects to scene
-        """
-
-        for matter in self.matters:
-            scene.add_actor(matter.generate_actor())
-            #scene.add_actor(matter.generate_legend_actor())
-
-        # if self.vector_field_rendering_actor is None:
-        #     self.initialize_image_import_with_empty_image()
-        #     self.scene.add_actor(self.image_actor)
-        #     self.image_actor.input = self.image_import.output
-        #     self.vector_field_rendering_actor = VectorFieldRenderingActor.start()
-
-    def render_force_image(self, image):
-        self.update_image(image)
-        x, y, _ = image.shape
-        transform = tvtk.Transform()
-        transform.rotate_z(-90)
-        transform.translate((-20.0/2.0, -20.0/2.0, 0.0))
-        transform.scale((20.0/x, 20.0/y, 1.0))
-        self.image_actor.user_transform = transform
-
-    def update_image(self, image):
-        """
-        This call updates vtkImageImport with a new image
-        :param image:
-        :return:
-        """
-
-        w, h, _ = image.shape
-
-        data_matrix = image.astype(uint8).transpose(1, 0, 2)
-        data_string = data_matrix.tostring()
-
-        self.image_import.copy_import_void_pointer(data_string, len(data_string))
-        self.image_import.set_data_scalar_type_to_unsigned_char()
-        self.image_import.number_of_scalar_components = 4
-        self.image_import.data_extent = (0, w-1, 0, h-1, 0, 0)
-        self.image_import.whole_extent = (0, w-1, 0, h-1, 0, 0)
-
-        self.image_import.update()
-        self.image_actor.visibility = True
-
-    def initialize_image_import_with_empty_image(self):
-        data_matrix = zeros([75, 75, 1], dtype=uint8)
-        data_string = data_matrix.tostring()
-        self.image_import.copy_import_void_pointer(data_matrix, len(data_string))
-        self.image_import.set_data_scalar_type_to_unsigned_char()
-        self.image_import.number_of_scalar_components = 1
-        self.image_import.data_extent = (0, 74, 0, 74, 0, 0)
-        self.image_import.whole_extent = (0, 74, 0, 74, 0, 0)
-
-        self.image_import.update()
-        self.image_actor.visibility = False
+        return array_to_return.reshape((number_of_matters, number_of_atoms))
 
     def remove_atom(self, atom):
         """
@@ -499,15 +477,12 @@ class Universe(HasTraits):
         if matter in self.matters:
             self.matters.remove(matter)
 
-        self.scene.remove_actor(matter.actor)
-        self.scene.remove_actor(matter.legend_actor)
-
     def remove_force(self, force):
         """
         This method completely removes force from Universe
         as if it never existed.
-        :param matter: A force to remove from Universe
-        :type matter: Force
+        :param force: A force to remove from Universe
+        :type force: Force
         :return: Nothing
         """
 
@@ -524,8 +499,8 @@ class Universe(HasTraits):
         """
         This method completely removes Natural Law from Universe
         as if it never existed.
-        :param matter: A Natural Law to remove from Universe
-        :type matter: NaturalLaw
+        :param natural_law: A Natural Law to remove from Universe
+        :type natural_law: NaturalLaw
         :return: Nothing
         """
 
@@ -614,6 +589,74 @@ class Universe(HasTraits):
         if natural_law in self.natural_laws:
             if natural_law.accelerator is force:
                 natural_law.accelerator = None
+
+    def generate_application_code(self, application_directory):
+        """
+        This method generates dynamic parts of a game application and
+        copies build dependencies and generated files to the specified
+        directory.
+
+        :param application_directory:
+        :return:
+        """
+
+        # There are two files, which are actually generated
+        # It is generated_constants.h and generated_core_engine.cuh
+
+        # We should use absolute path when it is possible
+
+        # we need to form output names os.path.join
+
+        current_directory = os.path.dirname(os.path.abspath(__file__))
+        abs_application_directory = os.path.abspath(application_directory)
+
+        if not os.path.isdir(abs_application_directory):
+            os.mkdir(abs_application_directory)
+
+        with open(os.path.join(current_directory, "template", "generated_constants.h")) as generated_constants_in:
+            with open(os.path.join(abs_application_directory, "generated_constants.h"), "w") as generated_constants_out:
+                generated_constants_out.write(generated_constants_in.read().format(number_of_matters=len(self.matters),
+                                                                                   number_of_atoms=len(self.atoms)))
+
+        with open(os.path.join(current_directory, "template", "generated_core_engine.cuh")) as generated_core_engine_in:
+            with open(os.path.join(abs_application_directory, "generated_core_engine.cuh"), "w") as generated_core_engine_out:
+                generated_core_engine_out.write(generated_core_engine_in.read().format(**self.compile()))
+
+        # copying static files
+
+        static_files = [
+            "GL",
+            "CMakeLists.txt",
+            "core_engine.cu",
+            "core_engine.h",
+            "exception.h",
+            "helper_cuda.h",
+            "helper_cuda_gl.h",
+            "helper_functions.h",
+            "helper_image.h",
+            "helper_math.h",
+            "helper_string.h",
+            "helper_timer.h",
+            "libGLEW.1.5.1.dylib",
+            "libGLEW.1.5.dylib",
+            "libGLEW.a",
+            "libGLEW.dylib",
+            "main.cpp",
+            "particle_system.cpp",
+            "particle_system.h",
+            "render_particles.cpp",
+            "render_particles.h",
+            "shaders.cpp",
+            "shaders.h"
+        ]
+
+        for src_path in static_files:
+            if os.path.isdir(os.path.join(current_directory, "template", src_path)):
+                shutil.copytree(os.path.join(current_directory, "template", src_path),
+                                os.path.join(abs_application_directory, src_path))
+            else:
+                shutil.copy2(os.path.join(current_directory, "template", src_path),
+                             os.path.join(abs_application_directory, src_path))
 
 
 def universe_representer(dumper, universe):

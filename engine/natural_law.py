@@ -1,31 +1,31 @@
 from sympy import Piecewise, And, Matrix, zeros, symbols, diag, ones, Or, S
 import yaml
 
-from traits.api import HasTraits, Instance, Float, String
 from force import Force
 from atom import Atom
 
 
-class NaturalLaw(HasTraits):
+class NaturalLaw(object):
     """
     Natural laws define interaction, how atoms get transformed.
     """
 
-    name = String()
+    def __init__(self):
+        self.name = ''
 
-    atom_in = Instance(Atom)
-    atom_out = Instance(Atom)
+        self.atom_in = None
+        self.atom_out = None
 
-    accelerator = Instance(Force)
+        self.accelerator = None
 
-    additive_component = Float(0.0)
-    multiplicative_component = Float(0.0)
+        self.additive_component = 0.0
+        self.multiplicative_component = 0.0
 
 
 # noinspection PyPep8Naming
 def min_elementwise(X, Y):
     rows, cols = X.shape
-    return Matrix(rows, cols, list(map(lambda a, b : Piecewise((a, a < b), (b, True)), X, Y)))
+    return Matrix(rows, cols, list(map(lambda a, b: Piecewise((a, a < b), (b, True)), X, Y)))
 
 
 def get_conversion_ratio_matrix(pending_conversion,

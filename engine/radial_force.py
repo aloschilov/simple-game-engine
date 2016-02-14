@@ -14,6 +14,8 @@ class RadialForce(Force):
     """
 
     def __init__(self):
+        super(RadialForce, self).__init__()
+
         self.min_rho = None
         self.max_rho = None
         self.min_z = None

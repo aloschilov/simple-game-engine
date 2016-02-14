@@ -12,6 +12,7 @@ class ExpressionBasedForce(Force):
     # initial value is constant expression
 
     def __init__(self):
+        super(ExpressionBasedForce, self).__init__()
         self.__expression = "0.0"
 
     def set_expression(self, expression):
