@@ -75,7 +75,7 @@ class AtomsInMatterTableModel(QAbstractTableModel):
         return False
 
     def flags(self, index):
-        return Qt.ItemIsEditable ^ Qt.ItemIsEnabled
+        return Qt.ItemFlags(Qt.ItemIsEditable ^ Qt.ItemIsEnabled)
 
 
 class MatterPropertiesWidget(QWidget):
@@ -173,14 +173,14 @@ class MatterPropertiesWidget(QWidget):
         self.setEnabled(True)
 
     def position_x_editor_value_changed(self, value):
-        position_to_setup = self.matter.position
-        position_to_setup[0] = value
-        self.matter.position = tuple(position_to_setup)
+        (x, y) = self.matter.position
+        x = value
+        self.matter.position = (x, y)
 
     def position_y_editor_value_changed(self, value):
-        position_to_setup = self.matter.position
-        position_to_setup[1] = value
-        self.matter.position = tuple(position_to_setup)
+        (x, y) = self.matter.position
+        y = value
+        self.matter.position = (x, y)
 
     def name_editor_text_changed(self, value):
         self.matter.name = value

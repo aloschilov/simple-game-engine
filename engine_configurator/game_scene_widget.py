@@ -7,6 +7,7 @@ from mayavi import mlab
 
 from engine.universe import Universe
 
+
 class Visualization(HasTraits):
     """
     The actual visualization
@@ -32,26 +33,25 @@ class Visualization(HasTraits):
         mlab.view(distance=20)
         mlab.view(focalpoint=(0, 0, 0))
 
-        @mlab.animate(delay=10, ui=False)
-        def animate():
-            f = mlab.gcf()
-            while 1:
-                self.universe.next_step()
-                f.scene.render()
-                yield
+#        @mlab.animate(delay=10, ui=False)
+#        def animate():
+#            f = mlab.gcf()
+#            while 1:
+#                self.universe.next_step()
+#                f.scene.render()
+#                yield
 
-        self.a = animate() # Starts the animation.
+#        self.a = animate() # Starts the animation.
 
     @on_trait_change('universe')
     def update_universe(self):
         print "def update_universe(self):"
         self.universe.scene = self.scene
 
-    # the layout of the dialog screated
+    # the layout of the dialog created
     view = View(Item('scene', editor=SceneEditor(scene_class=MayaviScene),
                      height=250, width=300, show_label=False),
                 resizable=True)  # We need this to resize with the parent widget
-
 
 
 class GameSceneWidget(QtGui.QWidget):
@@ -61,7 +61,7 @@ class GameSceneWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
         layout = QtGui.QVBoxLayout(self)
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         self.visualization = Visualization()
 

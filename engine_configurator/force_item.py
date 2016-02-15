@@ -16,7 +16,6 @@ class ForceItem(ClickableGraphicsWidget, IconGraphicsWidget):
         ClickableGraphicsWidget.__init__(self)
         self.initialize(":/images/force.png")
         self.force = force
-        self.force.on_trait_change(self.setText, 'name')
         self.setCursor(Qt.OpenHandCursor)
         self.setAcceptDrops(True)
 

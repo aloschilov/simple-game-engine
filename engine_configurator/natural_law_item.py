@@ -18,7 +18,6 @@ class NaturalLawItem(ClickableGraphicsWidget, IconGraphicsWidget):
         ClickableGraphicsWidget.__init__(self)
         self.initialize(":/images/natural_law.png")
         self.natural_law = natural_law
-        self.natural_law.on_trait_change(self.setText, "name")
         self.setCursor(Qt.OpenHandCursor)
         self.setAcceptDrops(True)
 
