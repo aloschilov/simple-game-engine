@@ -73,6 +73,8 @@ class BitmapForce(Force):
     """
 
     def __init__(self, rect=None, image_path=None):
+        super(BitmapForce, self).__init__()
+
         self.__image_path = image_path
         self.__rect = rect
         self.__expression = None
