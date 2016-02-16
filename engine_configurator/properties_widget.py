@@ -59,6 +59,9 @@ class PropertiesWidget(QWidget):
         self.main_layout.addWidget(self.natural_law_properties_widget)
         self.setLayout(self.main_layout)
 
+        self.previous_name_signal = None
+        self.previous_name_target = None
+
     def process_item_clicked(self, item):
         """
         This slots makes a decision on what widget to display,
@@ -66,24 +69,55 @@ class PropertiesWidget(QWidget):
         :param item:
         :return:
         """
+
+        if self.previous_name_signal:
+            self.previous_name_signal.disconnect(self.previous_name_target)
+
+            self.previous_name_signal = None
+            self.previous_name_target = None
+        
         if isinstance(item, MatterItem):
             self.main_layout.setCurrentWidget(self.matter_properties_widget)
             self.matter_properties_widget.switch_to_matter(item.matter)
+            
+            self.matter_properties_widget.name_editor.textChanged.connect(item.setText)
+            self.previous_name_target = item.setText
+            self.previous_name_signal = self.matter_properties_widget.name_editor.textChanged
         elif isinstance(item, AtomItem):
             self.main_layout.setCurrentWidget(self.atom_properties_widget)
             self.atom_properties_widget.switch_to_atom(item.atom)
+            
+            self.atom_properties_widget.name_editor.textChanged.connect(item.setText)
+            self.previous_name_target = item.setText
+            self.previous_name_signal = self.atom_properties_widget.name_editor.textChanged
         elif isinstance(item, RadialForceItem):
             self.main_layout.setCurrentWidget(self.radial_force_properties_widget)
             self.radial_force_properties_widget.switch_to_radial_force(item.force)
+            
+            self.force_properties_widget.name_editor.textChanged.connect(item.setText)
+            self.previous_name_target = item.setText
+            self.previous_name_signal = self.force_properties_widget.name_editor.textChanged
         elif isinstance(item, ExpressionBasedForceItem):
             self.main_layout.setCurrentWidget(self.expression_based_force_properties_widget)
             self.expression_based_force_properties_widget.switch_to_expression_based_force(item.force)
+            
+            self.expression_based_force_properties_widget.name_editor.textChanged.connect(item.setText)
+            self.previous_name_target = item.setText
+            self.previous_name_signal = self.expression_based_force_properties_widget.textChanged
         elif isinstance(item, BitmapForceItem):
             self.main_layout.setCurrentWidget(self.bitmap_force_properties_widget)
             self.bitmap_force_properties_widget.switch_to_bitmap_force(item.force)
+
+            self.bitmap_force_properties_widget.name_editor.textChanged.connect(item.setText)
+            self.previous_name_target = item.setText
+            self.previous_name_signal = self.bitmap_force_properties_widget.textChanged            
         elif isinstance(item, NaturalLawItem):
             self.main_layout.setCurrentWidget(self.natural_law_properties_widget)
             self.natural_law_properties_widget.switch_to_natural_law(item.natural_law)
+
+            self.natural_law_properties_widget.name_editor.textChanged.connect(item.setText)
+            self.previous_name_target = item.setText
+            self.previous_name_signal = self.natural_law_properties_widget.textChanged
         else:
             self.main_layout.setCurrentWidget(self.no_object_selected_widget)
 
