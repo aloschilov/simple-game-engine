@@ -1,4 +1,6 @@
 import sys
+
+from engine_configurator.agent_toolbox_item import AgentToolboxItem
 from engine_configurator.atom_toolbox_item import AtomToolboxItem
 from engine_configurator.game_scene_widget import GameSceneWidget
 from engine_configurator.matter_toolbox_item import MatterToolboxItem
@@ -70,11 +72,16 @@ class UniverseWidget(QMainWindow):
         self.natural_laws_stencils_view = QGraphicsView(self.natural_laws_stencils_scene)
         self.natural_laws_stencils_scene.addItem(NaturalLawToolboxItem())
 
+        self.agents_stencils_scene = QGraphicsScene()
+        self.agents_stencils_view = QGraphicsView(self.agents_stencils_scene)
+        self.agents_stencils_scene.addItem(AgentToolboxItem())
+
         self.tool_box = QToolBox()
         self.tool_box.addItem(self.matters_stencils_view, "Matters")
         self.tool_box.addItem(self.atoms_stencils_view, "Atoms")
         self.tool_box.addItem(self.forces_stencils_view, "Forces")
         self.tool_box.addItem(self.natural_laws_stencils_view, "Natural laws")
+        self.tool_box.addItem(self.agents_stencils_view, "Agents")
 
         self.properties_widget = PropertiesWidget(self.game_scene_widget.visualization.universe)
 
