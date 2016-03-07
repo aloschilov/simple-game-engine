@@ -23,6 +23,7 @@ from . import Matter
 from . import NaturalLaw
 from . import RadialForce
 from . import Agent
+from . import Sensor
 
 
 position_device_function_template = """
@@ -70,11 +71,6 @@ class Universe(object):
     if certain Forces are present.
     """
 
-    atoms = list()
-    forces = list()
-    matters = list()
-    natural_laws = list()
-
     @property
     def atoms_quantities(self):
         """
@@ -120,18 +116,51 @@ class Universe(object):
         for i in xrange(number_of_matters):
             self.matters[i].position = ps[i]
 
+    @property
+    def absolute_sensor_position_expressions(self):
+        """
+        Iterable with expressions for absolute Sensor positions
+        :return:
+        """
+
+        for sensor_index, sensor in enumerate(self.sensors):
+            if sensor.agent is not None:
+                s_p_x = Symbol('s_p_x_{index}'.format(index=sensor_index))
+                s_p_y = Symbol('s_p_y_{index}'.format(index=sensor_index))
+
+                agent_index = self.agents.index(sensor.agent)
+                a_p_x = Symbol('a_p_x_{index}'.format(index=agent_index))
+                a_p_y = Symbol('a_p_y_{index}'.format(index=agent_index))
+
+                yield [s_p_x + a_p_x, s_p_y + a_p_y]
+            else:
+                yield [0.0, 0.0]
+                # Here is the case when we return a fake expression or None
+                # We are free to return 0.0 here as absolute position
+
     def __init__(self):
-        super(Universe, self).__init__()
+        self.atoms = list()
+        self.forces = list()
+        self.matters = list()
+        self.natural_laws = list()
+        self.agents = list()
+        self.sensors = list()
+
+        # TODO: remove the following legacy code
         self.previous_clock_value = 0.0
         self.vector_field_rendering_countdown = 0
         self.future = None
+        # END TODO
 
         self.new_position_generators = list()
         self.new_quantities_generators = list()
 
     def create_matter(self):
         """
+        Creates and registers Matter in the Universe
 
+        :return: A reference to created object
+        :rtype: Matter
         """
 
         matter = Matter()
@@ -140,7 +169,10 @@ class Universe(object):
 
     def create_atom(self):
         """
+        Creates and registers Atom in the Universe
 
+        :return: A reference to created object
+        :rtype: Atom
         """
 
         atom = Atom()
@@ -149,7 +181,10 @@ class Universe(object):
 
     def create_force(self):
         """
+        Creates and registers test Force in the Universe
 
+        :return: A reference to created object
+        :rtype: Force
         """
 
         force = RadialForce()
@@ -166,6 +201,12 @@ class Universe(object):
         return force
 
     def create_radial_force(self, bezier_curve):
+        """
+
+        :param bezier_curve:
+        :return:
+        """
+
         force = RadialForce()
         force.bezier_curve = bezier_curve
         self.forces.append(force)
@@ -189,15 +230,27 @@ class Universe(object):
 
     def create_agent(self):
         """
-        Creates a default Agent.
+        Creates and registers Agent in the Universe.
 
-        :return: an Agent
+        :return: A reference to created object
         :rtype: Agent
         """
 
         agent = Agent()
         self.agents.append(agent)
         return agent
+
+    def create_sensor(self):
+        """
+        Creates and registers Sensor in the Universe.
+
+        :return: A reference to created object
+        :rtype: Sensor
+        """
+
+        sensor = Sensor()
+        self.sensors.append(sensor)
+        return sensor
 
     # noinspection PyShadowingNames,PyTypeChecker,PyPep8Naming
     @try_except
@@ -245,6 +298,8 @@ class Universe(object):
         number_of_matters = len(self.matters)
         number_of_atoms = len(self.atoms)
         number_of_forces = len(self.forces)
+        number_of_sensors = len(self.sensors)
+        number_of_agents = len(self.agents)
 
         ps = [[Symbol('p_x_{i}'.format(i=i)), Symbol('p_y_{i}'.format(i=i))] for i in xrange(number_of_matters)]
         fs = [force.function() for force in self.forces]
@@ -288,6 +343,12 @@ class Universe(object):
                     number_of_atoms,
                     lambda i, j: Symbol("nu_{i}_{j}".format(i=i, j=j)))
 
+        # T stands for target [of Sensor]
+        T = Matrix(number_of_sensors,
+                   number_of_forces,
+                   lambda i, j: 1 if self.forces[j] is self.sensors[i].perceived_force else 0)
+
+        # TODO: check weather this expression is duplication
         ps = [[Symbol('p_x_{i}'.format(i=i)), Symbol('p_y_{i}'.format(i=i))] for i in xrange(number_of_matters)]
 
         P = [Matrix(1, number_of_matters, lambda i, j: 0 if j == k else 1)*((Nu*G).multiply_elementwise(F)) for k in xrange(number_of_matters)]
@@ -399,6 +460,7 @@ class Universe(object):
         """
         Evaluates matters position from moment t to
         moment t + delta_t
+
         :param delta_t:
         :type delta_t: float
         :param positions_of_matters:
@@ -439,10 +501,35 @@ class Universe(object):
 
         return array_to_return.reshape((number_of_matters, number_of_atoms))
 
+    def get_sensor_values(self):
+        """
+        This method queries what perceive every sensor in the Universe
+        with grouping by Agent
+
+        :return: A list of the following type
+                [
+                    [<sensor_0_value_of_agent_0>,
+                    <sensor_1_value_of_agent_0>,
+                    ...,
+                    <sensor_<number of sensors in agent 0 - 1>_value_of_agent_0>],
+                    [<sensor_0_value_of_agent_1>,
+                    <sensor_1_value_of_agent_1>,
+                    ...,
+                    <sensor_<number of sensors in agent 1 - 1>_value_of_agent_1>],
+                ...,
+                    [<sensor_0_value_of_agent_<number of agents - 1>>,
+                     <sensor_1_value_of_agent_<number of agents - 1>>,
+                     ...,
+                     <sensor_<number of sensors in agent  - 1>_value_of_agent_<number of agents - 1>>],
+                ]
+        """
+        pass
+
     def remove_atom(self, atom):
         """
         This method completely removes atom from Universe
         as if it never existed.
+
         :param atom: An atom to remove from Universe
         :type atom: Atom
         :return: Nothing
@@ -467,6 +554,7 @@ class Universe(object):
         """
         This method completely removes matter from Universe
         as if it never existed.
+
         :param matter: A matter to remove from Universe
         :type matter: Matter
         :return: Nothing
@@ -481,6 +569,7 @@ class Universe(object):
         """
         This method completely removes force from Universe
         as if it never existed.
+
         :param force: A force to remove from Universe
         :type force: Force
         :return: Nothing
@@ -499,6 +588,7 @@ class Universe(object):
         """
         This method completely removes Natural Law from Universe
         as if it never existed.
+
         :param natural_law: A Natural Law to remove from Universe
         :type natural_law: NaturalLaw
         :return: Nothing
@@ -512,6 +602,7 @@ class Universe(object):
     def remove_matter_and_atom_connection(self, matter, atom):
         """
         An accessory method that removes Matter to Atom relation.
+
         :param matter: A Matter to remove Atom from.
         :type matter: Matter
         :param atom: An atom to remove from Matter.
@@ -525,10 +616,11 @@ class Universe(object):
     def remove_atom_and_force_connection(self, atom, force):
         """
         An accessory method that removes Atom to Force relation.
-        :param atom: An Atom which generates force
-        :param atom: Atom
-        :param force: A Force generated by atom
-        :param force: Force
+
+        :param atom: An Atom which generates Force
+        :type atom: Atom
+        :param force: A Force generated by Atom
+        :type force: Force
         :return: Nothing
         """
 
@@ -538,7 +630,8 @@ class Universe(object):
     def remove_force_and_atom_connection(self, force, atom):
         """
         An accessory method that removes Force to Atom relation.
-        :param force: A Force that produces effect
+
+        :param force: A Force which produces effect
         :type force: Force
         :param atom: An Atom to produce effect on
         :type atom: Atom
@@ -551,6 +644,7 @@ class Universe(object):
     def remove_atom_and_natural_law_connection(self, atom, natural_law):
         """
         An accessory method that removes Atom to Natural Law relation.
+
         :param atom: An Atom that is converted by Natural Law
         :type atom: Atom
         :param natural_law: A Natural Law that is configured to convert atom
@@ -565,6 +659,7 @@ class Universe(object):
     def remove_natural_law_and_atom_connection(self, natural_law, atom):
         """
         An accessory method that removes Natural Law to Atom relation.
+
         :param natural_law: A Natural Law that is configured to convert to atom
         :type natural_law: NaturalLaw
         :param atom: An atom to which Natural Law is converting to
@@ -579,6 +674,7 @@ class Universe(object):
     def remove_force_and_natural_law_connection(self, force, natural_law):
         """
         An accessory method that removes Force to Natural Law relation.
+
         :param force: A Force that serves as accelerator for conversion
         :type force: Force
         :param natural_law: A Natural Law for which Force serves as accelerator
@@ -679,3 +775,4 @@ def universe_constructor(loader, node):
 
 yaml.add_representer(Universe, universe_representer)
 yaml.add_constructor(u'!Universe', universe_constructor)
+

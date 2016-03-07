@@ -1,55 +1,37 @@
+class Sensor(object):
+    """
+    Sensor perceives value of Force at the current position.
+    """
+
+    def __init__(self, agent=None, perceived_force=None):
+        """
+        A default constructor of Sensor, which could be provided
+        with reference to parent Agent.
+        
+        :param agent: parent Agent to which this Sensor belongs
+        :type agent: Agent
+        """
+
+        # a position relative to an Agent
+        self.position = (0.0, 0.0)
+
+        self.agent = agent
+        self.perceived_force = perceived_force
+
 
 class Agent(object):
     """
-    Agents perceive Forces and Matters
+    Agents perceive Forces via Sensors
     """
 
-    def __init__(self):
+    def __init__(self, universe=None):
+        """
 
-        self.sensors = dict()
+        :param universe: a reference to parenting Universe
+        :type universe: Universe
+        """
+
+        # We need a reference to the Universe
+        # in order to query Sensor values
+        self.position = (0.0, 0.0)
         self.name = ""
-
-    def add_sensor(self, force, position):
-        """
-        Places a sensor that feels specific force
-        at the specified relative position.
-
-        :param force:
-        :param position:
-        :return: Nothing
-        """
-
-        if force in self.sensors.keys():
-            if position not in self.sensors[force]:
-                self.sensors[force].append(position)
-        else:
-            self.sensors[force] = [position, ]
-
-    def remove_sensor(self, force, position):
-        """
-        Removes a sensor that feels specific force
-        at the specified relative position
-
-        :param position: relative position of the sensor with
-        respect to agent position
-        :type position: (float, float)
-        :param force: a Force to feel
-        :type force: engine.Force
-        :return: Nothing
-        """
-
-        if force in self.sensors.keys():
-            if position in self.sensors[force]:
-                self.sensors[force].remove(position)
-        else:
-            # There are no sensors exist which feel
-            # specified force
-            return
-
-    def get_vision_of_force(self, force):
-        """
-
-        :param force:
-        :return:
-        """
-        pass

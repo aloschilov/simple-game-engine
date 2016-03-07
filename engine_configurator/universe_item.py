@@ -4,6 +4,8 @@ from pyface.qt.QtGui import (QGraphicsItem,
                              QPixmap,
                              QPainter)
 from pyface.qt.QtCore import Signal
+
+from engine_configurator.agent_item import AgentItem
 from engine_configurator.atom_item import AtomItem
 
 from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
@@ -26,6 +28,7 @@ class UniverseItem(ClickableGraphicsWidget):
     expression_based_force_added = Signal(QGraphicsItem, name="expression_based_force_added")
     bitmap_force_added = Signal(QGraphicsItem, name="bitmap_force_added")
     natural_law_added = Signal(QGraphicsItem, name="natural_law_added")
+    agent_added = Signal(QGraphicsItem, name="agent_added")
 
     def __init__(self, universe=None):
         super(UniverseItem, self).__init__()
@@ -39,7 +42,7 @@ class UniverseItem(ClickableGraphicsWidget):
         print "UniverseItem::dragEnterEvent"
         if event.mimeData().hasText() and event.mimeData().text() in ["Matter", "Atom", "RadialForce",
                                                                       "ExpressionBasedForce", "BitmapForce",
-                                                                      "NaturalLaw"]:
+                                                                      "NaturalLaw", "Agent"]:
             event.setAccepted(True)
             self.update()
         else:
@@ -89,6 +92,10 @@ class UniverseItem(ClickableGraphicsWidget):
             natural_law = self._universe.create_natural_law()
             natural_law_item = NaturalLawItem(natural_law)
             self.natural_law_added.emit(natural_law_item)
+        elif event.mimeData().hasText() and event.mimeData().text() == "Agent":
+            agent = self._universe.create_agent()
+            agent_item = AgentItem(agent)
+            self.agent_added.emit(agent_item)
 
         self.update()
 

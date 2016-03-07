@@ -6,6 +6,7 @@ from expression_based_force import ExpressionBasedForce
 from bitmap_force import BitmapForce
 from natural_law import NaturalLaw
 from agent import Agent
+from agent import Sensor
 from universe import Universe
 
 
@@ -20,4 +21,5 @@ __all__ = [
     "BitmapForce",
     "NaturalLaw",
     "Agent",
+    "Sensor",
 ]

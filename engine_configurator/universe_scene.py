@@ -81,6 +81,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.universe_item.expression_based_force_added.connect(self.add_expression_based_force)
         self.universe_item.bitmap_force_added.connect(self.add_bitmap_force)
         self.universe_item.natural_law_added.connect(self.add_natural_law)
+        self.universe_item.agent_added.connect(self.add_agent)
 
         self.graphics_items = list()
         self.graphics_items.append(self.universe_item)
@@ -232,6 +233,25 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.universe_item.universe.remove_natural_law(natural_law_item.natural_law)
 
         self.update()
+
+    def add_agent(self, agent_item):
+        self.graphics_items.append(agent_item)
+#        natural_law_item.atom_and_natural_law_connected.connect(self.add_atom_and_natural_law_connection)
+#        natural_law_item.natural_law_and_atom_connected.connect(self.add_natural_law_and_atom_connection)
+#        natural_law_item.force_and_natural_law_connected.connect(self.add_force_and_natural_law_connection)
+        self.addItem(agent_item)
+        self.graph.add_node(TreeNode(agent_item))
+        natural_law_item_node = self.graph.get_node(TreeNode(agent_item))
+        natural_law_item_node.attr['shape'] = 'rect'
+        natural_law_item_node.attr['width'] = agent_item.boundingRect().width()
+        natural_law_item_node.attr['height'] = agent_item.boundingRect().height()
+        self.graph.add_edge(TreeNode(self.universe_item),
+                            TreeNode(agent_item), minlen=10)
+        self.properties_bindings_update_required.emit()
+        self.update()
+
+    def remove_agent(self, agent_item):
+        pass
 
     def add_matter_and_atom_connection(self, matter_item, atom_item):
         self.graph.add_edge(TreeNode(matter_item),
