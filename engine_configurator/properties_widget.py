@@ -94,9 +94,9 @@ class PropertiesWidget(QWidget):
             self.main_layout.setCurrentWidget(self.radial_force_properties_widget)
             self.radial_force_properties_widget.switch_to_radial_force(item.force)
             
-            self.force_properties_widget.name_editor.textChanged.connect(item.setText)
+            self.radial_force_properties_widget.name_editor.textChanged.connect(item.setText)
             self.previous_name_target = item.setText
-            self.previous_name_signal = self.force_properties_widget.name_editor.textChanged
+            self.previous_name_signal = self.radial_force_properties_widget.name_editor.textChanged
         elif isinstance(item, ExpressionBasedForceItem):
             self.main_layout.setCurrentWidget(self.expression_based_force_properties_widget)
             self.expression_based_force_properties_widget.switch_to_expression_based_force(item.force)

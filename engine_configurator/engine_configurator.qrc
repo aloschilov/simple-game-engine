@@ -9,5 +9,6 @@
         <file>images/run.png</file>
         <file>images/abort.png</file>
         <file>images/agent.png</file>
+		<file>images/sensor.png</file>
 	</qresource>
 </RCC>

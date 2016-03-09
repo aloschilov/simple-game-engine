@@ -1,27 +1,27 @@
-from pyface.qt.QtCore import Qt, QLineF, QPoint, QMimeData, Signal
-from pyface.qt.QtGui import QApplication, QPixmap, QPainter, QStyleOptionGraphicsItem, QDrag, QGraphicsItem
+from pyface.qt.QtCore import (Qt, QMimeData, QLineF, QPoint, Signal)
+from pyface.qt.QtGui import (QDrag, QApplication, QPixmap, QPainter, QStyleOptionGraphicsItem, QGraphicsItem)
 
 from engine_configurator.clickable_graphics_widget import ClickableGraphicsWidget
 from engine_configurator.icon_graphics_widget import IconGraphicsWidget
 
 
-class AgentItem(ClickableGraphicsWidget, IconGraphicsWidget):
+class SensorItem(ClickableGraphicsWidget, IconGraphicsWidget):
     """
-    This item represents agent object at UniverseScene
+    This item represents Sensor object at UniverseScene
     """
 
-    agent_and_sensor_connected = Signal(QGraphicsItem, QGraphicsItem, name="agent_and_sensor_connected")
+    sensor_and_force_connected = Signal(QGraphicsItem, QGraphicsItem, name="sensor_and_force_connected")
 
-    def __init__(self, agent=None):
+    def __init__(self, sensor=None):
         ClickableGraphicsWidget.__init__(self)
-        self.initialize(":/images/agent.png")
-        self.agent = agent
+        self.initialize(":/images/sensor.png")
+        self.sensor = sensor
         self.setCursor(Qt.OpenHandCursor)
         self.setAcceptDrops(True)
 
     def mousePressEvent(self, event):
         self.setCursor(Qt.ClosedHandCursor)
-        super(AgentItem, self).mousePressEvent(event)
+        super(SensorItem, self).mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
 
@@ -33,11 +33,11 @@ class AgentItem(ClickableGraphicsWidget, IconGraphicsWidget):
         mime = QMimeData()
         # A weak solution that could not be implemented in
         # C++
-        mime.agent = self.agent
-        mime.agent_item = self
+        mime.sensor = self.sensor
+        mime.sensor_item = self
         drag.setMimeData(mime)
 
-        mime.setText("Agent")
+        mime.setText("Sensor")
 
         pixmap = QPixmap(int(self.boundingRect().width()),
                          int(self.boundingRect().height()))
@@ -59,10 +59,11 @@ class AgentItem(ClickableGraphicsWidget, IconGraphicsWidget):
 
     def mouseReleaseEvent(self, event):
         self.setCursor(Qt.OpenHandCursor)
-        super(AgentItem, self).mouseReleaseEvent(event)
+        super(SensorItem, self).mouseReleaseEvent(event)
 
     def dragEnterEvent(self, event):
-        if event.mimeData().hasText() and event.mimeData().text() in ["Sensor"]:
+        print "SensorItem::dragEnterEvent"
+        if event.mimeData().hasText() and event.mimeData().text() in ["Force"]:
             event.setAccepted(True)
             self.update()
         else:
@@ -78,14 +79,12 @@ class AgentItem(ClickableGraphicsWidget, IconGraphicsWidget):
         self.update()
 
     def dropEvent(self, event):
-        if event.mimeData().hasText() and event.mimeData().text() == "Sensor":
-            if event.mimeData().sensor.agent is not self.agent:
+        if event.mimeData().hasText() and event.mimeData().text() == "Force":
 
-                event.mimeData().sensor.agent = self.agent
-
-                self.agent_and_sensor_connected.emit(self, event.mimeData().sensor_item)
-
+            if event.mimeData().force is not self.sensor.perceived_force:
+                self.sensor.perceived_force = event.mimeData().force
+                self.sensor_and_force_connected.emit(self, event.mimeData().force_item)
             else:
-                print "No connection created since it's already exists"
+                print "No Force connection created since it's already exists"
 
         self.update()

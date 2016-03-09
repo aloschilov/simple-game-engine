@@ -14,6 +14,7 @@ from engine_configurator.matter_item import MatterItem
 from engine_configurator.radial_force_item import RadialForceItem
 from engine_configurator.bitmap_force_item import BitmapForceItem
 from engine_configurator.natural_law_item import NaturalLawItem
+from engine_configurator.sensor_item import SensorItem
 
 
 class UniverseItem(ClickableGraphicsWidget):
@@ -29,6 +30,7 @@ class UniverseItem(ClickableGraphicsWidget):
     bitmap_force_added = Signal(QGraphicsItem, name="bitmap_force_added")
     natural_law_added = Signal(QGraphicsItem, name="natural_law_added")
     agent_added = Signal(QGraphicsItem, name="agent_added")
+    sensor_added = Signal(QGraphicsItem, name="sensor_added")
 
     def __init__(self, universe=None):
         super(UniverseItem, self).__init__()
@@ -42,7 +44,7 @@ class UniverseItem(ClickableGraphicsWidget):
         print "UniverseItem::dragEnterEvent"
         if event.mimeData().hasText() and event.mimeData().text() in ["Matter", "Atom", "RadialForce",
                                                                       "ExpressionBasedForce", "BitmapForce",
-                                                                      "NaturalLaw", "Agent"]:
+                                                                      "NaturalLaw", "Agent", "Sensor"]:
             event.setAccepted(True)
             self.update()
         else:
@@ -96,6 +98,10 @@ class UniverseItem(ClickableGraphicsWidget):
             agent = self._universe.create_agent()
             agent_item = AgentItem(agent)
             self.agent_added.emit(agent_item)
+        elif event.mimeData().hasText() and event.mimeData().text() == "Sensor":
+            sensor = self._universe.create_sensor()
+            sensor_item = SensorItem(sensor)
+            self.sensor_added.emit(sensor_item)
 
         self.update()
 

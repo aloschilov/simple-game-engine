@@ -8,9 +8,11 @@ from engine_configurator.graphics_path_item_with_arrow_heads import GraphicsPath
 from engine_configurator.matter_item import MatterItem
 from engine_configurator.natural_law_item import NaturalLawItem
 from engine_configurator.radial_force_item import RadialForceItem
+from engine_configurator.sensor_item import SensorItem
 
 from engine_configurator.universe_item import UniverseItem
 from engine_configurator.atom_item import AtomItem
+from engine_configurator.agent_item import AgentItem
 
 from engine import Universe
 
@@ -82,6 +84,7 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.universe_item.bitmap_force_added.connect(self.add_bitmap_force)
         self.universe_item.natural_law_added.connect(self.add_natural_law)
         self.universe_item.agent_added.connect(self.add_agent)
+        self.universe_item.sensor_added.connect(self.add_sensor)
 
         self.graphics_items = list()
         self.graphics_items.append(self.universe_item)
@@ -94,6 +97,10 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.natural_law_to_atom_edges = list()
         self.atom_to_natural_law_edges = list()
         self.force_to_natural_law_edges = list()
+
+        self.agent_to_sensor_edges = list()
+
+        self.sensor_to_force_edges = list()
 
     def add_matter(self, matter_item):
         self.graphics_items.append(matter_item)
@@ -235,22 +242,51 @@ class UniverseScene(QtGui.QGraphicsScene):
         self.update()
 
     def add_agent(self, agent_item):
+        """
+
+        :param agent_item:
+        :type agent_item: AgentItem
+        :return:
+        """
         self.graphics_items.append(agent_item)
-#        natural_law_item.atom_and_natural_law_connected.connect(self.add_atom_and_natural_law_connection)
-#        natural_law_item.natural_law_and_atom_connected.connect(self.add_natural_law_and_atom_connection)
-#        natural_law_item.force_and_natural_law_connected.connect(self.add_force_and_natural_law_connection)
+        agent_item.agent_and_sensor_connected.connect(self.add_agent_and_sensor_connection)
         self.addItem(agent_item)
         self.graph.add_node(TreeNode(agent_item))
-        natural_law_item_node = self.graph.get_node(TreeNode(agent_item))
-        natural_law_item_node.attr['shape'] = 'rect'
-        natural_law_item_node.attr['width'] = agent_item.boundingRect().width()
-        natural_law_item_node.attr['height'] = agent_item.boundingRect().height()
+        sensor_item_node = self.graph.get_node(TreeNode(agent_item))
+        sensor_item_node.attr['shape'] = 'rect'
+        sensor_item_node.attr['width'] = agent_item.boundingRect().width()
+        sensor_item_node.attr['height'] = agent_item.boundingRect().height()
         self.graph.add_edge(TreeNode(self.universe_item),
                             TreeNode(agent_item), minlen=10)
         self.properties_bindings_update_required.emit()
         self.update()
 
     def remove_agent(self, agent_item):
+        # TODO: implementation
+        pass
+
+    def add_sensor(self, sensor_item):
+        """
+
+        :param sensor_item:
+        :type sensor_item: SensorItem
+        :return:
+        """
+        self.graphics_items.append(sensor_item)
+        sensor_item.sensor_and_force_connected.connect(self.add_sensor_and_force_connection)
+        self.addItem(sensor_item)
+        self.graph.add_node(TreeNode(sensor_item))
+        sensor_item_node = self.graph.get_node(TreeNode(sensor_item))
+        sensor_item_node.attr['shape'] = 'rect'
+        sensor_item_node.attr['width'] = sensor_item.boundingRect().width()
+        sensor_item_node.attr['height'] = sensor_item.boundingRect().height()
+        self.graph.add_edge(TreeNode(self.universe_item),
+                            TreeNode(sensor_item), minlen=10)
+        self.properties_bindings_update_required.emit()
+        self.update()
+
+    def remove_sensor(self, sensor_item):
+        # TODO: implementation
         pass
 
     def add_matter_and_atom_connection(self, matter_item, atom_item):
@@ -374,6 +410,36 @@ class UniverseScene(QtGui.QGraphicsScene):
                                                                             natural_law_item.natural_law)
         self.update()
 
+    def add_agent_and_sensor_connection(self, agent_item, sensor_item):
+        self.graph.add_edge(TreeNode(agent_item),
+                            TreeNode(sensor_item),
+                            minlen=10)
+
+        self.agent_to_sensor_edges.append(self.graph.get_edge(TreeNode(agent_item),
+                                                              TreeNode(sensor_item)))
+        self.update()
+        self.properties_bindings_update_required.emit()
+
+    def remove_agent_and_sensor_connection(self, agent_item, sensor_item):
+        # TODO: implementation
+        pass
+
+    def add_sensor_and_force_connection(self, sensor_item, force_item):
+        # TODO: Adjust for Sensor and Force
+        self.graph.add_edge(TreeNode(sensor_item),
+                            TreeNode(force_item),
+                            minlen=10)
+
+        self.sensor_to_force_edges.append(self.graph.get_edge(TreeNode(sensor_item),
+                                                              TreeNode(force_item)))
+
+        self.update()
+        self.properties_bindings_update_required.emit()
+
+    def remove_sensor_and_force_connection(self, sensor_item, force_item):
+        # TODO: implementation
+        pass
+
     def remove_item(self, graphics_item):
         """
         This method abstracts different approach used for deletion
@@ -488,6 +554,12 @@ class UniverseScene(QtGui.QGraphicsScene):
                     item.setFlag(QGraphicsItem.ItemIsSelectable, True)
                 elif edge in self.force_to_natural_law_edges:
                     item.setPen(QPen(Qt.darkYellow, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                    item.setFlag(QGraphicsItem.ItemIsSelectable, True)
+                elif edge in self.agent_to_sensor_edges:
+                    item.setPen(QPen(Qt.darkMagenta, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                    item.setFlag(QGraphicsItem.ItemIsSelectable, True)
+                elif edge in self.sensor_to_force_edges:
+                    item.setPen(QPen(Qt.blue, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
                     item.setFlag(QGraphicsItem.ItemIsSelectable, True)
                 else:
                     item.setPen(QPen(Qt.darkBlue, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))

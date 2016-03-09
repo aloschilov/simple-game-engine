@@ -9,6 +9,7 @@ from engine_configurator.radial_force_toolbox_item import RadialForceToolboxItem
 from engine_configurator.expression_based_force_toolbox_item import ExpressionBasedForceToolboxItem
 from engine_configurator.bitmap_force_toolbox_item import BitmapForceToolboxItem
 from engine_configurator.natural_law_toolbox_item import NaturalLawToolboxItem
+from engine_configurator.sensor_toolbox_item import SensorToolboxItem
 from engine_configurator.universe_scene import UniverseScene
 
 
@@ -76,12 +77,17 @@ class UniverseWidget(QMainWindow):
         self.agents_stencils_view = QGraphicsView(self.agents_stencils_scene)
         self.agents_stencils_scene.addItem(AgentToolboxItem())
 
+        self.sensors_stencils_scene = QGraphicsScene()
+        self.sensors_stencils_view = QGraphicsView(self.sensors_stencils_scene)
+        self.sensors_stencils_scene.addItem(SensorToolboxItem())
+
         self.tool_box = QToolBox()
         self.tool_box.addItem(self.matters_stencils_view, "Matters")
         self.tool_box.addItem(self.atoms_stencils_view, "Atoms")
         self.tool_box.addItem(self.forces_stencils_view, "Forces")
         self.tool_box.addItem(self.natural_laws_stencils_view, "Natural laws")
         self.tool_box.addItem(self.agents_stencils_view, "Agents")
+        self.tool_box.addItem(self.sensors_stencils_view, "Sensors")
 
         self.properties_widget = PropertiesWidget(self.game_scene_widget.visualization.universe)
 
