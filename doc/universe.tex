@@ -1,0 +1,56 @@
+\documentclass[a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{tabulary}
+\usepackage{textcomp}
+% http://tex.stackexchange.com/questions/26462/make-a-table-span-multiple-pages
+\usepackage{longtable}
+\usepackage{listings}
+
+
+\usepackage[mathscr]{euscript}
+% \mathfrak{M}
+\usepackage{ amssymb }
+
+\title{Universe}
+
+\author{Alexander Loshchilov}
+
+\date{2016-05-18}
+
+\begin{document}
+
+\maketitle
+
+\newpage
+
+\section{Concept}
+
+A hypothetic \textit{\textbf{Universe}}, where in its 2D Space, \textit{\textbf{Forces}} control what happen. There is \textit{\textbf{Matter}} build out of different \textit{\textbf{Atoms}} able to move. Each \textit{\textbf{Atom}} affect the \textit{\textbf{Forces}}. The \textit{\textbf{Natural Laws}} define how \textit{\textbf{Atoms}} convert into other \textit{\textbf{Atoms}}, if certain \textit{\textbf{Forces}} are present. We interact with \textit{\textbf{Universe}} using \textit{\textbf{Agents}}, which perceive \textit{\textbf{Forces}} and \textit{\textbf{Matters}}.
+
+\newpage
+
+\section{Mathematical model}
+
+So far our discussion about notions involded in universe has been rather imprecise.
+Let us formally define a \textit{\textbf{Universe}} as quintuple
+$ (\mathscr{M}, \mathscr{A}, \mathscr{F}, \mathscr{N}, \mathscr{I}) $,
+where $ \mathscr{M} $ is a set of \textit{\textbf{Matters}}, $ \mathscr{A} $ is a set of \textit{\textbf{Atoms}},
+$ \mathscr{F} $ is a set of \textit{\textbf{Forces}}, $ \mathscr{N} $ is a set of \textit{\textbf{Natural Laws}} and
+$ \mathscr{I} $ is a set of $ Agents $.
+
+\textit{\textbf{Matter}} is build out of different \textit{\textbf{Atoms}}.
+
+
+$\renewcommand{\arraystretch}{1.3}
+\begin{array}[c]{ccccc}
+\varphi:&\mathscr{M}&\rightarrow&\mathscr{P}(X)\\
+&\rotatebox{90}{$\in$}&&\rotatebox{90}{$\in$}&\\
+&m&\mapsto& A &\subseteq \mathscr{A}
+\end{array}$
+
+\end{document}
