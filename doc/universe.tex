@@ -3,7 +3,11 @@
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
+
+\usepackage{fancyhdr}
+\makeatletter
 \usepackage{graphicx}
+
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage{tabulary}
 \usepackage{textcomp}
@@ -13,8 +17,10 @@
 
 
 \usepackage[mathscr]{euscript}
-% \mathfrak{M}
-\usepackage{ amssymb }
+% \mathfrak{M} 
+% \usepackage{ amssymb }
+
+\newcommand*{\backin}{\rotatebox[origin=c]{-180}{$\in$}}%
 
 \title{Universe}
 
@@ -26,6 +32,12 @@
 
 \maketitle
 
+
+
+\newpage
+
+\tableofcontents
+
 \newpage
 
 \section{Concept}
@@ -34,7 +46,7 @@ A hypothetic \textit{\textbf{Universe}}, where in its 2D Space, \textit{\textbf{
 
 \newpage
 
-\section{Mathematical model}
+\section{Mathematical model} 
 
 So far our discussion about notions involded in universe has been rather imprecise.
 Let us formally define a \textit{\textbf{Universe}} as quintuple
@@ -45,11 +57,10 @@ $ \mathscr{I} $ is a set of $ Agents $.
 
 \textit{\textbf{Matter}} is build out of different \textit{\textbf{Atoms}}.
 
-
 $\renewcommand{\arraystretch}{1.3}
 \begin{array}[c]{ccccc}
 \varphi:&\mathscr{M}&\rightarrow&\mathscr{P}(X)\\
-&\rotatebox{90}{$\in$}&&\rotatebox{90}{$\in$}&\\
+&\rotatebox[origin=c]{90}{{$\in$}}&&\rotatebox{90}{$\in$}&\\
 &m&\mapsto& A &\subseteq \mathscr{A}
 \end{array}$
 
