@@ -60,7 +60,7 @@ $ \mathscr{I} $ is a set of \textit{\textbf{Agents}}.
 
 $\renewcommand{\arraystretch}{1.3}
 \begin{array}[c]{ccccc}
-\varphi:&\mathscr{M}&\rightarrow&\mathscr{P}(X)\\
+\varphi:&\mathscr{M}&\rightarrow&\mathscr{P}(\mathscr{A})\\
 &\rotatebox[origin=c]{90}{{$\in$}}&&\rotatebox{90}{$\in$}&\\
 &m&\mapsto& A &\subseteq \mathscr{A}
 \end{array}$
@@ -76,5 +76,38 @@ $\renewcommand{\arraystretch}{1.3}
 
 This relation could be represented by the following matrix:
 $ {N}=\left(\nu_{{i,j}}\right) $ where $ \forall i \in 1,\dots,|\mathscr{M}|, j \in 1,\dots,|\mathscr{A}| : \nu_{{i,j}}=\nu \left( m_{{i}},a_{{j}} \right) $.
+
+Every \textit{\textbf{Matter}} have got a position.
+
+$\renewcommand{\arraystretch}{1.3}
+\begin{array}[c]{ccccc}
+{p}:&\mathscr{M} &\rightarrow&\mathbb{R}^2\\
+&\rotatebox[origin=c]{90}{{$\in$}}&&\rotatebox{90}{$\in$}&\\
+&m&\mapsto& (x, y) & 
+\end{array}$
+
+Each \textit{\textbf{Atom}} produce \textit{\textbf{Forces}}.
+
+Let us define a function that maps an \textit{\textbf{Atom}} to a set of \textit{\textbf{Forces}} it produces.
+
+$\renewcommand{\arraystretch}{1.3}
+\begin{array}[c]{ccccc}
+{g}:&\mathscr{A} &\rightarrow&\mathscr{P}(\mathscr{F})\\
+&\rotatebox[origin=c]{90}{{$\in$}}&&\rotatebox{90}{$\in$}&\\
+&a&\mapsto&F& \subseteq \mathscr{F}
+\end{array}$
+
+This relation could be represented by the following matrix:
+$ {G}=\left(g_{{i,j}}\right) $ where
+$  \forall i \in 1,\dots,|\mathscr{A}|, j \in 1,\dots,|\mathscr{F}| $
+\begin{displaymath}
+   g_{{i,j}} = \left\{
+     \begin{array}{lr}
+       1 & : f_j \in g(a_i)\\
+       0 & : f_j \notin g(a_i)
+     \end{array}
+   \right.
+\end{displaymath}
+
 
 \end{document}
